@@ -1,0 +1,28 @@
+name: UI |  ES Lint
+
+on:
+  pull_request:
+    paths:
+      - packages/ui/**
+
+jobs:
+  front_end_es_lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect Workflow Telemetry
+        uses: runforesight/foresight-workflow-kit-action@v1
+        if: ${{ always() }}
+        with:
+          api_key: ${{ secrets.FORESIGHT_KEY }}
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install Dependencies
+        run: npm install
+      - name: Lint
+        working-directory: packages/ui
+        run: npm run lint
+      - name: Prettier
+        working-directory: packages/ui
+        run: npx prettier --check .

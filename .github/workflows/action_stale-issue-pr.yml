@@ -1,0 +1,22 @@
+name: Action | Mark stale issues and PR
+
+on:
+  schedule:
+  - cron: '34 22 * * *'
+
+jobs:
+  stale:
+
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+    - uses: actions/stale@v5
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        stale-issue-message: 'Stale issue, closing!'
+        stale-pr-message: 'Stale pull request, closing!'
+        stale-issue-label: 'no-issue-activity'
+        stale-pr-label: 'no-pr-activity'
