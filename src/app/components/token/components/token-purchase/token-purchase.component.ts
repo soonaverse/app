@@ -30,7 +30,7 @@ import {
   Transaction,
   TransactionType,
   getDefDecimalIfNotSet,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, Subscription, filter } from 'rxjs';
 

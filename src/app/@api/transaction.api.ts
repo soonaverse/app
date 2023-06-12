@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { PublicCollections, Transaction, WEN_FUNC, WenRequest } from '@soonaverse/interfaces';
+import { PublicCollections, Transaction, WEN_FUNC, WenRequest } from '@build-5/interfaces';
 import { Observable } from 'rxjs';
 import { BaseApi } from './base.api';
 

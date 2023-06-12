@@ -11,8 +11,8 @@ import {
   Token,
   TokenDistribution,
   TokenStats,
-} from '@soonaverse/interfaces';
-import { AwardFilter } from '@soonaverse/lib';
+} from '@build-5/interfaces';
+import { AwardFilter } from '@build-5/lib';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {

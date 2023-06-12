@@ -17,7 +17,7 @@ import {
   TEST_AVAILABLE_MINTABLE_NETWORKS,
   Token,
   TokenStatus,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import { BehaviorSubject, of, Subscription, switchMap } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { AwardApi } from './../../../../@api/award.api';
@@ -27,7 +27,7 @@ import { NotificationService } from './../../../../@core/services/notification/n
 import { AuthService } from './../../../../components/auth/services/auth.service';
 
 import { FileApi } from '@api/file.api';
-import { getDefDecimalIfNotSet, Network } from '@soonaverse/interfaces';
+import { getDefDecimalIfNotSet, Network } from '@build-5/interfaces';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { NzUploadChangeParam, NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
 

@@ -14,7 +14,7 @@ import {
   MAX_IOTA_AMOUNT,
   MIN_IOTA_AMOUNT,
   NETWORK_DETAIL,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 
 export enum IotaInputSize {
   LARGE = 'large',

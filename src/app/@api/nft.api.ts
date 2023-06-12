@@ -12,8 +12,8 @@ import {
   TransactionType,
   WEN_FUNC,
   WenRequest,
-} from '@soonaverse/interfaces';
-import { MemberRepository, NftRepository, TransactionRepository } from '@soonaverse/lib';
+} from '@build-5/interfaces';
+import { MemberRepository, NftRepository, TransactionRepository } from '@build-5/lib';
 import { Observable, switchMap } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
 

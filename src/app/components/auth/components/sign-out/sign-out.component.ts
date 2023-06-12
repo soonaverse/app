@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
-import { Member } from '@soonaverse/interfaces';
+import { Member } from '@build-5/interfaces';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 

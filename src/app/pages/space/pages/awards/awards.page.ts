@@ -11,8 +11,8 @@ import { DeviceService } from '@core/services/device';
 import { SeoService } from '@core/services/seo';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Award } from '@soonaverse/interfaces';
-import { AwardFilter } from '@soonaverse/lib';
+import { Award } from '@build-5/interfaces';
+import { AwardFilter } from '@build-5/lib';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DataService } from './../../services/data.service';
 

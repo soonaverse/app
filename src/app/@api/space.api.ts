@@ -6,14 +6,14 @@ import {
   SpaceMember,
   WEN_FUNC,
   WenRequest,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import {
   MemberRepository,
   SpaceBlockedMemberRepository,
   SpaceGuardianRepository,
   SpaceKnockingMemberRepository,
   SpaceMemberRepository,
-} from '@soonaverse/lib';
+} from '@build-5/lib';
 import { Observable, map, of, switchMap } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
 

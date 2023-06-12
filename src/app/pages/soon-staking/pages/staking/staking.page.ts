@@ -31,7 +31,7 @@ import {
   calcStakedMultiplier,
   getDefDecimalIfNotSet,
   tiers,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import { BehaviorSubject, Observable, Subscription, map, merge, of } from 'rxjs';
 
 interface Rewards {

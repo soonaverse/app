@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { Router } from '@angular/router';
 import { AuthService, Wallets } from '@components/auth/services/auth.service';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
-import { FILE_SIZES, Member } from '@soonaverse/interfaces';
+import { FILE_SIZES, Member } from '@build-5/interfaces';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({

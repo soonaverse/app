@@ -10,7 +10,7 @@ import {
   Network,
   Transaction,
   TransactionType,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 
 export enum TimelineItemType {
   BADGE = 'Badge',

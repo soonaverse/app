@@ -6,8 +6,8 @@ import {
   TokenPurchaseAge,
   TokenTradeOrder,
   TokenTradeOrderType,
-} from '@soonaverse/interfaces';
-import { TokenPurchaseRepository, TokenStatsRepository } from '@soonaverse/lib';
+} from '@build-5/interfaces';
+import { TokenPurchaseRepository, TokenStatsRepository } from '@build-5/lib';
 import { map } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
 

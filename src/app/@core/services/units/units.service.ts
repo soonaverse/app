@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DEFAULT_NETWORK, Network, NETWORK_DETAIL } from '@soonaverse/interfaces';
+import { DEFAULT_NETWORK, Network, NETWORK_DETAIL } from '@build-5/interfaces';
 import { map, Observable } from 'rxjs';
 import { CacheService } from '../cache/cache.service';
 

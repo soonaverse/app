@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { FileApi } from '@api/file.api';
 import { AuthService } from '@components/auth/services/auth.service';
-import { FILE_SIZES, Space } from '@soonaverse/interfaces';
+import { FILE_SIZES, Space } from '@build-5/interfaces';
 import { ROUTER_UTILS } from './../../../../@core/utils/router.utils';
 
 @Component({

@@ -10,7 +10,7 @@ import { SeoService } from '@core/services/seo';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService } from '@pages/space/services/data.service';
-import { Award, Proposal, Token, TokenStatus } from '@soonaverse/interfaces';
+import { Award, Proposal, Token, TokenStatus } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { Subscription } from 'rxjs';
 

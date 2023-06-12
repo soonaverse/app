@@ -18,7 +18,7 @@ import {
   NETWORK_DETAIL,
   Token,
   TokenStatus,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 
 @Component({
   selector: 'wen-token-edit',

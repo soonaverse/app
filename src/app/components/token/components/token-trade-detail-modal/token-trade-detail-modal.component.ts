@@ -24,7 +24,7 @@ import {
   TOKEN_SALE,
   TOKEN_SALE_TEST,
   Transaction,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
 
 @UntilDestroy()

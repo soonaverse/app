@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Collection } from '@soonaverse/interfaces';
+import { Collection } from '@build-5/interfaces';
 
 @Component({
   selector: 'wen-collection-status',

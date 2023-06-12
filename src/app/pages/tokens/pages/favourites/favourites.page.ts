@@ -6,7 +6,7 @@ import { SeoService } from '@core/services/seo';
 import { getItem, setItem, StorageItem } from '@core/utils';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { Token } from '@soonaverse/interfaces';
+import { Token } from '@build-5/interfaces';
 import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
 import { tokensSections } from '../tokens/tokens.page';
 

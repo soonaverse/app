@@ -5,7 +5,7 @@ import {
   NETWORK_DETAIL,
   Network,
   getDefDecimalIfNotSet,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import { firstValueFrom, skipWhile } from 'rxjs';
 
 const DEF_DECIMALS = 6;

@@ -1,5 +1,5 @@
 {
-  "$schema": "../../node_modules/@angular/cli/lib/config/schema.json",
+  "$schema": "../node_modules/@angular/cli/lib/config/schema.json",
   "cli": {
     "analytics": false
   },
@@ -80,13 +80,13 @@
               },
               {
                 "glob": "**/*",
-                "input": "../../node_modules/@ant-design/icons-angular/src/inline-svg/",
+                "input": "../node_modules/@ant-design/icons-angular/src/inline-svg/",
                 "output": "/assets/"
               }
             ],
             "styles": [
               "src/theme/styles.less",
-              "../../node_modules/instantsearch.css/themes/satellite.css"
+              "../node_modules/instantsearch.css/themes/satellite.css"
             ],
             "scripts": []
           },

@@ -21,7 +21,7 @@ import {
   NETWORK_DETAIL,
   Nft,
   NftAccess,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { NzSelectOptionInterface } from 'ng-zorro-antd/select';
 import { BehaviorSubject, Subscription, from } from 'rxjs';

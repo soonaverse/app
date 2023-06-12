@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Space, Token, TokenDistribution, TokenStats } from '@soonaverse/interfaces';
+import { Space, Token, TokenDistribution, TokenStats } from '@build-5/interfaces';
 import { BehaviorSubject, map, Observable, of } from 'rxjs';
 import {
   AuditOneQueryService,

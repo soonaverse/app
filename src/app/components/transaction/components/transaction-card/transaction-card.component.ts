@@ -3,7 +3,7 @@ import { DeviceService } from '@core/services/device';
 import { PreviewImageService } from '@core/services/preview-image';
 import { TransactionService } from '@core/services/transaction';
 import { UnitsService } from '@core/services/units';
-import { Transaction } from '@soonaverse/interfaces';
+import { Transaction } from '@build-5/interfaces';
 
 @Component({
   selector: 'wen-transaction-card',

@@ -10,7 +10,7 @@ import {
   TokenTradeOrderStatus,
   Transaction,
   TransactionType,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 

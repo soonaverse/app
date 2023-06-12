@@ -20,7 +20,7 @@ import {
   MIN_AMOUNT_TO_TRANSFER,
   Nft,
   NftAccess,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import { BehaviorSubject, Subscription, take } from 'rxjs';
 
 @UntilDestroy()

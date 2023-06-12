@@ -8,7 +8,7 @@ import { StorageItem, getItem, setItem } from '@core/utils';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { environment } from '@env/environment';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Token } from '@soonaverse/interfaces';
+import { Token } from '@build-5/interfaces';
 import { filter } from 'rxjs';
 
 export const tokensSections: TabSection[] = [

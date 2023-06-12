@@ -1,15 +1,8 @@
 {
-  "name": "@soonaverse/ui",
-  "version": "0.0.0",
+  "name": "@soonaverse/app",
+  "version": "1.0.0",
   "license": "Apache-2.0",
-  "main": "lib/index.js",
-  "private": "true",
-  "directories": {
-    "lib": "lib"
-  },
-  "files": [
-    "lib"
-  ],
+  "private": "false",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

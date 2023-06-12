@@ -9,7 +9,7 @@ import {
   Token,
   TokenDistribution,
   Transaction,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import { BehaviorSubject } from 'rxjs';
 import { TransactionWithFullMember } from './../../../@api/proposal.api';
 

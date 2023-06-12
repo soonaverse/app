@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { AuthService } from '@components/auth/services/auth.service';
 import { DataService } from '@pages/proposal/services/data.service';
 import { HelperService } from '@pages/proposal/services/helper.service';
-import { Timestamp } from '@soonaverse/interfaces';
+import { Timestamp } from '@build-5/interfaces';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({

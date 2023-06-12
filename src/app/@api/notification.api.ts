@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Notification, PublicCollections } from '@soonaverse/interfaces';
-import { NotificationRepository } from '@soonaverse/lib';
+import { Notification, PublicCollections } from '@build-5/interfaces';
+import { NotificationRepository } from '@build-5/lib';
 import { BaseApi, SOON_ENV } from './base.api';
 
 @Injectable({

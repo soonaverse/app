@@ -12,7 +12,7 @@ import { MilestoneSmrApi } from '@api/milestone_smr.api';
 import { DeviceService } from '@core/services/device';
 import { environment } from '@env/environment';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Milestone, Network, PROD_NETWORKS, TEST_NETWORKS } from '@soonaverse/interfaces';
+import { Milestone, Network, PROD_NETWORKS, TEST_NETWORKS } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, map } from 'rxjs';
 

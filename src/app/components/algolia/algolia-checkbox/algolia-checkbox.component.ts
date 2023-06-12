@@ -13,7 +13,7 @@ import { noop, parseNumberInput } from '@components/algolia/util';
 import { CacheService } from '@core/services/cache/cache.service';
 import { PreviewImageService } from '@core/services/preview-image';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Access } from '@soonaverse/interfaces';
+import { Access } from '@build-5/interfaces';
 import { NgAisIndex, NgAisInstantSearch, TypedBaseWidget } from 'angular-instantsearch';
 import { connectRefinementList } from 'instantsearch.js/es/connectors';
 import {

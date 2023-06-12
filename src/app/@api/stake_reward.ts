@@ -9,8 +9,8 @@ import {
   TokenStats,
   WEN_FUNC,
   WenRequest,
-} from '@soonaverse/interfaces';
-import { StakeRewardRepository } from '@soonaverse/lib';
+} from '@build-5/interfaces';
+import { StakeRewardRepository } from '@build-5/lib';
 import dayjs from 'dayjs';
 import { Observable } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';

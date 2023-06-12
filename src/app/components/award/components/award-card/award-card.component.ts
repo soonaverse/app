@@ -3,7 +3,7 @@ import { DeviceService } from '@core/services/device';
 import { PreviewImageService } from '@core/services/preview-image';
 import { UnitsService } from '@core/services/units';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Award, AwardBadgeType, FILE_SIZES, Space } from '@soonaverse/interfaces';
+import { Award, AwardBadgeType, FILE_SIZES, Space } from '@build-5/interfaces';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { SpaceApi } from './../../../../@api/space.api';
 import { ROUTER_UTILS } from './../../../../@core/utils/router.utils';

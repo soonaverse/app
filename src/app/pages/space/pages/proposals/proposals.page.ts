@@ -11,7 +11,7 @@ import { DeviceService } from '@core/services/device';
 import { SeoService } from '@core/services/seo';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Proposal } from '@soonaverse/interfaces';
+import { Proposal } from '@build-5/interfaces';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ProposalFilter } from './../../../../@api/proposal.api';
 import { DataService } from './../../services/data.service';

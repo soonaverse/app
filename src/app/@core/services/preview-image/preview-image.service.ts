@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FileApi } from '@api/file.api';
-import { FILE_SIZES } from '@soonaverse/interfaces';
+import { FILE_SIZES } from '@build-5/interfaces';
 
 @Injectable({
   providedIn: 'root',

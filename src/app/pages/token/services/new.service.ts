@@ -13,7 +13,7 @@ import {
   Space,
   TokenAllocation,
   TokenDistributionType,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { NzUploadChangeParam, NzUploadXHRArgs } from 'ng-zorro-antd/upload';

@@ -6,7 +6,7 @@ import {
   SOON_PROD_ADDRESS_API,
   SOON_TEST_ADDRESS_API,
   WEN_FUNC,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import { NzUploadXHRArgs } from 'ng-zorro-antd/upload';
 import { Observable, map, of } from 'rxjs';
 

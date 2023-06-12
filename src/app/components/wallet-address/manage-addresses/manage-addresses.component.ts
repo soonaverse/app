@@ -9,7 +9,7 @@ import {
   PROD_NETWORKS,
   Space,
   TEST_NETWORKS,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 
 @Component({
   selector: 'wen-manage-addresses',

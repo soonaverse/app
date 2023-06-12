@@ -11,7 +11,7 @@ import {
   Token,
   TokenTradeOrder,
   TokenTradeOrderType,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import bigDecimal from 'js-big-decimal';
 
 @Component({

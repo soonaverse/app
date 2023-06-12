@@ -4,7 +4,7 @@ import { RefinementMappings } from '@components/algolia/refinement/refinement.co
 import { enumToArray } from '@core/utils/manipulations.utils';
 import { environment } from '@env/environment';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { Access, Categories, NftAvailable } from '@soonaverse/interfaces';
+import { Access, Categories, NftAvailable } from '@build-5/interfaces';
 import algoliasearch from 'algoliasearch/lite';
 
 const accessMapping: RefinementMappings = {};

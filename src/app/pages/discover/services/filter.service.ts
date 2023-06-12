@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { GLOBAL_DEBOUNCE_TIME } from '@soonaverse/interfaces';
+import { GLOBAL_DEBOUNCE_TIME } from '@build-5/interfaces';
 import { BehaviorSubject } from 'rxjs';
 import { SortOptions } from './sort-options.interface';
 

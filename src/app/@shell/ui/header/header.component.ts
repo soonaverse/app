@@ -35,7 +35,7 @@ import {
   NotificationType,
   TRANSACTION_AUTO_EXPIRY_MS,
   TransactionOrder,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationRef, NzNotificationService } from 'ng-zorro-antd/notification';
 import {

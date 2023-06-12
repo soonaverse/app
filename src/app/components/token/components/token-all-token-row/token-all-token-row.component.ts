@@ -15,7 +15,7 @@ import { UnitsService } from '@core/services/units';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/token/services/helper.service';
-import { DEFAULT_NETWORK_DECIMALS, Token, TokenStatus } from '@soonaverse/interfaces';
+import { DEFAULT_NETWORK_DECIMALS, Token, TokenStatus } from '@build-5/interfaces';
 import { BehaviorSubject, Subscription, first } from 'rxjs';
 
 @UntilDestroy()

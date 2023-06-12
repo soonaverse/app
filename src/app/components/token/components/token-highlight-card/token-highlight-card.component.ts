@@ -4,7 +4,7 @@ import { TokenPurchaseApi } from '@api/token_purchase.api';
 import { PreviewImageService } from '@core/services/preview-image';
 import { UnitsService } from '@core/services/units';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Token } from '@soonaverse/interfaces';
+import { Token } from '@build-5/interfaces';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @UntilDestroy()

@@ -13,7 +13,7 @@ import { TransactionService } from '@core/services/transaction';
 import { UnitsService } from '@core/services/units';
 import { download } from '@core/utils/tools.utils';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { Award, StakeRewardStatus } from '@soonaverse/interfaces';
+import { Award, StakeRewardStatus } from '@build-5/interfaces';
 import { NzUploadFile } from 'ng-zorro-antd/upload';
 import Papa from 'papaparse';
 import { Observable } from 'rxjs';

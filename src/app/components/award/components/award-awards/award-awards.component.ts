@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UnitsService } from '@core/services/units';
 import { DataService } from '@pages/award/services/data.service';
 import { HelperService } from '@pages/award/services/helper.service';
-import { FILE_SIZES } from '@soonaverse/interfaces';
+import { FILE_SIZES } from '@build-5/interfaces';
 
 @Component({
   selector: 'wen-award-awards',

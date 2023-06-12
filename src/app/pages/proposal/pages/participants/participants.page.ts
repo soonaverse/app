@@ -13,7 +13,7 @@ import { CacheService } from '@core/services/cache/cache.service';
 import { DeviceService } from '@core/services/device';
 import { SeoService } from '@core/services/seo';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { COL, GLOBAL_DEBOUNCE_TIME, Member } from '@soonaverse/interfaces';
+import { COL, GLOBAL_DEBOUNCE_TIME, Member } from '@build-5/interfaces';
 import { BehaviorSubject, Subscription, debounceTime, first, from, skip } from 'rxjs';
 import { DataService } from '../../services/data.service';
 import { DEFAULT_LIST_SIZE } from './../../../../@api/base.api';

@@ -19,7 +19,7 @@ import {
   tiers,
   TOKEN_EXPIRY_HOURS,
   WenRequest,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { BehaviorSubject, firstValueFrom, skip, Subscription } from 'rxjs';

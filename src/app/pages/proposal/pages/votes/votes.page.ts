@@ -4,7 +4,7 @@ import { DeviceService } from '@core/services/device';
 import { UnitsService } from '@core/services/units';
 import { DataService } from '@pages/proposal/services/data.service';
 import { HelperService } from '@pages/proposal/services/helper.service';
-import { ProposalType } from '@soonaverse/interfaces';
+import { ProposalType } from '@build-5/interfaces';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({

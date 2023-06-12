@@ -7,8 +7,8 @@ import {
   TokenTradeOrderType,
   WEN_FUNC,
   WenRequest,
-} from '@soonaverse/interfaces';
-import { TokenMarketRepository } from '@soonaverse/lib';
+} from '@build-5/interfaces';
+import { TokenMarketRepository } from '@build-5/lib';
 import { Observable, map } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
 

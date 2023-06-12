@@ -5,7 +5,7 @@ import { DeviceService } from '@core/services/device';
 import { PreviewImageService } from '@core/services/preview-image';
 import { UnitsService } from '@core/services/units';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { GLOBAL_DEBOUNCE_TIME, Transaction } from '@soonaverse/interfaces';
+import { GLOBAL_DEBOUNCE_TIME, Transaction } from '@build-5/interfaces';
 import { BehaviorSubject, debounceTime, map } from 'rxjs';
 import { ThemeList, ThemeService } from '@core/services/theme';
 import { DataService } from './../../services/data.service';

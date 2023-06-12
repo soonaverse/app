@@ -17,7 +17,7 @@ import { FilterStorageService } from '@core/services/filter-storage';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { marketSections } from '@pages/market/pages/market/market.page';
 import { FilterService } from '@pages/market/services/filter.service';
-import { COL, Timestamp } from '@soonaverse/interfaces';
+import { COL, Timestamp } from '@build-5/interfaces';
 import { InstantSearchConfig } from 'angular-instantsearch/instantsearch/instantsearch';
 import { Subject } from 'rxjs';
 

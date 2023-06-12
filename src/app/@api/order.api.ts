@@ -6,8 +6,8 @@ import {
   Transaction,
   WEN_FUNC,
   WenRequest,
-} from '@soonaverse/interfaces';
-import { TransactionRepository } from '@soonaverse/lib';
+} from '@build-5/interfaces';
+import { TransactionRepository } from '@build-5/lib';
 import { Observable } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
 

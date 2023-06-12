@@ -1,4 +1,4 @@
-import { Network } from '@soonaverse/interfaces';
+import { Network } from '@build-5/interfaces';
 
 export enum StorageItem {
   CustomToken = 'App/customToken',

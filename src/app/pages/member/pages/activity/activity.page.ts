@@ -21,7 +21,7 @@ import {
   StakeType,
   Token,
   Transaction,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import dayjs from 'dayjs';
 import { BehaviorSubject, map, Observable } from 'rxjs';

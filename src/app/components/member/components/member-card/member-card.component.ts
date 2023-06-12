@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/c
 import { MemberApi } from '@api/member.api';
 import { DeviceService } from '@core/services/device';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { FILE_SIZES, Member, Timestamp, Transaction } from '@soonaverse/interfaces';
+import { FILE_SIZES, Member, Timestamp, Transaction } from '@build-5/interfaces';
 import { BehaviorSubject, first, Observable, of } from 'rxjs';
 import { ROUTER_UTILS } from './../../../../@core/utils/router.utils';
 

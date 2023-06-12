@@ -29,7 +29,7 @@ import {
   MIN_IOTA_AMOUNT,
   PRICE_UNITS,
   Units,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { DisabledTimeConfig } from 'ng-zorro-antd/date-picker';
 import { NzNotificationService } from 'ng-zorro-antd/notification';

@@ -20,7 +20,7 @@ import {
   StakeRewardStatus,
   Token,
   getDefDecimalIfNotSet,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { NzUploadFile } from 'ng-zorro-antd/upload';
 import Papa from 'papaparse';

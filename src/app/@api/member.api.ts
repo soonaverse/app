@@ -16,7 +16,7 @@ import {
   Transaction,
   WEN_FUNC,
   WenRequest,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import {
   AirdropRepository,
   AwardParticipantRepository,
@@ -31,7 +31,7 @@ import {
   TokenDistributionRepository,
   TokenRepository,
   TransactionRepository,
-} from '@soonaverse/lib';
+} from '@build-5/lib';
 import dayjs from 'dayjs';
 import { Observable, combineLatest, map, switchMap } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';

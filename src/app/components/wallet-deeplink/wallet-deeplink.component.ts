@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { DEFAULT_NETWORK, NETWORK_DETAIL, Network, WEN_NAME } from '@soonaverse/interfaces';
+import { DEFAULT_NETWORK, NETWORK_DETAIL, Network, WEN_NAME } from '@build-5/interfaces';
 
 @Component({
   selector: 'wen-wallet-deeplink',

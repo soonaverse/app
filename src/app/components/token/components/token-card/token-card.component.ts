@@ -4,7 +4,7 @@ import { PreviewImageService } from '@core/services/preview-image';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { DataService } from '@pages/token/services/data.service';
 import { HelperService } from '@pages/token/services/helper.service';
-import { Token } from '@soonaverse/interfaces';
+import { Token } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 
 export enum TokenCardType {

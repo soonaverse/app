@@ -30,7 +30,7 @@ import {
   Network,
   RANKING,
   RANKING_TEST,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { BehaviorSubject, first, firstValueFrom, skip, Subscription } from 'rxjs';
 import { DataService } from '../../services/data.service';

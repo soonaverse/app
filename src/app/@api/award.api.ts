@@ -7,13 +7,13 @@ import {
   Timestamp,
   WEN_FUNC,
   WenRequest,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import {
   AwardFilter,
   AwardOwnerRepository,
   AwardParticipantRepository,
   AwardRepository,
-} from '@soonaverse/lib';
+} from '@build-5/lib';
 
 import { map, Observable, of } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';

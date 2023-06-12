@@ -23,7 +23,7 @@ import {
   TokenDistribution,
   TokenTradeOrderType,
   getDefDecimalIfNotSet,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import bigDecimal from 'js-big-decimal';
 
 export enum StepType {

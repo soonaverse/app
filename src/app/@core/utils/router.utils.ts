@@ -1,4 +1,4 @@
-import { URL_PATHS } from '@soonaverse/interfaces';
+import { URL_PATHS } from '@build-5/interfaces';
 
 export const ROUTER_UTILS = {
   config: {

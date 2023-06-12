@@ -25,7 +25,7 @@ import {
   Space,
   StakeType,
   TokenDistribution,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import Papa from 'papaparse';
 import { BehaviorSubject, combineLatest, debounceTime, map, Observable, skip } from 'rxjs';
 import { SpaceApi } from './../../../../@api/space.api';

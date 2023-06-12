@@ -6,9 +6,9 @@ import {
   SOON_PROD_ADDRESS_API,
   SOON_TEST_ADDRESS_API,
   WEN_FUNC,
-} from '@soonaverse/interfaces';
-import { SoonEnv, initSoonEnv } from '@soonaverse/lib';
-import { CrudRepository } from '@soonaverse/lib/lib/repositories/CrudRepository';
+} from '@build-5/interfaces';
+import { SoonEnv, initSoonEnv } from '@build-5/lib';
+import { CrudRepository } from '@build-5/lib/lib/repositories/CrudRepository';
 import { Observable, map } from 'rxjs';
 
 export const DEFAULT_LIST_SIZE = 50;

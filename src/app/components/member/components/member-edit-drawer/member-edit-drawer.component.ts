@@ -19,7 +19,7 @@ import {
   Member,
   Nft,
   TWITTER_REGEXP,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import { NzSelectOptionInterface } from 'ng-zorro-antd/select';
 import { BehaviorSubject, Subscription, first, from } from 'rxjs';
 import { MemberApi } from '../../../../@api/member.api';

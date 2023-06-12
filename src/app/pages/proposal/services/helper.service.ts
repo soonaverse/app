@@ -5,7 +5,7 @@ import {
   ProposalQuestion,
   ProposalType,
   PROPOSAL_COMMENCING_IN_DAYS,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import dayjs from 'dayjs';
 
 @Injectable({

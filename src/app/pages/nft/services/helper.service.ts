@@ -17,7 +17,7 @@ import {
   TransactionBillPayment,
   TransactionType,
   TRANSACTION_AUTO_EXPIRY_MS,
-} from '@soonaverse/interfaces';
+} from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import * as isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
