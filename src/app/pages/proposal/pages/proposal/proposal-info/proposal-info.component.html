@@ -1,0 +1,76 @@
+<nz-card
+  nzTitle="Approve Proposal"
+  class="block"
+  *ngIf="
+    !(data?.proposal$ | async)?.approved &&
+    (isGuardianWithinSpace$ | async) &&
+    !(data?.proposal$ | async)?.rejected
+  "
+>
+  <div class="mb-8 space-y-4">
+    <button nz-button nzType="primary" nzBlock nzSize="large" (click)="wenOnApprove.emit()" i18n>
+      Approve
+    </button>
+    <button
+      nz-button
+      nzDanger
+      nzType="primary"
+      nzBlock
+      nzSize="large"
+      (click)="wenOnReject.emit()"
+      i18n
+    >
+      Decline
+    </button>
+  </div>
+</nz-card>
+
+<nz-card nzTitle="Proposal Info" class="block">
+  <wen-description
+    [items]="[
+      helper.isNativeVote((data.proposal$ | async)?.type)
+        ? {
+            title: descriptionLabels[1],
+            value: (helper.getCommenceDate(data.proposal$ | async) | date : 'short')
+          }
+        : null,
+      {
+        title: descriptionLabels[2],
+        value: (helper.getStartDate(data.proposal$ | async) | date : 'short')
+      },
+      {
+        title: descriptionLabels[3],
+        value: (helper.getEndDate(data.proposal$ | async) | date : 'short')
+      },
+      {
+        title: descriptionLabels[4],
+        type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+        value: helper.getVotingTypeText((data.proposal$ | async)?.type),
+        titleTemplate: votingTypeTooltipIcon
+      },
+      !helper.isNativeVote((data.proposal$ | async)?.type)
+        ? {
+            title: descriptionLabels[5],
+            value: (data.proposal$ | async)?.totalWeight || 0,
+            titleTemplate: totalWeightTooltipIcon
+          }
+        : null
+    ]"
+  ></wen-description>
+  <ng-template #votingTypeTooltipIcon>
+    <wen-icon-question-circle
+      nz-tooltip
+      i18n-nzTooltipTitle
+      nzTooltipTitle="Voting Type of this proposal."
+    >
+    </wen-icon-question-circle>
+  </ng-template>
+  <ng-template #totalWeightTooltipIcon>
+    <wen-icon-question-circle
+      nz-tooltip
+      i18n-nzTooltipTitle
+      nzTooltipTitle="Total weight within this proposal for all participants."
+    >
+    </wen-icon-question-circle>
+  </ng-template>
+</nz-card>

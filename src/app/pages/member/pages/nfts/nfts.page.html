@@ -1,0 +1,85 @@
+<ais-instantsearch *ngIf="config" [config]="config">
+  <header class="header" id="header">
+    <div class="header-searchbox">
+      <wen-search-box></wen-search-box>
+    </div>
+  </header>
+  <div class="relative mt-11 lg:mt-10">
+    <ais-stats data-layout="mobile">
+      <ng-template let-state="state">
+        <span
+          class="font-medium ais-Stats-text text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >
+          {{ state.nbHits | number }} <ng-container i18n>records</ng-container>
+        </span>
+      </ng-template>
+    </ais-stats>
+  </div>
+  <nz-card class="mt-4" *ngIf="((data.member$ | async)?.uid === (loggedInMember$ | async)?.uid)">
+    <div class="w-full flex justify-between items-center space-x-10">
+      <div class="flex">
+        <wen-icon-info-circle
+          class="text-icons-secondary dark:text-icons-secondary-dark"
+        ></wen-icon-info-circle>
+        <div class="ml-3 font-medium" i18n>
+          Bring NFT from other network to Soonaverse and unlock it’s trading options.
+        </div>
+      </div>
+      <button nz-button nzType="primary" nzSize="default" (click)="isDepositNftVisible = true" i18n>
+        Deposit NFT
+      </button>
+    </div>
+  </nz-card>
+  <main class="flex justify-between mx-auto">
+    <section
+      class="container-results"
+      [ngClass]="{ 'mr-5': filterStorageService.marketNftsFiltersVisible$ | async }"
+    >
+      <ais-infinite-hits [transformItems]="convertAllToSoonaverseModel">
+        <ng-template let-hits="hits" let-results="results" let-refine="showMore">
+          <div class="mt-6 xl:grid place-items-start" *ngIf="hits.length">
+            <div class="mb-10 wen-cards-wrapper-light">
+              <wen-nft-card
+                class="w-full h-full outline-none"
+                *ngFor="let hit of hits; trackBy: trackByUid"
+                [nft]="hit"
+                [collection]="cacheService.getCollection(hit.collection) | async"
+              >
+              </wen-nft-card>
+              <div (wenVisible)="refine()"></div>
+            </div>
+          </div>
+
+          <nz-card class="w-full mt-6" *ngIf="hits.length === 0">
+            <div class="flex flex-col justify-center text-center h-36">
+              <span
+                class="mb-3 leading-7 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                i18n
+              >
+                No NFTs
+              </span>
+            </div>
+          </nz-card>
+        </ng-template>
+      </ais-infinite-hits>
+    </section>
+  </main>
+
+  <wen-sort-by
+    class="hidden"
+    [items]="filterStorageService.marketNftsFiltersOptions.sortItems"
+    [value]="(filterStorageService.memberNftsFitlers$ | async)?.sortBy"
+  ></wen-sort-by>
+  <wen-algolia-checkbox
+    class="hidden"
+    attribute="owner"
+    [value]="(filterStorageService.memberNftsFitlers$ | async)?.refinementList?.owner"
+  >
+  </wen-algolia-checkbox>
+</ais-instantsearch>
+
+<wen-nft-deposit
+  *ngIf="isDepositNftVisible"
+  [isOpen]="isDepositNftVisible"
+  (wenOnClose)="isDepositNftVisible = false"
+></wen-nft-deposit>

@@ -1,0 +1,296 @@
+<wen-modal-drawer
+  i18n-title
+  title="Checkout"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="flex flex-col mt-12 lg:flex-row lg:mt-6">
+    <div class="relative w-full lg:w-72 lg:w-overflow-hidden">
+      <img
+        *ngIf="mediaType === 'image'"
+        i18n-alt
+        alt="NFT image"
+        [src]="previewImageService.getUrl(getRecord()?.media) || '/assets/mocks/no_banner.jpg'"
+        class="object-cover w-full h-full rounded-2xl"
+      />
+
+      <video controls class="object-cover w-full h-full rounded-2xl" *ngIf="mediaType === 'video'">
+        <source [src]="previewImageService.getUrl(getRecord()?.media)" type="video/mp4" />
+        Your browser does not support HTML video.
+      </video>
+    </div>
+    <div class="mt-8 lg:ml-8 lg:mt-0">
+      <div class="relative flex flex-col w-full h-full">
+        <h3 class="mb-1 text-2xl font-bold truncate">{{ getTitle() }}</h3>
+        <div class="text-xl font-medium">{{ collection?.name }}</div>
+        <div class="flex items-center mt-2.5 mb-2.5">
+          <wen-icon-crown
+            class="mr-2.5 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            [size]="20"
+          ></wen-icon-crown>
+          <div class="font-medium">
+            {{ (collection?.royaltiesFee || 0) * 100 }}% <span i18n>Royalties</span>
+          </div>
+          <wen-icon-question-circle
+            [size]="20"
+            class="ml-1.5 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            nz-tooltip
+            i18n-nzTooltipTitle
+            nzTooltipTitle="Royalties are automatically deducted and paid to artists."
+          ></wen-icon-question-circle>
+        </div>
+
+        <a
+          *ngIf="royaltySpace && royaltySpace?.uid !== collection?.space"
+          [routerLink]="['/space', royaltySpace.uid]"
+          class="flex items-center justify-between mb-2.5 w-max"
+        >
+          <nz-avatar
+            [nzSrc]="previewImageService.getAvatarSize(royaltySpace.avatarUrl)"
+            [nzSize]="24"
+            class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark min-w-6"
+            nzShape="circle"
+          >
+          </nz-avatar>
+          <div class="ml-3 text-xs font-medium">
+            <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+              Royalties goes to
+            </div>
+            <div class="" i18n>{{ royaltySpace.name | truncate : [20] }}</div>
+          </div>
+        </a>
+
+        <div
+          class="px-5 py-3 mt-8 lg:mt-auto bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl w-max"
+        >
+          <div
+            class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+          >
+            Total price
+          </div>
+          <div
+            class="flex items-center mt-2 text-lg"
+            *ngIf="discount() < 1 && currentStep === stepType.CONFIRM"
+          >
+            <div class="mr-2 font-bold line-through text-foregrounds-tertiary">
+              {{ targetPrice | formatToken : collection?.mintingData?.network : true | async }}
+            </div>
+            <div class="mr-2 font-bold truncate">
+              {{
+                calc(targetPrice, discount())
+                  | formatToken : collection?.mintingData?.network : true
+                  | async
+              }}
+            </div>
+          </div>
+          <div
+            class="flex items-center mt-2 text-lg"
+            *ngIf="discount() === 1 || currentStep !== stepType.CONFIRM"
+          >
+            <div class="mr-2 font-bold truncate">
+              {{
+                currentStep !== stepType.CONFIRM
+                  ? (targetAmount | formatToken : collection?.mintingData?.network : true | async)
+                  : (targetPrice | formatToken : collection?.mintingData?.network : true | async)
+              }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div [ngSwitch]="currentStep" class="w-full">
+    <ng-container *ngSwitchCase="stepType.CONFIRM">
+      <ng-container *ngTemplateOutlet="confirmTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.TRANSACTION">
+      <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.WAIT">
+      <ng-container *ngTemplateOutlet="waitTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.COMPLETE">
+      <ng-container *ngTemplateOutlet="completeTemplate"></ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #confirmTemplate>
+  <div class="wen-transaction-select-container">
+    <wen-terms-and-conditions
+      class="lg:ml-6"
+      [isChecked]="agreeTermsConditions"
+      documentLink="https://docs.google.com/document/d/1ng67fXTdINhmgkLpnbS_SkiDlZSsDAqrd13cbwXQCcQ"
+      (wenOnCheckChange)="agreeTermsConditions = $event"
+    >
+    </wen-terms-and-conditions>
+
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-6 lg:w-auto"
+      [disabled]="!agreeTermsConditions"
+      i18n
+      (click)="proceedWithOrder()"
+    >
+      Confirm and Lock
+    </button>
+
+    <div
+      class="mt-4 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    >
+      <span i18n>Your NFT will be locked for purchase for</span> {{ lockTime }}
+      <span i18n>minutes</span>.
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #transactionTemplate>
+  <div class="wen-transaction-active-container">
+    <div class="px-4 py-2.5 rounded-2xl border border-alerts-error flex">
+      <wen-icon-stopwatch class="mr-2 lg:mr-3"></wen-icon-stopwatch>
+      <div class="text-base font-medium">
+        <span *ngIf="!helper.isExpired(transaction$ | async)">{{
+          expiryTicker$ | async | countdownTime
+        }}</span>
+        <span class="text-alerts-error" *ngIf="!helper.isExpired(transaction$ | async)" i18n>
+          remaining to make the transfer.</span
+        >
+        <span class="text-alerts-error" *ngIf="helper.isExpired(transaction$ | async)" i18n
+          >Expired</span
+        >
+      </div>
+    </div>
+
+    <nz-alert
+      class="mt-2"
+      nzType="warning"
+      nzShowIcon
+      *ngIf="!helper.isExpired(transaction$ | async) && invalidPayment"
+      i18n-nzMessage
+      nzMessage="We received invalid amount. Try again."
+    ></nz-alert>
+
+    <wen-send-funds
+      class="block w-full"
+      *ngIf="!helper.isExpired(transaction$ | async)"
+      [targetAddress]="targetAddress"
+      [formattedAmount]="
+        targetAmount | formatToken : collection?.mintingData?.network : true | async
+      "
+    >
+    </wen-send-funds>
+
+    <wen-wallet-deeplink
+      *ngIf="!helper.isExpired(transaction$ | async)"
+      class="mt-6"
+      [targetAddress]="targetAddress"
+      [network]="collection?.mintingData?.network"
+      [targetAmount]="(targetAmount || 0).toString()"
+    >
+    </wen-wallet-deeplink>
+  </div>
+</ng-template>
+
+<ng-template #waitTemplate>
+  <div class="wen-transaction-wait-container">
+    <div class="w-full my-8 border border-inputs-border dark:border-inputs-border-dark rounded-2xl">
+      <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+      <div class="wen-modal-history-log">
+        <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+          <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+          <a
+            class="absolute text-sm font-medium underline left-16 wen-btn-link"
+            target="_blank"
+            *ngIf="t.link"
+            [href]="transactionService.getExplorerLink(t.transaction)"
+            >{{ t.label }}</a
+          >
+          <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+        </div>
+      </div>
+    </div>
+
+    <button
+      nz-button
+      nzSize="large"
+      nzType="default"
+      class="flex items-center border-inputs-border dark:border-inputs-border-dark"
+    >
+      <wen-icon-refresh
+        class="mr-3 text-foregrounds-secondary dark:text-foregrounds-secondary-dark animate-spin"
+      ></wen-icon-refresh>
+      <div class="text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n>
+        Validating your transaction...
+      </div>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #completeTemplate>
+  <div class="wen-transaction-active-container">
+    <div class="w-full my-8 border border-inputs-border dark:border-inputs-border-dark rounded-2xl">
+      <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+      <div class="h-auto px-5 pt-4 pb-2">
+        <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+          <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+          <a
+            class="absolute text-sm font-medium underline left-16 wen-btn-link"
+            target="_blank"
+            *ngIf="t.link"
+            [href]="transactionService.getExplorerLink(t.transaction)"
+            >{{ t.label }}</a
+          >
+          <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex lg:items-center">
+      <div
+        class="flex items-center justify-center w-10 h-10 rounded-full bg-alerts-success dark:bg-alerts-success-dark"
+      >
+        <wen-icon-check
+          class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+        ></wen-icon-check>
+      </div>
+      <div class="ml-3.5 text-lg font-medium" i18n>Transaction complete. Congratulations.</div>
+    </div>
+
+    <div class="flex flex-col items-center w-full mt-8 lg:flex-row lg:w-auto">
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="large"
+        class="w-full lg:mr-2"
+        i18n
+        (click)="close()"
+      >
+        Close checkout
+      </button>
+
+      <button
+        nz-button
+        nzType="default"
+        (click)="goToNft()"
+        nzSize="large"
+        class="w-full mb-6 lg:mb-0 lg:mt-1"
+        i18n
+      >
+        Show my NFT
+      </button>
+    </div>
+  </div>
+</ng-template>

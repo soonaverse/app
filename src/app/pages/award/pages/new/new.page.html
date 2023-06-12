@@ -1,0 +1,372 @@
+<wen-content [showBackButton]="(deviceService.isDesktop$ | async) || false">
+  <h1 class="mt-7" i18n>New Award</h1>
+
+  <form nz-form nzLayout="vertical">
+    <div class="py-4" nz-row [nzGutter]="24">
+      <div
+        class="space-y-4"
+        nz-col
+        nzFlex="auto"
+        [ngStyle]="{
+          'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+        }"
+      >
+        <nz-card [nzBordered]="false" i18n-nzErrorTip nzErrorTip="Title is required.">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Award info"
+            i18n-nzDescription
+            nzDescription="Title and description will be included on the Award. End date determines the duration of the Award."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-4 floating-title" [ngClass]="nameControl.value ? 'value' : ''">
+            <nz-form-label i18n>Title</nz-form-label>
+            <nz-form-control i18n-nzErrorTip nzErrorTip="You must enter name.">
+              <input
+                nz-input
+                i18n-placeholder
+                placeholder="Title"
+                nzSize="large"
+                [formControl]="nameControl"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          <div class="flex space-x-4 grow">
+            <nz-form-item class="w-full floating-title" [ngClass]="endControl.value ? 'value' : ''">
+              <nz-form-label i18n>End</nz-form-label>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="End Date is required.">
+                <nz-date-picker
+                  [nzShowTime]="{ nzFormat: 'HH:mm', nzMinuteStep: 5, nzHideDisabledOptions: true }"
+                  class="flex grow"
+                  nzSize="large"
+                  nzShowTime
+                  nzFormat="yyyy-MM-dd HH:mm:ss"
+                  [formControl]="endControl"
+                  i18n-nzPlaceHolder
+                  nzPlaceHolder="End"
+                ></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <nz-form-item class="floating-title" [ngClass]="descriptionControl.value ? 'value' : ''">
+            <nz-form-label i18n>Description</nz-form-label>
+            <nz-form-control>
+              <textarea
+                nz-input
+                nzSize="large"
+                i18n-placeholder
+                placeholder="Description"
+                rows="4"
+                [formControl]="descriptionControl"
+              ></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-card>
+
+        <nz-card>
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Badge definition"
+            i18n-nzDescription
+            nzDescription="Title and description will be included on the badge."
+          >
+          </nz-card-meta>
+          <div class="mt-4 space-y-4">
+            <nz-form-item class="floating-title" [ngClass]="badgeNameControl.value ? 'value' : ''">
+              <nz-form-label i18n>Title</nz-form-label>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Title is required.">
+                <input
+                  nz-input
+                  nzSize="large"
+                  i18n-placeholder
+                  placeholder="Title"
+                  [formControl]="badgeNameControl"
+                />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item
+              class="floating-title"
+              [ngClass]="badgeDescriptionControl.value ? 'value' : ''"
+            >
+              <nz-form-label i18n>Description</nz-form-label>
+              <nz-form-control>
+                <textarea
+                  nz-input
+                  nzSize="large"
+                  i18n-placeholder
+                  placeholder="Badge description"
+                  rows="4"
+                  [formControl]="badgeDescriptionControl"
+                ></textarea>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+      </div>
+
+      <div
+        class="mt-4 space-y-4 lg:mt-0 lg:max-w-450"
+        nz-col
+        [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+      >
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Space Info"
+            i18n-nzDescription
+            nzDescription="This is the space that will list the award."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-4">
+            <nz-form-control i18n-nzErrorTip nzErrorTip="Space is required.">
+              <nz-select
+                class="w-full"
+                nzSize="large"
+                nzShowSearch
+                [nzCustomTemplate]="selectTpl"
+                nzAllowClear
+                [nzPlaceHolder]="placeholderTpl"
+                [formControl]="spaceControl"
+              >
+                <nz-option
+                  *ngFor="let s of spaces$ | async; trackBy: trackByUid"
+                  nzCustomContent
+                  [nzLabel]="s.name || s.uid"
+                  [nzValue]="s.uid"
+                >
+                  <nz-avatar
+                    [nzSrc]="previewImageService.getAvatarSize(s.avatarUrl)"
+                    [nzSize]="32"
+                    class="mr-3 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+                    nzShape="circle"
+                  >
+                  </nz-avatar>
+                  {{s.name || s.uid}}
+                </nz-option>
+              </nz-select>
+              <ng-template #placeholderTpl>
+                <div class="flex items-center space-x-4">
+                  <wen-icon-globe
+                    class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                  ></wen-icon-globe>
+                  <span i18n>Select a space</span>
+                </div>
+              </ng-template>
+              <ng-template #selectTpl let-s>
+                <div class="flex items-center space-x-4">
+                  <wen-icon-globe
+                    class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                  ></wen-icon-globe>
+                  <span>{{ s.nzLabel }}</span>
+                </div>
+              </ng-template>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-card>
+
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Reward info"
+            i18n-nzDescription
+            nzDescription="You need to fund this award with native token. Select which token will be used as reward."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-4">
+            <nz-form-control i18n-nzErrorTip nzErrorTip="Token is required.">
+              <nz-select
+                class="w-full"
+                nzSize="large"
+                nzShowSearch
+                [nzCustomTemplate]="selectTpl"
+                nzAllowClear
+                [nzPlaceHolder]="placeholderTpl2"
+                [formControl]="tokenControl"
+              >
+                <nz-option
+                  *ngFor="let t of tokens$ | async; trackBy: trackByUid"
+                  nzCustomContent
+                  [nzLabel]="t.name || t.uid"
+                  [nzValue]="t.uid"
+                >
+                  <nz-avatar
+                    [nzSrc]="previewImageService.getTokenSize(t.icon)"
+                    [nzSize]="32"
+                    class="mr-3 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+                    nzShape="circle"
+                  >
+                  </nz-avatar>
+                  {{t.name || t.uid}}
+                </nz-option>
+              </nz-select>
+              <ng-template #placeholderTpl2>
+                <div class="flex items-center space-x-4">
+                  <wen-icon-globe
+                    class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                  ></wen-icon-globe>
+                  <span i18n>Select a token</span>
+                </div>
+              </ng-template>
+              <ng-template #selectTpl let-s>
+                <div class="flex items-center space-x-4">
+                  <wen-icon-globe
+                    class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                  ></wen-icon-globe>
+                  <span>{{ s.nzLabel }}</span>
+                </div>
+              </ng-template>
+            </nz-form-control>
+          </nz-form-item>
+
+          <p i18n class="ant-card-meta-description">
+            Defines the amount of tokens for each badge and the number of badges available.
+          </p>
+
+          <nz-form-item class="mt-6 grow">
+            <nz-form-control i18n-nzErrorTip nzErrorTip="Invalid token amount per badge">
+              <nz-input-group nzSize="large" [nzPrefix]="prefixPerBadge">
+                <input
+                  nz-input
+                  type="number"
+                  class="w-full"
+                  nz-input
+                  i18n-placeholder
+                  placeholder="Tokens per badge"
+                  [formControl]="badgeTokenControl"
+                />
+                <ng-template #prefixPerBadge>
+                  <nz-avatar
+                    [nzSrc]="isBaseToken(getCurrentToken()) ? getCurrentToken()?.icon : previewImageService.getTokenSize(getCurrentToken()?.icon)"
+                    [nzSize]="32"
+                    class="mr-3 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+                    nzShape="circle"
+                  >
+                  </nz-avatar>
+                </ng-template>
+              </nz-input-group>
+            </nz-form-control>
+          </nz-form-item>
+          <div class="flex items-baseline">
+            <nz-form-item class="grow">
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Minimum 1 and maximum 10000.">
+                <nz-input-group nzSize="large" [nzPrefix]="prefixBadgesAmount">
+                  <input
+                    nz-input
+                    type="number"
+                    class="w-full"
+                    nzSize="large"
+                    i18n-placeHolder
+                    placeholder="Number of available badges"
+                    [formControl]="badgeCountControl"
+                  />
+                  <ng-template #prefixBadgesAmount>
+                    <wen-icon-award></wen-icon-award>
+                  </ng-template>
+                </nz-input-group>
+              </nz-form-control>
+            </nz-form-item>
+            <wen-icon-question-circle
+              class="ml-3 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+              nz-tooltip
+              nzTooltipPlacement="right"
+              i18n-nzTooltipTitle
+              nzTooltipTitle="The amount of badges you want to make available for this award. This can also be thought of as how many awards you want to give out."
+            ></wen-icon-question-circle>
+          </div>
+
+          <div
+            class="px-6 py-2 font-medium rounded-3xl bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+          >
+            <div
+              class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+              i18n
+            >
+              Total to be funded
+            </div>
+            <div>
+              {{ getCurrentToken() ? (( {value: getTotalTokens(), exponents:
+              getCurrentToken()?.decimals} | formatToken: getCurrentToken()?.uid: true: false |
+              async ) + ' ' + getCurrentToken()?.symbol) : ' - ' }}
+            </div>
+          </div>
+        </nz-card>
+
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Badge"
+            i18n-nzDescription
+            nzDescription="Upload image that will be used as a Reward Badge."
+          >
+          </nz-card-meta>
+
+          <div class="mt-6">
+            <nz-form-item>
+              <nz-form-control>
+                <nz-upload
+                  class="wen-banner"
+                  nzName="banner"
+                  nzType="drag"
+                  nzListType="picture-card"
+                  [nzLimit]="1"
+                  [nzCustomRequest]="uploadFileBadge.bind(this)"
+                  (nzChange)="uploadChangeBadge($event)"
+                  nzFileType="image/png,image/jpg,image/jpeg,image/webp"
+                  [nzFileList]="uploadedImage ? [uploadedImage] : []"
+                  [nzShowUploadList]="{ showPreviewIcon: false, showDownloadIcon: false, showRemoveIcon: true }"
+                >
+                  <ng-container>
+                    <i class="upload-icon" nz-icon nzType="upload"></i>
+                    <span class="pl-2 text-xs">jpeg/png/webp</span>
+                  </ng-container>
+                </nz-upload>
+                <div
+                  class="text-accent-primary dark:text-accent-primary-darkest"
+                  *ngIf="imageControl.invalid && !imageControl.pristine"
+                  i18n
+                >
+                  Badge is required.
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+
+            <p i18n class="mb-4 ant-card-meta-description">
+              Set the duration for which the badge will be locked in the Firefly wallet.
+            </p>
+
+            <nz-form-item class="grow">
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Minimum 1 and maximum 10000.">
+                <nz-input-group nzSize="large" [nzPrefix]="prefixBadgeLocking">
+                  <input
+                    nz-input
+                    type="number"
+                    class="w-full"
+                    nzSize="large"
+                    i18n-placeHolder
+                    placeholder="Badge locking period (months)"
+                    [formControl]="badgeLockPeriodControl"
+                  />
+                  <ng-template #prefixBadgeLocking>
+                    <wen-icon-time></wen-icon-time>
+                  </ng-template>
+                </nz-input-group>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+      </div>
+    </div>
+
+    <button
+      nz-button
+      class="w-full mt-8 lg:w-auto mb-18 lg:mb-6 lg:mt-0"
+      nzType="primary"
+      nzSize="large"
+      type="button"
+      (click)="create()"
+      i18n
+    >
+      Create award
+    </button>
+  </form>
+</wen-content>

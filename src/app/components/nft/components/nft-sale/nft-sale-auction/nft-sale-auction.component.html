@@ -1,0 +1,142 @@
+<div class="px-6 py-5">
+  <div
+    class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    i18n
+  >
+    Set your floor price
+  </div>
+
+  <nz-form-item class="mt-2">
+    <nz-form-control>
+      <nz-input-group nzSize="large" class="relative">
+        <nz-input-number
+          i18n-nzPlaceHolder
+          [nzPlaceHolder]="'Floor price (' + unitsService.label(nft?.mintingData?.network) + ')'"
+          nzSize="large"
+          class="w-full"
+          [nzMin]="0"
+          [formControl]="floorPriceControl"
+        ></nz-input-number>
+        <i
+          nz-icon
+          nzType="info-circle"
+          class="absolute -translate-y-1/2 cursor-pointer right-6 top-1/2 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          nz-tooltip
+          i18n-nzTooltipTitle
+          [nzTooltipTitle]="
+            'Minimum price is ' +
+            (minimumPrice | formatToken : nft?.mintingData?.network | async) +
+            ' and Maximum price is ' +
+            (maximumPrice | formatToken : nft?.mintingData?.network | async)
+          "
+        ></i>
+      </nz-input-group>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div class="flex flex-col justify-between mt-5 space-y-4 lg:space-y-0 lg:flex-row lg:space-x-4">
+    <div
+      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      i18n
+    >
+      Available time
+    </div>
+    <div class="flex space-x-4">
+      <div
+        class="available-time-auction-option"
+        (click)="availableTimeAuctionOption$.next(availableTimeAuctionOptionTypes.NOW)"
+        [ngClass]="{
+          'available-time-auction-option__selected':
+            (availableTimeAuctionOption$ | async) === availableTimeAuctionOptionTypes.NOW
+        }"
+        i18n
+      >
+        NOW
+      </div>
+      <div
+        class="available-time-auction-option"
+        (click)="availableTimeAuctionOption$.next(availableTimeAuctionOptionTypes.CUSTOM)"
+        [ngClass]="{
+          'available-time-auction-option__selected':
+            (availableTimeAuctionOption$ | async) === availableTimeAuctionOptionTypes.CUSTOM
+        }"
+        i18n
+      >
+        Select Date/Time
+      </div>
+    </div>
+  </div>
+
+  <nz-form-item class="mt-2">
+    <nz-form-control i18n-nzErrorTip nzErrorTip="Available On is required.">
+      <nz-date-picker
+        class="flex grow"
+        [nzDisabledDate]="disabledStartDate.bind(this)"
+        nzSize="large"
+        [nzShowTime]="{ nzFormat: 'HH:mm', nzMinuteStep: 5, nzHideDisabledOptions: true }"
+        nzFormat="yyyy-MM-dd HH:mm"
+        [formControl]="availableFromControl"
+        i18n-nzPlaceHolder
+        nzPlaceHolder="Available on"
+        [nzDisabled]="(availableTimeAuctionOption$ | async) === availableTimeAuctionOptionTypes.NOW"
+      >
+      </nz-date-picker>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div
+    class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    i18n
+  >
+    Auction length
+  </div>
+
+  <nz-form-item
+    class="mt-2"
+    nz-tooltip
+    i18n-nzTooltipTitle
+    nzTooltipTitle="Various auction length coming next sprint once community have a vote!"
+  >
+    <nz-form-control>
+      <nz-select
+        class="w-full"
+        nzSize="large"
+        [formControl]="lengthFromControl"
+        [nzPlaceHolder]="placeholderTpl"
+      >
+        <nz-option nzLabel="3 days" i18n-nzLabel [nzValue]="3"></nz-option>
+        <nz-option nzLabel="2 days" i18n-nzLabel [nzValue]="2"></nz-option>
+        <nz-option nzLabel="1 day" i18n-nzLabel [nzValue]="1"></nz-option>
+      </nz-select>
+      <ng-template #placeholderTpl>
+        <div class="flex items-center space-x-4">
+          <wen-icon-time
+            class="text-accent-secondary dark:text-accent-secondary-dark"
+          ></wen-icon-time>
+          <span i18n>Set duration of auction</span>
+        </div>
+      </ng-template>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div
+    class="flex items-center px-5 py-4 mt-4 rounded-xl bg-alerts-warning dark:bg-alerts-warning-dark text-foregrounds-primary dark:text-foregrounds-primary"
+  >
+    <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+    <div class="text-base font-bold" i18n>Auction can't be canceled after start date</div>
+  </div>
+
+  <div class="flex flex-col items-center w-full mt-8 text-xs font-medium text-foregrounds-tertiary">
+    <div class="mb-3" i18n>Once your listing is complete, you will get a confirmation message.</div>
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      [disabled]="form.invalid"
+      (click)="submit()"
+      i18n
+    >
+      Confirm listing
+    </button>
+  </div>
+</div>

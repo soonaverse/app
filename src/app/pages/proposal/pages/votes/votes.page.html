@@ -1,0 +1,49 @@
+<nz-card
+  i18n-nzTitle
+  [nzTitle]="
+    (deviceService.isDesktop$ | async)
+      ? 'Casted Votes'
+      : 'Votes (' + ((data.transactions$ | async) || []).length + ')'
+  "
+  class="block"
+  *ngIf="(data?.proposal$ | async)?.approved"
+>
+  <nz-table #basicTable [nzData]="(data.transactions$ | async) || []" [nzShowPagination]="false">
+    <thead>
+      <tr>
+        <th i18n>Voter</th>
+        <th i18n>Date</th>
+        <th i18n>Option (Weight)</th>
+        <th *ngIf="(data.proposal$ | async)?.type === proposalTypes.NATIVE">
+          <ng-container i18n>Expired On</ng-container
+          ><wen-icon-question-circle
+            class="inline-block"
+            nz-tooltip
+            nzTooltipPlacement="right"
+            i18n-nzTooltipTitle
+            nzTooltipTitle="Once refunded token output is consumed your vote expires and proportional weight is applied. You will have to vote again to cast your vote."
+          ></wen-icon-question-circle>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let t of data?.transactions$ | async">
+        <td class="cursor-pointer" [routerLink]="['/', 'member', t.member]">
+          @{{ t.memberRec?.name || t.member | truncate : [7] }}
+        </td>
+        <td>{{ t.createdOn?.toDate() | date : 'short' }}</td>
+        <td>
+          {{ helper.findAnswerText((data.proposal$ | async)?.questions, t.payload.values) }} ({{
+          (data.proposal$ | async)?.type === proposalTypes.NATIVE ? (t.payload.weight | formatToken:
+          (data.token$ | async)?.uid: false: false: 2 | async) + ' ' + ((data.token$ |
+          async)?.symbol === 'IOTA' ? 'M' : '') + (data.token$ | async)?.symbol : t.payload.weight
+          || 0 }})
+        </td>
+        <td *ngIf="(data.proposal$ | async)?.type === proposalTypes.NATIVE">
+          {{ t.payload.outputConsumedOn ? (t.payload.outputConsumedOn.toDate() | date: 'medium') :
+          '-' }}
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

@@ -1,0 +1,74 @@
+<div class="py-4" nz-row [nzGutter]="24">
+  <div
+    nz-col
+    nzFlex="auto"
+    [ngStyle]="{
+      'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+    }"
+  >
+    <div
+      class="flex items-center px-5 py-4 rounded-xl bg-tags-pending dark:bg-tags-pending-dark text-foregrounds-primary dark:text-foregrounds-primary"
+    >
+      <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+      <div class="text-base font-bold" i18n>
+        You can create only ONE token per space and it can never be changed.
+      </div>
+    </div>
+
+    <div
+      class="flex px-5 py-4 mt-6 rounded-xl bg-tags-commencing dark:bg-tags-commencing-dark text-foregrounds-primary dark:text-foregrounds-primary"
+    >
+      <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+      <div class="text-base font-medium mt-0.5" i18n>
+        Important information for creating a token on Soonaverse: Please read the instructions and
+        fill out an application form available on this screen if you want to do public sale or make
+        you token available on Soonaverse exchange.
+      </div>
+    </div>
+
+    <button
+      *ngIf="deviceService.isDesktop$ | async"
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-12"
+      (click)="wenOnTabChange.emit(stepTypes.METRICS)"
+      i18n
+    >
+      Continue
+    </button>
+  </div>
+
+  <div
+    class="mt-4 space-y-4 lg:mt-0 lg:max-w-450"
+    nz-col
+    [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+  >
+    <nz-card>
+      <nz-card-meta
+        i18n-nzTitle
+        nzTitle="Token Sale Requirements"
+        i18n-nzDescription
+        nzDescription="To create a public sale or use the Token Exchange you must complete our KYC process."
+      >
+      </nz-card-meta>
+
+      <button nz-button nzType="primary" nzSize="default" class="mt-6 w-44" (click)="onFillForm()">
+        <wen-icon-file-check></wen-icon-file-check>
+        <div class="ml-2.5" i18n>Begin Process</div>
+      </button>
+    </nz-card>
+  </div>
+</div>
+
+<button
+  *ngIf="deviceService.isMobile$ | async"
+  nz-button
+  nzType="primary"
+  nzSize="large"
+  class="w-full mt-12"
+  (click)="wenOnTabChange.emit(stepTypes.METRICS)"
+  i18n
+>
+  Continue
+</button>

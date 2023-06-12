@@ -1,0 +1,85 @@
+<wen-modal-drawer [title]="getTitle()" [isOpen]="isOpen" [content]="content" (wenOnClose)="close()">
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="flex items-center mt-8 lg:mt-6">
+    <nz-avatar
+      [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+      class="border-2 border-tags-border dark:border-tags-border-dark min-w-12"
+      nzShape="circle"
+      [nzSize]="48"
+    >
+    </nz-avatar>
+    <div class="ml-4 text-lg font-bold">{{ token?.name }}</div>
+    <div class="ml-3 font-medium">({{ token?.symbol }})</div>
+  </div>
+
+  <div class="flex items-center mt-5" *ngIf="token?.coolDownEnd">
+    <wen-icon-time
+      class="text-icons-secondary dark:text-icons-secondary-dark"
+      [size]="20"
+    ></wen-icon-time>
+    <div class="font-medium ml-2.5 flex items-center">
+      <div class="mr-1" i18n>Cooldown period ends</div>
+      <div>{{ token?.coolDownEnd || null | relativeTime : 'from' }}</div>
+    </div>
+  </div>
+
+  <div class="relative flex flex-col mt-4 font-medium">
+    <div
+      class="relative flex flex-row-reverse items-center justify-between flex-1 w-full px-6 py-2 border rounded-3xl border-inputs-border dark:border-inputs-border-dark min-h-14 h-14"
+    >
+      <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark">Mi</div>
+      <input
+        class="w-full p-0 outline-0"
+        [formControl]="amountControl"
+        nz-input
+        nzSize="small"
+        [nzBorderless]="true"
+      />
+    </div>
+
+    <div
+      class="flex flex-row-reverse items-center justify-between flex-1 w-full px-6 py-2 mt-2 rounded-3xl bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-h-14"
+    >
+      <div class="mt-1">
+        {{
+          formatTokenBest(amountControl.value / (token?.pricePerToken || 0)) + ' ' + token?.symbol
+        }}
+      </div>
+    </div>
+  </div>
+
+  <wen-terms-and-conditions
+    class="mt-8"
+    [isChecked]="agreeTermsConditions"
+    documentLink="https://docs.google.com/document/d/1oOFhZIip2XTEGVYhtr_3eUeSG6fbLDILFJGBvmtlFgc"
+    (wenOnCheckChange)="agreeTermsConditions = $event"
+  >
+  </wen-terms-and-conditions>
+
+  <wen-terms-and-conditions
+    class="mt-4"
+    [isChecked]="agreeTokenTermsConditions"
+    i18n-label
+    label="I agree with"
+    i18n-linkLabel
+    linkLabel="Token terms and Conditions"
+    [documentLink]="token?.termsAndConditions || ''"
+    (wenOnCheckChange)="agreeTokenTermsConditions = $event"
+  >
+  </wen-terms-and-conditions>
+
+  <div class="flex justify-center w-full mt-10 item-center">
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      [disabled]="!agreeTermsConditions || !agreeTokenTermsConditions"
+      (click)="confirm()"
+      i18n
+    >
+      Confirm and refund
+    </button>
+  </div>
+</ng-template>

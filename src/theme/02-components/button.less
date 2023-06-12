@@ -1,0 +1,170 @@
+.ant-btn:disabled {
+  opacity: 0.5;
+}
+
+.ant-dropdown-trigger > .anticon.anticon-down,
+.ant-dropdown-link > .anticon.anticon-down,
+.ant-dropdown-button > .anticon.anticon-down {
+  font-size: @font-size-lg;
+  vertical-align: baseline;
+}
+
+.ant-dropdown-menu-item:hover,
+.ant-dropdown-menu-submenu-title:hover {
+  background-color: @select-item-active-bg;
+}
+
+.ant-btn > .anticon {
+  vertical-align: baseline;
+}
+
+.ant-btn {
+  font-size: @font-size-lg;
+  @apply inline-flex place-items-center justify-center bg-buttons-secondary-background dark:bg-buttons-secondary-background-dark dark:border-none min-w-max;
+
+  > * {
+    @apply text-inherit;
+  }
+
+  &:not([nztype='default']) {
+    @apply text-buttons-text dark:text-buttons-text-dark;
+  }
+}
+
+.ant-btn.ant-btn-block {
+  @apply flex;
+}
+
+.ant-btn-primary {
+  @apply bg-buttons-primary-enabled dark:bg-buttons-primary-enabled-dark text-foregrounds-on-primary;
+
+  &:hover {
+    @apply bg-buttons-primary-on-hover dark:bg-buttons-primary-on-hover-dark text-foregrounds-on-primary;
+  }
+
+  &:active,
+  &:focus {
+    @apply bg-buttons-primary-pressed dark:bg-buttons-primary-pressed-dark border-buttons-primary-pressed;
+  }
+}
+
+a.ant-btn {
+  -webkit-appearance: none;
+  @apply py-0;
+}
+
+a.ant-btn&:not([nztype='default']) {
+  @apply text-textlink-enabled dark:text-textlink-enabled-dark;
+
+  &:hover {
+    @apply text-textlink-on-hover;
+  }
+
+  &:active,
+  &:focus {
+    @apply text-textlink-pressed;
+  }
+
+  &:not(.ant-btn-block) {
+    @apply bg-transparent dark:bg-transparent;
+  }
+}
+
+.ant-btn-lg {
+  border-radius: @border-radius-lg;
+}
+
+.ant-btn-dangerous {
+  border-color: transparent;
+  @apply border-transparent bg-buttons-destructive dark:bg-buttons-destructive;
+
+  &:hover {
+    @apply bg-buttons-destructive dark:bg-buttons-destructive;
+  }
+}
+
+.wen-secondary {
+  @apply text-buttons-secondary-enabled dark:text-buttons-secondary-enabled-dark bg-buttons-secondary-background dark:bg-buttons-secondary-background-dark border-none !important;
+
+  &:hover {
+    @apply text-buttons-secondary-on-hover dark:text-buttons-secondary-on-hover-dark !important;
+  }
+
+  &:active,
+  &:focus {
+    @apply text-buttons-secondary-pressed dark:text-buttons-secondary-pressed-dark !important;
+
+    // path {
+    //   stroke: white;
+    // }
+  }
+
+  &.selected {
+    @apply bg-accent-primary dark:bg-accent-primary-dark border-accent-primary dark:border-accent-primary-dark text-white !important;
+  }
+
+  &.ant-btn-dangerous {
+    @apply text-buttons-secondary-destructive dark:text-buttons-secondary-destructive-dark !important;
+  }
+}
+
+// sort by button
+.wen-sort-button {
+  .ant-select-selector {
+    border: none !important;
+  }
+
+  .ant-select-selection-item {
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.ant-select-dropdown {
+  .cdk-virtual-scroll-viewport {
+    min-height: 100px;
+  }
+}
+
+.wen-header-button {
+  @apply text-foregrounds-primary dark:text-foregrounds-primary-dark hover:border-accent-primary dark:border-accent-primary-dark border border-solid hover:text-foregrounds-primary dark:text-foregrounds-primary-dark;
+
+  outline: @input-hover-border-color;
+
+  &:focus {
+    @apply border-accent-primary dark:border-accent-primary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark;
+
+    outline: 1px solid @input-hover-border-color;
+  }
+}
+
+.isMember {
+  .wen-header-button {
+    @apply bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark hover:bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark;
+  }
+}
+
+.ant-popover-inner-content {
+  @apply text-accent-secondary dark:text-accent-secondary-dark font-medium text-xs leading-4 px-2 py-1;
+}
+
+.ant-btn-sm {
+  @apply text-sm;
+}
+
+.ant-btn-circle {
+  @apply aspect-square p-0;
+}
+
+.wen-btn-underline {
+  @apply font-medium text-buttons-primary-enabled dark:text-buttons-primary-enabled-dark cursor-pointer;
+}
+
+.wen-btn-link {
+  @apply text-buttons-primary-enabled dark:text-buttons-primary-enabled-dark cursor-pointer;
+}
+
+.wen-btn-max {
+  @apply w-max !important;
+}

@@ -1,0 +1,26 @@
+{
+  "projects": {
+    "default": "soonaverse",
+    "preview": "soonaverse-test",
+    "dev": "soonaverse-dev"
+  },
+  "targets": {
+    "soonaverse": {
+      "hosting": {
+        "5d1024cf-d55e-4b10-9d27-eccc37e80161": [
+          "5d1024cf-d55e-4b10-9d27-eccc37e80161"
+        ],
+        "def-host": [
+          "soonaverse"
+        ]
+      }
+    },
+    "soonaverse-test": {
+      "hosting": {
+        "def-host": [
+          "soonaverse-test"
+        ]
+      }
+    }
+  }
+}

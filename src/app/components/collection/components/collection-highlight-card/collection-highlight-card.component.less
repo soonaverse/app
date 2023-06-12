@@ -1,0 +1,27 @@
+:host {
+  @apply block;
+
+  ::ng-deep {
+    nz-card {
+      @apply rounded-2xl;
+
+      .ant-card-body {
+        @apply px-2 pt-3 pb-1;
+      }
+    }
+
+    nz-table {
+      .ant-table-tbody .ant-table-row .ant-table-cell {
+        @apply border-0 !important;
+      }
+    }
+  }
+
+  .green-label {
+    @apply text-[#8ECEAF];
+  }
+
+  .orange-label {
+    @apply text-[#F39200];
+  }
+}

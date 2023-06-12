@@ -1,0 +1,124 @@
+<wen-modal-drawer
+  [isOpen]="isOpen"
+  [content]="content"
+  [primaryColor]="false"
+  [hasPadding]="false"
+  [showHeader]="false"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div
+    class="pt-6 px-6 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-t-3xl flex items-center justify-between"
+  >
+    <div class="text-2xl font-bold" i18n>List Item for sale</div>
+    <wen-icon-close class="cursor-pointer" (click)="close()"></wen-icon-close>
+  </div>
+  <div
+    class="flex flex-col px-6 pt-6 lg:flex-row bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+  >
+    <div class="relative w-full lg:w-72 mt-6 lg:mt-0 lg:w-overflow-hidden">
+      <img
+        *ngIf="mediaType === 'image'"
+        i18n-alt
+        alt="NFT image"
+        [src]="previewImageService.getUrl(nft?.media) || '/assets/mocks/no_banner.jpg'"
+        class="object-cover w-full h-full rounded-2xl"
+      />
+
+      <video controls class="object-cover w-full h-full rounded-2xl" *ngIf="mediaType === 'video'">
+        <source [src]="nft?.media" type="video/mp4" />
+        Your browser does not support HTML video.
+      </video>
+    </div>
+    <div class="mt-8 lg:ml-8 lg:mt-0">
+      <div class="relative flex flex-col w-full h-full">
+        <h3 class="mb-1 text-2xl font-bold truncate">{{ nft?.name }}</h3>
+        <div class="text-xl font-medium">{{ collection?.name }}</div>
+
+        <div class="flex items-center mt-2.5 mb-2.5">
+          <wen-icon-crown
+            class="mr-2.5 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            [size]="20"
+          ></wen-icon-crown>
+          <div class="font-medium">
+            {{ (collection?.royaltiesFee || 0) * 100 }}% <span i18n>Royalties</span>
+          </div>
+          <wen-icon-question-circle
+            [size]="20"
+            class="ml-1.5 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            nz-tooltip
+            i18n-nzTooltipTitle
+            nzTooltipTitle="Royalties are automatically deducted and paid to artists."
+          ></wen-icon-question-circle>
+        </div>
+
+        <div
+          class="px-5 py-3 mt-8 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:mt-auto rounded-2xl w-max"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary" i18n>Current price</div>
+          <div class="flex items-center mt-2 text-lg">
+            <div class="mr-2 font-bold truncate">
+              {{
+                nft?.availablePrice || nft?.price || 0
+                  | formatToken : nft?.mintingData?.network : true
+                  | async
+              }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="flex items-center px-6 pt-6 pb-4 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-b-3xl"
+  >
+    <nz-tag
+      nzMode="checkable"
+      class="mt-2 w-max"
+      [nzChecked]="currentSaleType === saleType.NOT_FOR_SALE"
+      (nzCheckedChange)="currentSaleType = saleType.NOT_FOR_SALE"
+    >
+      <span i18n>Not for sale</span>
+    </nz-tag>
+    <nz-tag
+      nzMode="checkable"
+      class="mt-2 w-max"
+      [nzChecked]="currentSaleType === saleType.FIXED_PRICE"
+      (nzCheckedChange)="currentSaleType = saleType.FIXED_PRICE"
+    >
+      <span i18n>Fixed price</span>
+    </nz-tag>
+    <nz-tag
+      nzMode="checkable"
+      class="mt-2 w-max"
+      [nzChecked]="currentSaleType === saleType.AUCTION"
+      (nzCheckedChange)="currentSaleType = saleType.AUCTION"
+    >
+      <span i18n>Auction</span>
+    </nz-tag>
+  </div>
+
+  <div
+    [ngSwitch]="currentSaleType"
+    class="w-screen px-5 -translate-x-5 translate-y-5 lg:w-full bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-b-2xl lg:px-0 lg:translate-x-0 lg:translate-y-0"
+  >
+    <wen-nft-sale-not-for-sale
+      [nft]="nft"
+      (wenOnUpdate)="update($event)"
+      *ngSwitchCase="saleType.NOT_FOR_SALE"
+    ></wen-nft-sale-not-for-sale>
+    <wen-nft-sale-fixed-price
+      [nft]="nft"
+      *ngSwitchCase="saleType.FIXED_PRICE"
+      (wenOnUpdate)="update($event)"
+    ></wen-nft-sale-fixed-price>
+    <wen-nft-sale-auction
+      [nft]="nft"
+      *ngSwitchCase="saleType.AUCTION"
+      (wenOnUpdate)="update($event)"
+    ></wen-nft-sale-auction>
+  </div>
+</ng-template>

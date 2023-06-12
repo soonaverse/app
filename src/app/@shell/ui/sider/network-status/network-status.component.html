@@ -1,0 +1,270 @@
+<wen-icon-network-status
+  class="cursor-pointer"
+  (click)="isVisible = true"
+></wen-icon-network-status>
+
+<nz-drawer
+  [nzBodyStyle]="{ overflow: 'auto', padding: '0px' }"
+  [nzWidth]="(deviceService.isDesktop$ | async) ? '280px' : '100%'"
+  nzPlacement="left"
+  [nzClosable]="false"
+  [nzVisible]="isVisible"
+  (nzOnClose)="isVisible = false"
+>
+  <div *nzDrawerContent class="relative h-full">
+    <button class="absolute z-10 top-5 right-5" (click)="isVisible = false">
+      <wen-icon-close></wen-icon-close>
+    </button>
+
+    <div class="pt-6 ml-8 text-lg font-bold" i18n>Network status</div>
+
+    <div class="w-full h-px mt-5 bg-foregrounds-separator dark:bg-foregrounds-separator-dark"></div>
+
+    <div class="mt-6 ml-8 mr-5">
+      <div class="flex items-center">
+        <div class="text-lg font-semibold">IOTA</div>
+      </div>
+
+      <div class="flex items-center justify-between mt-4 text-xs font-medium">
+        <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+          Network status
+        </div>
+        <div
+          class="flex items-center"
+          *ngIf="getCurrentStatus(lastIotaMilestone$ | async) === networkStatuses.GREEN"
+        >
+          <div class="text-[#28B16F]" i18n>Operational</div>
+          <div class="h-2 w-2 rounded-full bg-[#28B16F] ml-1.5"></div>
+        </div>
+        <div
+          class="flex items-center"
+          *ngIf="getCurrentStatus(lastIotaMilestone$ | async) === networkStatuses.YELLOW"
+        >
+          <div class="text-[#f0eb60]" i18n>Degraded Performance</div>
+          <div class="h-2 w-2 rounded-full bg-[#f0eb60] ml-1.5"></div>
+        </div>
+        <div
+          class="flex items-center"
+          *ngIf="getCurrentStatus(lastIotaMilestone$ | async) === networkStatuses.RED"
+        >
+          <div class="text-[#912a2a]" i18n>Down</div>
+          <div class="h-2 w-2 rounded-full bg-[#912a2a] ml-1.5"></div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mt-1 text-xs font-medium">
+        <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+          Last milestone
+        </div>
+        <div>
+          {{ (lastIotaMilestone$ | async)?.['milestone'] }}
+        </div>
+      </div>
+    </div>
+
+    <ng-container *ngIf="!environment.production">
+      <div
+        class="w-full h-px mt-6 bg-foregrounds-separator dark:bg-foregrounds-separator-dark"
+      ></div>
+
+      <div class="mt-6 ml-8 mr-5">
+        <div class="flex items-center">
+          <div class="text-lg font-semibold">IOTA</div>
+          <div class="w-px h-5 bg-[#66DDCA] ml-2 mr-1.5"></div>
+          <div
+            class="font-medium -translate-y-1 text-xxs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+          >
+            Devnet
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-4 text-xs font-medium">
+          <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+            Network status
+          </div>
+          <div
+            class="flex items-center"
+            *ngIf="getCurrentStatus(lastAtoiMilestone$ | async) === networkStatuses.GREEN"
+          >
+            <div class="text-[#28B16F]" i18n>Operational</div>
+            <div class="h-2 w-2 rounded-full bg-[#28B16F] ml-1.5"></div>
+          </div>
+          <div
+            class="flex items-center"
+            *ngIf="getCurrentStatus(lastAtoiMilestone$ | async) === networkStatuses.YELLOW"
+          >
+            <div class="text-[#f0eb60]" i18n>Degraded Performance</div>
+            <div class="h-2 w-2 rounded-full bg-[#f0eb60] ml-1.5"></div>
+          </div>
+          <div
+            class="flex items-center"
+            *ngIf="getCurrentStatus(lastAtoiMilestone$ | async) === networkStatuses.RED"
+          >
+            <div class="text-[#912a2a]" i18n>Down</div>
+            <div class="h-2 w-2 rounded-full bg-[#912a2a] ml-1.5"></div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-1 text-xs font-medium">
+          <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+            Last milestone
+          </div>
+          <div>
+            {{ (lastAtoiMilestone$ | async)?.['milestone'] }}
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="w-full h-px mt-6 bg-foregrounds-separator dark:bg-foregrounds-separator-dark"></div>
+
+    <div class="mt-6 ml-8 mr-5">
+      <div class="flex items-center">
+        <div class="text-lg font-semibold">Shimmer</div>
+      </div>
+
+      <div
+        *ngIf="!isSmrEnabled()"
+        class="flex items-center justify-center p-8 mt-4 text-xs font-medium text-center rounded-2xl bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+        i18n
+      >
+        Shimmer Mainnet Coming SOON
+      </div>
+
+      <div
+        *ngIf="isSmrEnabled()"
+        class="flex items-center justify-between mt-4 text-xs font-medium"
+      >
+        <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+          Network status
+        </div>
+        <div
+          class="flex items-center"
+          *ngIf="getCurrentStatus(lastSmrMilestone$ | async) === networkStatuses.GREEN"
+        >
+          <div class="text-[#28B16F]" i18n>Operational</div>
+          <div class="h-2 w-2 rounded-full bg-[#28B16F] ml-1.5"></div>
+        </div>
+        <div
+          class="flex items-center"
+          *ngIf="getCurrentStatus(lastSmrMilestone$ | async) === networkStatuses.YELLOW"
+        >
+          <div class="text-[#f0eb60]" i18n>Degraded Performance</div>
+          <div class="h-2 w-2 rounded-full bg-[#f0eb60] ml-1.5"></div>
+        </div>
+        <div
+          class="flex items-center"
+          *ngIf="getCurrentStatus(lastSmrMilestone$ | async) === networkStatuses.RED"
+        >
+          <div class="text-[#912a2a]" i18n>Down</div>
+          <div class="h-2 w-2 rounded-full bg-[#912a2a] ml-1.5"></div>
+        </div>
+      </div>
+
+      <div
+        *ngIf="isSmrEnabled()"
+        class="flex items-center justify-between mt-1 text-xs font-medium"
+      >
+        <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+          Last milestone
+        </div>
+        <div>
+          {{ (lastSmrMilestone$ | async)?.['milestone'] }}
+        </div>
+      </div>
+    </div>
+
+    <ng-container *ngIf="!environment.production">
+      <div
+        class="w-full h-px mt-6 bg-foregrounds-separator dark:bg-foregrounds-separator-dark"
+      ></div>
+
+      <div class="mt-6 ml-8 mr-5">
+        <div class="flex items-center">
+          <div class="text-lg font-semibold">Shimmer</div>
+          <div class="w-px h-5 bg-[#66DDCA] ml-2 mr-1.5"></div>
+          <div
+            class="font-medium -translate-y-1 text-xxs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+          >
+            Testnet
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-4 text-xs font-medium">
+          <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+            Network status
+          </div>
+          <div
+            class="flex items-center"
+            *ngIf="getCurrentStatus(lastRmsMilestone$ | async) === networkStatuses.GREEN"
+          >
+            <div class="text-[#28B16F]" i18n>Operational</div>
+            <div class="h-2 w-2 rounded-full bg-[#28B16F] ml-1.5"></div>
+          </div>
+          <div
+            class="flex items-center"
+            *ngIf="getCurrentStatus(lastRmsMilestone$ | async) === networkStatuses.YELLOW"
+          >
+            <div class="text-[#f0eb60]" i18n>Degraded Performance</div>
+            <div class="h-2 w-2 rounded-full bg-[#f0eb60] ml-1.5"></div>
+          </div>
+          <div
+            class="flex items-center"
+            *ngIf="getCurrentStatus(lastRmsMilestone$ | async) === networkStatuses.RED"
+          >
+            <div class="text-[#912a2a]" i18n>Down</div>
+            <div class="h-2 w-2 rounded-full bg-[#912a2a] ml-1.5"></div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-1 text-xs font-medium">
+          <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+            Last milestone
+          </div>
+          <div>
+            {{ (lastRmsMilestone$ | async)?.['milestone'] }}
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="w-full h-px mt-6 bg-foregrounds-separator dark:bg-foregrounds-separator-dark"></div>
+
+    <div class="mt-6 ml-8 mr-5">
+      <div class="flex items-center">
+        <div class="text-lg font-semibold" i18n>Assembly</div>
+      </div>
+
+      <div
+        class="flex items-center justify-center p-8 mt-4 text-xs font-medium text-center rounded-2xl bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+        i18n
+      >
+        Assembly Coming SOON
+      </div>
+    </div>
+
+    <div class="w-full h-px mt-6 bg-foregrounds-separator dark:bg-foregrounds-separator-dark"></div>
+
+    <div class="mt-6 pb-6 ml-8 mr-5">
+      <div class="flex items-center">
+        <div>
+          <div class="mt-2 text-lg font-semibold leading-3">Shimmer</div>
+          <div
+            class="text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          >
+            EVM
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="flex items-center justify-center p-8 mt-4 text-xs font-medium text-center rounded-2xl bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+        i18n
+      >
+        Shimmer EVM Coming SOON
+      </div>
+    </div>
+  </div>
+</nz-drawer>

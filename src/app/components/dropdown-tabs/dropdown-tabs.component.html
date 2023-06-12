@@ -1,0 +1,30 @@
+<button
+  nz-button
+  nz-dropdown
+  nzTrigger="click"
+  [nzDropdownMenu]="createMenu"
+  nzType="primary"
+  type="button"
+  [(nzVisible)]="isVisible"
+  class="flex items-center gap-2 pr-2"
+>
+  <span>{{ selectedTab?.label }}</span> <wen-icon-angle-down></wen-icon-angle-down>
+</button>
+
+<nz-dropdown-menu #createMenu="nzDropdownMenu">
+  <div
+    class="flex flex-col px-3 py-3 space-y-1 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl lg:block"
+  >
+    <button
+      nz-button
+      type="button"
+      *ngFor="let item of tabs; let i = index; trackBy: trackByLabel"
+      [routerLink]="item.route"
+      (click)="isVisible = false"
+      class="flex items-center gap-2 px-5 py-2 w-36 wen-secondary"
+      [ngClass]="{ selected: item === selectedTab }"
+    >
+      {{ item.label }}
+    </button>
+  </div>
+</nz-dropdown-menu>

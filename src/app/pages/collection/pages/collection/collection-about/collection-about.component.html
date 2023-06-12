@@ -1,0 +1,213 @@
+<nz-card
+  class="mt-8"
+  i18n-nzTitle
+  nzTitle="Network"
+  *ngIf="!helper.isMinted(data.collection$ | async)"
+>
+  <div
+    class="mb-6 text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    *ngIf="(isGuardianWithinSpace$ | async) && (data.collection$ | async)?.approved === true"
+    i18n
+  >
+    Make NFT’s from this collection available on decentralised network.
+  </div>
+
+  <button
+    nz-button
+    nzType="primary"
+    nzSize="default"
+    class="w-full"
+    *ngIf="
+      (isGuardianWithinSpace$ | async) &&
+      !helper.isMinted(data.collection$ | async) &&
+      (data.collection$ | async)?.approved === true
+    "
+    [disabled]="helper.mintInProgress(data.collection$ | async)"
+    (click)="isMintOnNetorkVisible = true"
+  >
+    <ng-container *ngIf="helper.mintInProgress(data.collection$ | async); else mintText">
+      <span i18n>Minting</span>
+      <ng-container *ngIf="((data.collection$ | async)?.mintingData?.nftsToMint || 0) > 0">
+        &nbsp;({{ (data.collection$ | async)?.mintingData?.nftsToMint | number }}&nbsp;<span i18n
+          >NFTs left</span
+        >...)
+      </ng-container>
+    </ng-container>
+    <ng-template #mintText i18n>Mint Collection</ng-template>
+  </button>
+
+  <div
+    class="font-medium"
+    *ngIf="
+      !helper.isMinted(data.collection$ | async) &&
+      ((isGuardianWithinSpace$ | async) === false || (data.collection$ | async)?.approved !== true)
+    "
+    i18n
+  >
+    Collection is not yet migrated to the decentralized network.
+  </div>
+</nz-card>
+
+<nz-card class="mt-4" i18n-nzTitle nzTitle="Who can buy?">
+  <div class="float-left space-x-4">
+    <div class="flex" *ngIf="(data.collection$ | async)?.access === access.OPEN">
+      <wen-icon-open-sale
+        [size]="20"
+        class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+      </wen-icon-open-sale>
+      <div
+        class="ml-1.5 text-sm font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        i18n
+      >
+        Open sale
+      </div>
+    </div>
+    <div class="flex" *ngIf="(data.collection$ | async)?.access === access.MEMBERS_ONLY">
+      <wen-icon-members-only
+        [size]="20"
+        class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+      </wen-icon-members-only>
+      <div
+        class="ml-1.5 text-sm font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        i18n
+      >
+        Space Members Only
+      </div>
+    </div>
+    <div class="flex" *ngIf="(data.collection$ | async)?.access === access.GUARDIANS_ONLY">
+      <wen-icon-guardians-only
+        [size]="20"
+        class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+      </wen-icon-guardians-only>
+      <div
+        class="ml-1.5 text-sm font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        i18n
+      >
+        Space Guardians Only
+      </div>
+    </div>
+    <div class="flex" *ngIf="(data.collection$ | async)?.access === access.MEMBERS_WITH_BADGE">
+      <wen-icon-members-with-badge
+        [size]="20"
+        class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+      </wen-icon-members-with-badge>
+      <div
+        class="ml-1.5 text-sm font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        i18n
+      >
+        Space Members with Badge Only
+      </div>
+    </div>
+    <div
+      class="flex"
+      *ngIf="(data.collection$ | async)?.access === access.MEMBERS_WITH_NFT_FROM_COLLECTION"
+    >
+      <wen-icon-members-with-nft-from-collection
+        [size]="20"
+        class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+      </wen-icon-members-with-nft-from-collection>
+      <div
+        class="ml-1.5 text-sm font-medium w-4/5 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        i18n
+      >
+        Must hold at least one NFT from each selected Collections
+      </div>
+    </div>
+    <div
+      *ngIf="(data.collection$ | async)?.onePerMemberOnly"
+      class="text-sm font-medium text-foregrounds-secondary ml-7 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      i18n
+    >
+      (One NFT per member)
+    </div>
+
+    <div
+      *ngIf="(data.collection$ | async)?.access === access.MEMBERS_WITH_NFT_FROM_COLLECTION"
+      class="flex flex-wrap mt-5"
+    >
+      <div
+        class="flex items-center cursor-pointer justify-between p-1.5 mt-2 mr-2 bg-icons-tertiary dark:bg-icons-tertiary-dark rounded-lg"
+        [routerLink]="['/', 'collection', (cache.getCollection(collection) | async)?.uid]"
+        *ngFor="let collection of data.accessCollections$ | async"
+      >
+        <nz-avatar
+          [nzSrc]="
+            previewImageService.getCollectionSize(
+              (cache.getCollection(collection) | async)?.bannerUrl
+            )
+          "
+          [nzSize]="24"
+          class="mr-2.5 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark min-w-6 min-h-6"
+          nzShape="circle"
+        >
+        </nz-avatar>
+        <div class="text-sm font-medium">{{ (cache.getCollection(collection) | async)?.name }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="float-right" *ngIf="(data.accessBadges$ | async)?.length">
+    <nz-avatar
+      *ngFor="let award of data.accessBadges$ | async; trackBy: trackByUid"
+      [nzSrc]="award.badge.image"
+      [nzSize]="64"
+      class="cursor-pointer wen-avatar-background"
+      nzShape="circle"
+      [routerLink]="['/', 'award', award.uid]"
+    >
+    </nz-avatar>
+  </div>
+</nz-card>
+
+<wen-audit-one-widget
+  [canManage]="!!(isGuardianWithinSpace$ | async)"
+  [dataset]="data.auditOneStatus$ | async"
+  [entity]="(data.collection$ | async)?.uid"
+></wen-audit-one-widget>
+
+<nz-card
+  i18n-nzTitle
+  nzTitle="Member discounts"
+  class="mt-4"
+  *ngIf="(data.collection$ | async)?.discounts?.length"
+>
+  <div class="space-y-2">
+    <div
+      *ngFor="let item of helper.sortedDiscounts((data.collection$ | async)?.discounts)"
+      class="flex items-center"
+    >
+      <wen-icon-percentage
+        class="mr-3 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+      </wen-icon-percentage>
+      <div class="text-xs font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ item.amount * 100 }}%
+        <span i18n>discount for members with rewards from this space in total value of </span
+        >{{ item.tokenReward | formatToken : item.tokenUid : true : false | async }}
+        <a class="underline wen-btn-link" [routerLink]="['/token', item.tokenUid]">{{
+          item.tokenSymbol | uppercase
+        }}</a>
+      </div>
+    </div>
+  </div>
+</nz-card>
+
+<wen-collection-mint-network
+  *ngIf="isMintOnNetorkVisible"
+  [isOpen]="isMintOnNetorkVisible"
+  [collection]="(data.collection$ | async) || undefined"
+  (wenOnClose)="isMintOnNetorkVisible = false"
+>
+</wen-collection-mint-network>
+
+<nz-card i18n-nzTitle nzTitle="About" class="mt-4" *ngIf="deviceService.isMobile$ | async">
+  <div
+    class="mt-10 overflow-hidden font-medium whitespace-pre-line lg:mt-6"
+    [innerHtml]="(data.collection$ | async)?.description | markdown"
+  ></div>
+</nz-card>

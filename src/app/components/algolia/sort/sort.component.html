@@ -1,0 +1,11 @@
+<nz-radio-group class="wen-radio-group" [formControl]="sortControl">
+  <wen-radio *ngFor="let item of state.options" [value]="item?.value || ''">
+    <div
+      class="text-xs text-foregrounds-primary dark:text-foregrounds-primary-dark flex items-center -translate-y-1"
+    >
+      <div [ngClass]="item.value === sortControl.value ? 'font-bold' : 'font-medium'">
+        {{ item?.label }}
+      </div>
+    </div>
+  </wen-radio>
+</nz-radio-group>

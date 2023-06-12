@@ -1,0 +1,306 @@
+<ng-container *ngIf="items?.length">
+  <nz-card i18n-nzTitle nzTitle="Timeline" class="overflow-hidden" *ngIf="!isCollapsable">
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+  </nz-card>
+
+  <wen-collapse
+    i18n-title
+    title="Timeline"
+    [isCollapsed]="false"
+    class="overflow-hidden"
+    *ngIf="isCollapsable"
+  >
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+  </wen-collapse>
+</ng-container>
+
+<ng-template #content>
+  <ng-container
+    *ngFor="
+      let item of items | slice : 0 : (showAll ? items?.length : 3);
+      let i = index;
+      trackBy: trackByUid
+    "
+  >
+    <div *ngIf="item.type === timelineItemTypes.BADGE" class="relative flex items-center mt-3">
+      <div
+        *ngIf="i !== 0"
+        #timelineLine
+        class="absolute w-0.5 h-full bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark left-3 -translate-x-1/2 -translate-y-1/2"
+      ></div>
+
+      <div
+        *ngIf="i < (items?.length || 0) - 1"
+        #timelineLine
+        class="absolute w-0.5 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark left-3 -translate-x-1/2 translate-y-1/2"
+        [ngClass]="!showAll && (items.length || 0) > 3 && i === 2 ? 'h-96' : 'h-1/2'"
+      ></div>
+
+      <div
+        class="relative z-10 flex items-center justify-center mr-4 text-white rounded-full min-w-6 min-h-6 bg-accent-primary dark:bg-accent-primary-dark"
+      >
+        <wen-icon-check></wen-icon-check>
+      </div>
+
+      <div
+        class="flex items-center justify-between w-full p-3 border lg:p-5 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark rounded-large"
+      >
+        <div class="flex items-center">
+          <nz-avatar
+            [nzSrc]="castAsBadgePayload(item.payload).image | ipfsBadge : filesizes.small"
+            class="wen-avatar-background min-w-10 min-h-10"
+            nzShape="circle"
+          >
+          </nz-avatar>
+
+          <div class="ml-6">
+            <div class="text-xs font-medium text-gray-400">
+              {{
+                item.payload.date
+                  | date : ((deviceService.isDesktop$ | async) ? 'medium' : 'mediumDate')
+              }}
+            </div>
+            <div
+              class="text-base font-medium mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+            >
+              <span i18n>Earned Badge</span> {{ item.payload.name }} <span i18n>with</span>
+              {{ castAsBadgePayload(item.payload).xp }}XP
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      *ngIf="item.type === timelineItemTypes.LISTED_BY_MEMBER"
+      class="relative flex items-center mt-3"
+    >
+      <div
+        class="absolute w-0.5 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark left-3 -translate-x-1/2 translate-y-1/2 h-28"
+      ></div>
+
+      <div
+        class="relative z-10 flex items-center justify-center mr-4 text-white rounded-full min-w-6 min-h-6 bg-accent-primary dark:bg-accent-primary-dark"
+      >
+        <wen-icon-check></wen-icon-check>
+      </div>
+
+      <div
+        class="flex items-center justify-between w-full p-3 border lg:p-5 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark rounded-large"
+      >
+        <div class="flex items-center">
+          <nz-avatar
+            [nzSrc]="
+              castAsListedByMemberPayload(item.payload).image | resizeAvatar : filesizes.small
+            "
+            style="max-width: 40px; min-width: 40px"
+            [nzSize]="40"
+          ></nz-avatar>
+
+          <div class="ml-6">
+            <div class="text-xs font-medium text-gray-400">
+              {{
+                item.payload.date
+                  | date : ((deviceService.isDesktop$ | async) ? 'medium' : 'mediumDate')
+              }}
+            </div>
+            <div
+              class="text-base font-medium mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+            >
+              <ng-container *ngIf="!castAsListedByMemberPayload(item.payload).isAuction">
+                <span i18n>Listed by</span> @{{ item.payload.name | truncate : [10] }}
+              </ng-container>
+              <ng-container *ngIf="castAsListedByMemberPayload(item.payload).isAuction">
+                <span i18n>Made available for auction by</span> @{{
+                  item.payload.name | truncate : [10]
+                }}
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="item.type === timelineItemTypes.ORDER" class="relative flex items-center mt-3">
+      <div
+        *ngIf="i !== 0"
+        class="absolute w-0.5 h-full bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark left-3 -translate-x-1/2 -translate-y-1/2"
+      ></div>
+
+      <div
+        class="absolute w-0.5 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark left-3 -translate-x-1/2 translate-y-1/2"
+        [ngClass]="i === 0 ? 'h-24' : 'h-full'"
+      ></div>
+
+      <div
+        class="relative z-10 flex items-center justify-center mr-4 text-white rounded-full min-w-6 min-h-6 bg-accent-primary dark:bg-accent-primary-dark"
+      >
+        <wen-icon-check></wen-icon-check>
+      </div>
+
+      <div
+        class="flex items-center justify-between w-full p-3 border lg:p-5 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark rounded-large"
+      >
+        <div class="flex items-center w-full">
+          <nz-avatar
+            [nzSrc]="castAsOrderPayload(item.payload).image | ipfsBadge : filesizes.small"
+            class="wen-avatar-background min-w-10 min-h-10"
+            nzShape="circle"
+          >
+          </nz-avatar>
+
+          <div class="w-full ml-6">
+            <div class="text-xs font-medium text-gray-400">
+              {{
+                item.payload.date
+                  | date : ((deviceService.isDesktop$ | async) ? 'medium' : 'mediumDate')
+              }}
+            </div>
+            <div
+              class="text-base font-medium mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+            >
+              <nz-collapse nzGhost>
+                <nz-collapse-panel
+                  [nzHeader]="lineTpl"
+                  (nzActiveChange)="activeChange($event, item)"
+                  [nzShowArrow]="false"
+                >
+                  <!-- This active variable doesn't exist so had to come up with a different way -->
+                  <ng-template #lineTpl let-active>
+                    <div class="flex justify-between">
+                      <div class="mt-1">
+                        <span i18n>Purchased by</span> @{{ item.payload.name }}
+                        <span i18n>for</span>
+                        {{
+                          castAsOrderPayload(item.payload).amount
+                            | formatToken : item.payload.network : true
+                            | async
+                        }}
+                      </div>
+                      <a class="inline text-sm wen-btn-link">
+                        <ng-container *ngIf="!isActive(item)" i18n>See</ng-container>
+                        <ng-container *ngIf="isActive(item)" i18n>Hide</ng-container>
+                      </a>
+                    </div>
+                  </ng-template>
+
+                  <div class="w-full overflow-y-auto">
+                    <div
+                      *ngFor="let tt of castAsOrderPayload(item.payload).transactions || []"
+                      class="relative w-full my-1"
+                    >
+                      <div
+                        class="w-full h-px mt-3 bg-foregrounds-separator dark:bg-foregrounds-separator-dark"
+                      ></div>
+
+                      <div
+                        class="flex items-center mt-3 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      >
+                        {{ tt.createdOn?.toDate() | date : 'shortDate' }}
+                        <div
+                          class="w-1 h-1 mx-1 rounded-full bg-foregrounds-tertiary dark:text-foregrounds-secondary-dark"
+                        ></div>
+                        {{ tt.createdOn?.toDate() | date : 'shortTime' }}
+                      </div>
+
+                      <div class="flex items-center">
+                        <a
+                          class="text-sm font-medium underline wen-btn-link"
+                          target="_blank"
+                          [href]="transactionService.getExplorerLink(tt)"
+                          >{{ transactionService.getTitle(tt) }}</a
+                        >
+                        <ng-container
+                          *ngIf="
+                            tt.payload.amount && tt.space && tt.type !== transactionTypes.PAYMENT
+                          "
+                        >
+                          <wen-icon-collapse-arrow
+                            class="mx-1 text-icons-tertiary dark:text-icons-tertiary-dark"
+                          ></wen-icon-collapse-arrow>
+
+                          <div
+                            class="text-sm font-bold text-foregrounds-primary dark:text-foregrounds-primary"
+                          >
+                            {{ tt.payload.amount | formatToken : tt.network | async }}
+                          </div>
+
+                          <a
+                            class="ml-3 text-sm font-medium underline wen-btn-link"
+                            target="_blank"
+                            [routerLink]="['/space', tt.space]"
+                            >{{ (cache.getSpace(tt.space) | async)?.name }}</a
+                          >
+                        </ng-container>
+                      </div>
+                    </div>
+                  </div>
+                </nz-collapse-panel>
+              </nz-collapse>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="relative flex items-center mt-3"
+      *ngIf="
+        item.type === timelineItemTypes.LISTED_BY_SPACE &&
+        (showAll || getOrdersLength() < collapsedItemsCount)
+      "
+    >
+      <div
+        *ngIf="items.length > 0"
+        class="absolute w-0.5 h-24 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark left-3 -translate-x-1/2 -translate-y-1/2"
+      ></div>
+
+      <div
+        class="relative z-10 flex items-center justify-center mr-4 text-white rounded-full min-w-6 min-h-6 bg-accent-primary dark:bg-accent-primary-dark"
+      >
+        <wen-icon-check></wen-icon-check>
+      </div>
+
+      <div
+        class="flex items-center justify-between w-full p-3 border lg:p-5 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark rounded-large"
+      >
+        <div class="flex items-center">
+          <nz-avatar
+            [nzSrc]="
+              previewImageService.getAvatarSize(castAsListedBySpacePayload(item.payload).image)
+            "
+            class="wen-avatar-background min-w-10 min-h-10"
+            nzShape="circle"
+          >
+          </nz-avatar>
+
+          <div class="ml-6">
+            <div class="text-xs font-medium text-gray-400">
+              {{
+                item.payload.date
+                  | date : ((deviceService.isDesktop$ | async) ? 'medium' : 'mediumDate')
+              }}
+            </div>
+            <div
+              class="text-base font-medium mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+            >
+              <span i18n>Listed by space</span> {{ item.payload.name }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <button
+    nz-button
+    nzType="primary"
+    class="self-center wen-btn-max mx-auto mt-6"
+    nzBlock
+    *ngIf="(items?.length || 0) > 3"
+    (click)="showAll = !showAll"
+  >
+    <ng-container *ngIf="showAll; else showMoreBlock" i18n>Show less</ng-container>
+    <ng-template #showMoreBlock i18n>Show more</ng-template>
+  </button>
+</ng-template>

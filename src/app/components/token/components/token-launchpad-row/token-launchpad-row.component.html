@@ -1,0 +1,192 @@
+<nz-skeleton
+  *ngIf="!token?.uid"
+  class="block px-3 py-3 lg:px-5 lg:py-3.5 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl h-18 w-full"
+  [nzActive]="true"
+  [nzAvatar]="{ size: 'default' }"
+  [nzTitle]="{ width: '100%' }"
+  [nzParagraph]="{ rows: 0 }"
+></nz-skeleton>
+
+<div
+  *ngIf="token?.uid"
+  class="relative w-full bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark py-4 lg:px-5 lg:py-3.5 rounded-2xl"
+  [ngClass]="{
+    'ongoing-wrapper': getCardType() === tokenCardTypes.ONGOING,
+    'ending-wrapper': getCardType() === tokenCardTypes.ENDING
+  }"
+>
+  <a
+    class="block cursor-pointer lg:flex lg:items-center hover:text-current border-box-children"
+    [routerLink]="['/', this.path, token?.uid]"
+  >
+    <div
+      class="flex items-center w-full px-4 lg:px-0 lg:min-w-[20%] lg:max-w-[25%] overflow-hidden"
+    >
+      <nz-avatar
+        [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+        class="border-2 border-tags-border dark:border-tags-border-dark min-w-10"
+        nzShape="circle"
+        [nzSize]="40"
+      >
+      </nz-avatar>
+      <div class="ml-3">
+        <div class="font-bold">{{ token?.name }}</div>
+        <div
+          class="text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >
+          {{ helper.getPair(token) }}
+        </div>
+      </div>
+    </div>
+
+    <div
+      *ngIf="deviceService.isMobile$ | async"
+      class="w-full h-px mt-6 bg-foregrounds-separator dark:bg-foregrounds-separator-dark lg:mt-0"
+    ></div>
+
+    <div
+      class="flex flex-row-reverse items-center justify-between px-4 mt-4 space-x-3 lg:px-0"
+      *ngIf="deviceService.isMobile$ | async"
+    >
+      <ng-container *ngTemplateOutlet="statsBlock"></ng-container>
+    </div>
+
+    <ng-container *ngIf="deviceService.isDesktop$ | async">
+      <ng-container *ngTemplateOutlet="statsBlock"></ng-container>
+    </ng-container>
+
+    <div
+      class="w-full mt-4 px-4 lg:px-0 lg:mt-0 font-medium lg:text-right lg:min-w-[12%] lg:max-w-[16%] overflow-hidden"
+    >
+      <ng-container *ngIf="available()">
+        <div class="flex items-center p-3 rounded-xl">
+          <div
+            class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          >
+            {{ getPrc() | number : '1.2-2' }}%
+          </div>
+          <nz-progress
+            class="w-full ml-2"
+            [nzShowInfo]="false"
+            nzStatus="active"
+            [nzPercent]="getPrc()"
+            nzStrokeLinecap="square"
+          ></nz-progress>
+        </div>
+      </ng-container>
+    </div>
+
+    <div
+      [ngClass]="
+        (deviceService.isDesktop$ | async)
+          ? 'min-w-[14%] max-w-[16%] overflow-hidden flex items-center justify-end'
+          : 'absolute top-0 right-4 -translate-y-1/2 mt-0'
+      "
+    >
+      <nz-tag
+        class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+        *ngIf="!available() && saleNotStarted() && token?.saleStartDate"
+        i18n
+      >
+        Coming soon
+      </nz-tag>
+      <nz-tag
+        class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+        *ngIf="isInCoolDown()"
+        i18n
+      >
+        In Cooldown
+      </nz-tag>
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="small"
+        class="w-24"
+        *ngIf="(deviceService.isDesktop$ | async) && available() && !isInCoolDown()"
+        i18n
+      >
+        Buy
+      </button>
+    </div>
+
+    <div
+      class="w-full px-4 mt-7"
+      *ngIf="(deviceService.isMobile$ | async) && available() && !isInCoolDown()"
+    >
+      <button nz-button nzType="primary" nzSize="small" class="w-full" i18n>Buy</button>
+    </div>
+  </a>
+</div>
+
+<ng-template #statsBlock>
+  <div class="w-full font-medium lg:min-w-[18%] lg:max-w-[20%] overflow-hidden">
+    <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+      <ng-container i18n>Price</ng-container> ({{
+        unitsService.label(token?.mintingData?.network)
+      }})
+    </div>
+    <div class="mt-0.5">
+      {{
+        { value: token?.pricePerToken || 0 || 0, exponents: token?.decimals }
+          | formatToken : token?.mintingData?.network : false : false
+          | async
+      }}
+    </div>
+  </div>
+
+  <div
+    class="w-full font-medium lg:min-w-[16%] lg:max-w-[20%] overflow-hidden"
+    *ngIf="deviceService.isDesktop$ | async"
+  >
+    <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+      <ng-container i18n>Price (USD)</ng-container>
+    </div>
+    <div class="mt-0.5">
+      <ng-container *ngIf="token?.pricePerToken; else noValue">
+        {{
+          unitsService.getUsd(token?.pricePerToken, token?.mintingData?.network)
+            | async
+            | currency : 'USD'
+            | UsdBelowTwoDecimals
+        }}
+      </ng-container>
+      <ng-template #noValue> - </ng-template>
+    </div>
+  </div>
+
+  <div
+    class="w-full font-medium lg:min-w-[16%] lg:max-w-[20%] overflow-hidden"
+    *ngIf="available() || !saleEnded() || isInCoolDown()"
+  >
+    <ng-container *ngIf="(available() || saleNotStarted()) && !saleEnded(); else notSaleBlock">
+      <ng-container *ngIf="saleNotStarted()">
+        <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+          <ng-container i18n>Sale starts</ng-container>
+        </div>
+        <div class="mt-0.5">
+          {{ token?.saleStartDate?.toDate() | date : 'medium' }}
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="!saleNotStarted()">
+        <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+          <ng-container i18n>Sale ends</ng-container>
+        </div>
+        <div class="mt-0.5">
+          {{ getEndDate().toDate() | date : 'medium' }}
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <ng-template #notSaleBlock>
+      <ng-container *ngIf="isInCoolDown()">
+        <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+          Cooldown period ends
+        </div>
+        <div class="mt-0.5">
+          {{ token?.coolDownEnd?.toDate() | date : 'medium' }}
+        </div>
+      </ng-container>
+    </ng-template>
+  </div>
+</ng-template>

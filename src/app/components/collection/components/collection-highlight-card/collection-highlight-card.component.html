@@ -1,0 +1,55 @@
+<nz-card>
+  <div class="wen-card-highlight-title">{{ title }}</div>
+
+  <nz-table class="block mt-2" [nzData]="[{}]" [nzShowPagination]="false" nzSize="small">
+    <tbody>
+      <tr
+        *ngFor="let collection of collections; let i = index"
+        class="relative cursor-pointer"
+        [routerLink]="['/collection', collection?.uid]"
+      >
+        <td class="border-0">
+          <div class="flex items-center">
+            <nz-avatar
+              [nzSrc]="previewImageService.getCollectionSize(collection?.bannerUrl)"
+              class="rounded-md min-w-6"
+              nzShape="circle"
+              [nzSize]="24"
+            >
+            </nz-avatar>
+            <div class="ml-2 text-sm font-bold">{{ collection?.name }}</div>
+          </div>
+        </td>
+        <td class="border-0">
+          <div class="text-sm font-medium text-right">
+            <span *ngIf="collection?.floorPrice">
+              {{ collection?.floorPrice | formatToken : collection?.mintingData?.network | async }}
+            </span>
+            <span *ngIf="!collection?.floorPrice"> - </span>
+          </div>
+        </td>
+        <td class="border-0 right">
+          <div
+            *ngIf="(collection?.total || 0) - (collection?.sold || 0) > 0"
+            class="font-medium text-sm text-right"
+            [ngClass]="
+              (collection?.total || 0) - (collection?.sold || 0) > 10
+                ? 'green-label'
+                : 'orange-label'
+            "
+          >
+            {{ (collection?.total || 0) - (collection?.sold || 0) }}
+            <ng-container i18n>Remaining</ng-container>
+          </div>
+          <div
+            *ngIf="(collection?.total || 0) - (collection?.sold || 0) <= 0"
+            class="font-medium text-sm text-right"
+          >
+            {{ collection?.total || 0 }}
+            <ng-container i18n>NFTs</ng-container>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

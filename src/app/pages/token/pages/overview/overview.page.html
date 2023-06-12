@@ -1,0 +1,32 @@
+<div class="space-y-4">
+  <div class="relative w-full overflow-hidden rounded-2xl">
+    <img
+      loading="eager"
+      *ngIf="mediaType === 'image'"
+      [src]="previewImageService.getUrl((data.token$ | async)?.overviewGraphics) || '/assets/mocks/no_banner.jpg'"
+      class="object-cover w-full h-full rounded-3xl"
+    />
+    <video controls autoplay loop class="object-cover w-full h-full" *ngIf="mediaType === 'video'">
+      <source
+        [src]="previewImageService.getUrl((data.token$ | async)?.overviewGraphics)"
+        type="video/mp4"
+      />
+      Your browser does not support HTML video.
+    </video>
+  </div>
+
+  <wen-token-progress
+    [token]="(data.token$ | async) || undefined"
+    [memberDistribution]="(data.memberDistribution$ | async) || undefined"
+    *ngIf="deviceService.isMobile$ | async"
+  ></wen-token-progress>
+  <wen-token-buy *ngIf="deviceService.isMobile$ | async"></wen-token-buy>
+
+  <div class="mt-12">
+    <div class="text-2xl font-bold">{{ (data.token$ | async)?.title }}</div>
+    <p
+      class="mt-5 whitespace-pre-line"
+      [innerHtml]="(data.token$ | async)?.description | markdown"
+    ></p>
+  </div>
+</div>

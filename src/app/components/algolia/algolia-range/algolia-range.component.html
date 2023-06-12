@@ -1,0 +1,13 @@
+<div class="w-full flex items-center justify-between space-x-2">
+  <input nz-input nzSize="default" [formControl]="minControl" />
+  <input nz-input nzSize="default" [formControl]="maxControl" />
+</div>
+
+<nz-slider
+  nzRange
+  [nzStep]="10 * 1000"
+  nzTooltipVisible="never"
+  [nzMin]="state?.range?.min"
+  [nzMax]="state?.range?.max"
+  [formControl]="formControl"
+></nz-slider>

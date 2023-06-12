@@ -1,0 +1,56 @@
+<ng-container *ngIf="!nft?.saleAccessMembers?.length" [ngSwitch]="type">
+  <div
+    *ngSwitchCase="accessTypes.MEMBERS_ONLY"
+    class="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-full border border-foregrounds-secondary dark:border-foregrounds-secondary-dark w-8 h-8 flex items-center justify-center text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    nz-tooltip
+    nzPlacement
+    nzTooltipPlacement="bottom"
+    i18n-nzTooltipTitle
+    nzTooltipTitle="Space Members Only"
+  >
+    <wen-icon-members-only [size]="20"></wen-icon-members-only>
+  </div>
+  <div
+    *ngSwitchCase="accessTypes.GUARDIANS_ONLY"
+    class="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-full border border-foregrounds-secondary dark:border-foregrounds-secondary-dark w-8 h-8 flex items-center justify-center text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    nz-tooltip
+    nzTooltipPlacement="bottom"
+    i18n-nzTooltipTitle
+    nzTooltipTitle="Space Guardians Only"
+  >
+    <wen-icon-guardians-only [size]="20"></wen-icon-guardians-only>
+  </div>
+  <div
+    *ngSwitchCase="accessTypes.MEMBERS_WITH_BADGE"
+    class="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-full border border-foregrounds-secondary dark:border-foregrounds-secondary-dark w-8 h-8 flex items-center justify-center text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    nz-tooltip
+    nzTooltipPlacement="bottom"
+    i18n-nzTooltipTitle
+    nzTooltipTitle="Space Members with Badge Only"
+  >
+    <wen-icon-members-with-badge [size]="20"></wen-icon-members-with-badge>
+  </div>
+  <div
+    *ngSwitchCase="accessTypes.MEMBERS_WITH_NFT_FROM_COLLECTION"
+    class="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-full border border-foregrounds-secondary dark:border-foregrounds-secondary-dark w-8 h-8 flex items-center justify-center text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    nz-tooltip
+    nzTooltipPlacement="bottom"
+    i18n-nzTooltipTitle
+    nzTooltipTitle="At least one NFT from Collections"
+  >
+    <wen-icon-members-with-nft-from-collection
+      [size]="20"
+    ></wen-icon-members-with-nft-from-collection>
+  </div>
+</ng-container>
+
+<div
+  *ngIf="nft?.saleAccessMembers?.length"
+  class="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-full border border-foregrounds-secondary dark:border-foregrounds-secondary-dark w-8 h-8 flex items-center justify-center text-foregrounds-primary dark:text-foregrounds-primary-dark"
+  nz-tooltip
+  nzTooltipPlacement="bottom"
+  i18n-nzTooltipTitle
+  nzTooltipTitle="Specific members only"
+>
+  <wen-icon-specific-members-only [size]="20"></wen-icon-specific-members-only>
+</div>

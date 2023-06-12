@@ -1,0 +1,245 @@
+<article
+  class="w-full bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl wen-card"
+  [ngClass]="fullWidth ? '' : 'h-72 lg:h-99'"
+>
+  <a
+    class="flex flex-col h-full text-current hover:text-current"
+    [routerLink]="['/', this.path, nft?.uid]"
+  >
+    <div class="relative w-full h-40 overflow-hidden lg:h-60 rounded-2xl">
+      <img
+        loading="lazy"
+        *ngIf="mediaType === 'image'"
+        i18n-alt
+        (error)="onImgErrorWeShowPlaceHolderVideo($event)"
+        alt="NFT image"
+        [src]="previewImageService.getNftSize(nft?.media) || '/assets/mocks/no_banner.jpg'"
+        class="object-cover w-full h-full"
+        [ngClass]="{
+          'card-smaller-height':
+            !fullWidth &&
+            (helper.isDateInFuture(nft?.availableFrom) || helper.isDateInFuture(nft?.auctionFrom))
+        }"
+      />
+
+      <img
+        loading="lazy"
+        *ngIf="mediaType === 'video'"
+        class="object-cover w-full h-full"
+        [ngClass]="{
+          'card-smaller-height':
+            !fullWidth &&
+            (helper.isDateInFuture(nft?.availableFrom) || helper.isDateInFuture(nft?.auctionFrom))
+        }"
+        [src]="
+          previewImageService.getVideoPreview(nft?.media) || '/assets/mocks/video_placeholder.jpg'
+        "
+      />
+
+      <div
+        *ngIf="
+          !fullWidth &&
+          collection?.approved &&
+          (helper.isAvailableForSale(nft, collection) ||
+            helper.isAvailableForAuction(nft, collection) ||
+            nft?.placeholderNft)
+        "
+        class="absolute top-4 left-4 z-10 rounded-lg bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark flex items-center justify-center px-3 py-1.5 text-sm font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        [ngClass]="getBadgeProperties().className"
+      >
+        {{ getBadgeProperties().label }}
+      </div>
+
+      <div
+        class="absolute z-10 flex top-4 right-4"
+        *ngIf="
+          collection?.access !== targetAccess.OPEN ||
+          collection?.status !== collectionStatuses.MINTED
+        "
+      >
+        <div
+          *ngIf="collection?.status !== collectionStatuses.MINTED"
+          nz-tooltip
+          nzTooltipPlacement="bottom"
+          i18n-nzTooltipTitle
+          nzTooltipTitle="NFT is not yet migrated to the decentralized network."
+          class="flex items-center justify-center w-8 h-8 rounded-full bg-alerts-warning dark:bg-alerts-warning-dark"
+        >
+          <wen-icon-link-broken
+            class="text-foregrounds-primary dark:text-foregrounds-primary"
+          ></wen-icon-link-broken>
+        </div>
+        <wen-collection-access-badge
+          *ngIf="
+            !nft?.owner ||
+            (nft?.owner && nft?.saleAccess && nft?.saleAccess === targetNftAccess.MEMBERS)
+          "
+          [class.ml-2]="collection?.status !== collectionStatuses.MINTED"
+          [type]="collection?.access || targetAccess.OPEN"
+          [nft]="nft || undefined"
+        ></wen-collection-access-badge>
+      </div>
+
+      <div
+        class="absolute bottom-0 flex items-center justify-center w-full py-1 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+        *ngIf="helper.isDateInFuture(nft?.availableFrom) || helper.isDateInFuture(nft?.auctionFrom)"
+      >
+        <div class="text-xs">
+          <ng-container
+            *ngIf="
+              helper.getDaysLeft(nft?.availableFrom) > 0 ||
+                helper.getDaysLeft(nft?.auctionFrom) > 0;
+              else todayBlock
+            "
+          >
+            <span class="font-bold" i18n>Starts in</span>
+            <span class="font-medium">
+              {{
+                helper.getDaysLeft(nft?.availableFrom) > 0
+                  ? helper.getDaysLeft(nft?.availableFrom)
+                  : helper.getDaysLeft(nft?.auctionFrom)
+              }}
+            </span>
+            <span
+              class="font-medium"
+              *ngIf="
+                (helper.getDaysLeft(nft?.availableFrom) || helper.getDaysLeft(nft?.auctionFrom)) > 1
+              "
+              i18n
+              >days</span
+            >
+            <span
+              class="font-medium"
+              *ngIf="
+                (helper.getDaysLeft(nft?.availableFrom) || helper.getDaysLeft(nft?.auctionFrom)) ===
+                1
+              "
+              i18n
+              >day</span
+            >
+          </ng-container>
+          <ng-template #todayBlock>
+            <span class="font-bold" i18n>Starts today</span>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative flex flex-col w-full px-4 py-3 grow lg:py-4">
+      <h3
+        nz-tooltip
+        [nzTooltipTitle]="nft?.name || nft?.uid"
+        class="mb-1 text-base font-bold truncate lg:text-lg"
+      >
+        {{ nft?.name || nft?.uid }}
+      </h3>
+
+      <div
+        class="mt-1 mb-3 text-sm font-medium break-words line-clamp-2 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      >
+        {{ collection?.name || '' }}
+      </div>
+
+      <div class="flex items-center mt-auto">
+        <div class="w-0 grow" *ngIf="helper.isAvailableForSale(nft, collection)">
+          <div class="font-medium text-xxs text-foregrounds-secondary" i18n>Price</div>
+          <div
+            class="text-sm font-medium truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          >
+            {{
+              applyDiscount(nft?.availablePrice || nft?.price)
+                | formatToken
+                  : (nft?.placeholderNft
+                      ? collection?.mintingData?.network
+                      : nft?.mintingData?.network)
+                  : true
+                | async
+            }}
+          </div>
+        </div>
+
+        <div class="w-0 grow" *ngIf="helper.isAvailableForAuction(nft, collection)">
+          <div class="font-medium text-xxs text-foregrounds-secondary">
+            <ng-container *ngIf="nft?.auctionHighestBid; else minBidBlock" i18n
+              >Current bid</ng-container
+            >
+            <ng-template #minBidBlock>Min bid</ng-template>
+          </div>
+          <div
+            class="text-sm font-medium truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          >
+            {{
+              nft?.auctionHighestBid || nft?.auctionFloorPrice
+                | formatToken
+                  : (nft?.placeholderNft
+                      ? collection?.mintingData?.network
+                      : nft?.mintingData?.network)
+                  : true
+                | async
+            }}
+          </div>
+        </div>
+
+        <a
+          class="flex items-center w-0 grow"
+          [routerLink]="['/member', (owner$ | async)?.uid]"
+          *ngIf="
+            nft?.owner &&
+            !helper.isAvailableForSale(nft, collection) &&
+            !helper.isAvailableForAuction(nft, collection)
+          "
+          (click)="$event.stopPropagation()"
+        >
+          <nz-avatar
+            [nzSrc]="(owner$ | async)?.avatar | resizeAvatar : filesizes.small"
+            class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-w-10"
+            style="max-width: 32px; min-width: 32px"
+            [nzSize]="32"
+          >
+          </nz-avatar>
+          <div class="ml-2">
+            <div class="font-medium text-xxs text-foregrounds-secondary" i18n>Owned by</div>
+            <div
+              class="text-sm font-medium truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+            >
+              @{{ (owner$ | async)?.name || (owner$ | async)?.uid | truncate : [10] }}
+            </div>
+          </div>
+        </a>
+
+        <span
+          *ngIf="
+            !nft?.owner ||
+            helper.isAvailableForSale(nft, collection) ||
+            helper.isAvailableForAuction(nft, collection)
+          "
+          class="ml-auto"
+          nz-tooltip
+          i18n-nzTooltipTitle
+          [nzTooltipTitle]="
+            helper.isLocked(nft, collection) ||
+            (!helper.isAvailableForSale(nft, collection) &&
+              !helper.isAvailableForAuction(nft, collection))
+              ? 'Not Available'
+              : undefined
+          "
+        >
+          <button
+            nz-button
+            nzType="primary"
+            class="flex items-center justify-center p-2 rounded-full"
+            [disabled]="
+              helper.isLocked(nft, collection) ||
+              (!helper.isAvailableForSale(nft, collection) &&
+                !helper.isAvailableForAuction(nft, collection))
+            "
+            (click)="onBuy($event)"
+            i18n
+          >
+            <wen-icon-wallet class="text-white"></wen-icon-wallet>
+          </button>
+        </span>
+      </div>
+    </div>
+  </a>
+</article>

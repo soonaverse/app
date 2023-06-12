@@ -1,0 +1,706 @@
+<wen-content [showBackButton]="(deviceService.isDesktop$ | async) || false">
+  <h1 class="mt-7" *ngIf="!editMode" i18n>Create new collection</h1>
+  <h1 class="mt-7" *ngIf="editMode" i18n>Edit collection</h1>
+
+  <form nz-form nzLayout="vertical" [formGroup]="collectionForm">
+    <div class="py-4" nz-row [nzGutter]="24">
+      <div
+        class="space-y-4"
+        nz-col
+        nzFlex="auto"
+        [ngStyle]="{
+          'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+        }"
+      >
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Collection info"
+            i18n-nzDescription
+            nzDescription="Name and description will be included on the Collection."
+          >
+          </nz-card-meta>
+          <div class="mt-4 space-y-4">
+            <nz-form-item class="floating-title" [ngClass]="nameControl.value ? 'value' : ''">
+              <nz-form-label i18n>Name</nz-form-label>
+              <nz-form-control>
+                <input
+                  nz-input
+                  i18n-placeholder
+                  placeholder="Name"
+                  nzSize="large"
+                  [formControl]="nameControl"
+                />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item
+              class="floating-title"
+              [ngClass]="descriptionControl.value ? 'value' : ''"
+            >
+              <nz-form-label i18n>Description</nz-form-label>
+              <nz-form-control>
+                <textarea
+                  nz-input
+                  i18n-placeholder
+                  placeholder="Description"
+                  nzSize="large"
+                  rows="4"
+                  [formControl]="descriptionControl"
+                ></textarea>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Sales info"
+            i18n-nzDescription
+            nzDescription="All times are reflected in user's timezone. For generated NFT and SFT the price is set here and cannot be changed on the NFT. Price for classic NFT collection is only indicative and can be changed on the NFT."
+          >
+          </nz-card-meta>
+          <div class="mt-4 space-y-4">
+            <wen-iota-input class="pb-2" [formControl]="priceControl"></wen-iota-input>
+
+            <nz-form-item
+              class="floating-title"
+              [ngClass]="availableFromControl.value ? 'value' : ''"
+            >
+              <nz-form-label i18n>Available on</nz-form-label>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Available On is required.">
+                <nz-date-picker
+                  class="flex grow"
+                  [nzDisabledDate]="disabledStartDate.bind(this)"
+                  [nzDisabledTime]="disabledDateTime.bind(this)"
+                  nzSize="large"
+                  [nzShowTime]="{ nzFormat: 'HH:mm', nzMinuteStep: 5, nzHideDisabledOptions: true }"
+                  nzFormat="yyyy-MM-dd HH:mm"
+                  [formControl]="availableFromControl"
+                  i18n-nzPlaceHolder
+                  nzPlaceHolder="Available on"
+                >
+                </nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label
+                class="text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                i18n
+                >Royalty</nz-form-label
+              >
+              <span class="ant-card-meta-description" i18n>
+                This royalty % will be applied on the initial mint of the NFTs and all secondary
+                sales. The IOTA address that will be receiving royalties must always have a minimum
+                balance of 1 Mi due to the dust protection mechanism of the IOTA protocol. </span
+              ><br />
+              <nz-form-control class="relative">
+                <nz-input-number
+                  class="w-full"
+                  [nzMin]="0"
+                  [nzMax]="100"
+                  [nzStep]="1"
+                  [nzFormatter]="formatterPercent"
+                  [nzParser]="parserPercent"
+                  i18n-nzPlaceHolder
+                  nzPlaceHolder="Royalties - Percentage fee"
+                  nzSize="large"
+                  [formControl]="royaltiesFeeControl"
+                ></nz-input-number>
+                <i
+                  nz-icon
+                  nzType="info-circle"
+                  class="absolute -translate-y-1/2 cursor-pointer right-6 top-1/2 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                  nz-tooltip
+                  i18n-nzTooltipTitle
+                  nzTooltipTitle="Example: 10 % , 20 % , etc.."
+                ></i>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <label nz-checkbox [formControl]="royaltiesSpaceDifferentControl">
+                <div class="flex items-center">
+                  <div class="font-medium mr-2.5" i18n>Royalties goes to a different space</div>
+                  <i
+                    nz-icon
+                    nzType="info-circle"
+                    class="cursor-pointer text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                    nz-tooltip
+                    i18n-nzTooltipTitle
+                    nzTooltipTitle="Royalties goes to a different space"
+                  ></i>
+                </div>
+              </label>
+            </nz-form-item>
+
+            <nz-form-item *ngIf="royaltiesSpaceDifferentControl.value">
+              <wen-select-space
+                class="block w-full"
+                [includeDefaultSpace]="false"
+                [formControl]="royaltiesSpaceControl"
+                [spaces]="getSpaceListOptions(spaces$ | async)"
+                size="large"
+              >
+              </wen-select-space>
+            </nz-form-item>
+          </div>
+        </nz-card>
+
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Links"
+            i18n-nzDescription
+            nzDescription="Links will be included on the NFT detail. Use account usernames for Twitter and Discord (name#id)."
+          >
+          </nz-card-meta>
+          <div class="mt-4 space-y-4">
+            <nz-form-item>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Invalid URL.">
+                <nz-input-group nzSize="large" [nzPrefix]="prefixURL">
+                  <input
+                    type="text"
+                    nz-input
+                    i18n-placeholder
+                    placeholder="URL"
+                    [formControl]="urlControl"
+                  />
+                  <ng-template #prefixURL>
+                    <wen-icon-link></wen-icon-link>
+                  </ng-template>
+                </nz-input-group>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Invalid Twitter username.">
+                <nz-input-group nzSize="large" [nzPrefix]="prefixTwitter">
+                  <input
+                    type="text"
+                    nz-input
+                    i18n-placeholder
+                    placeholder="Link to your Twitter account"
+                    [formControl]="twitterControl"
+                  />
+                  <ng-template #prefixTwitter>
+                    <wen-icon-twitter></wen-icon-twitter>
+                  </ng-template>
+                </nz-input-group>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Invalid Discord username.">
+                <nz-input-group nzSize="large" [nzPrefix]="prefixDiscord">
+                  <input
+                    type="text"
+                    nz-input
+                    i18n-placeholder
+                    placeholder="Link to your Discord account"
+                    [formControl]="discordControl"
+                  />
+                  <ng-template #prefixDiscord>
+                    <wen-icon-discord></wen-icon-discord>
+                  </ng-template>
+                </nz-input-group>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Discounts"
+            i18n-nzDescription
+            nzDescription="The discount applies only to members who have earned tokens from awards issued by this space."
+          >
+          </nz-card-meta>
+
+          <div class="pt-4">
+            <ng-container *ngIf="deviceService.isDesktop$ | async">
+              <div
+                class="flex items-center justify-between mt-4"
+                *ngFor="let discount of discounts.controls; let i = index"
+              >
+                <nz-form-item
+                  class="w-1/3 mb-0 mr-4 floating-title grow"
+                  [ngClass]="gForm(discount, 'tokenReward').value ? 'value' : ''"
+                >
+                  <nz-form-label> <span i18n>Token amount higher than</span></nz-form-label>
+                  <nz-form-control>
+                    <nz-input-group nzSize="large" class="relative">
+                      <nz-input-number
+                        i18n-nzPlaceHolder
+                        [nzPlaceHolder]="'Token amount higher than'"
+                        nzSize="large"
+                        class="w-full"
+                        [nzMin]="0"
+                        [formControl]="gForm(discount, 'tokenReward')"
+                      ></nz-input-number>
+                    </nz-input-group>
+                  </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item class="w-1/3 mb-0 grow">
+                  <nz-form-control i18n-nzErrorTip nzErrorTip="Token is required.">
+                    <nz-select
+                      class="w-full"
+                      nzSize="large"
+                      nzMode="default"
+                      [nzOptions]="(filteredTokens$ | async) || []"
+                      [nzServerSearch]="true"
+                      nzShowSearch
+                      nzAllowClear
+                      i18n-nzPlaceHolder
+                      nzPlaceHolder="Type awarded token..."
+                      (nzOnSearch)="searchToken($event)"
+                      [formControl]="gForm(discount, 'tokenUid')"
+                    >
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+
+                <wen-icon-arrow-right class="mx-10"></wen-icon-arrow-right>
+
+                <nz-form-item
+                  class="w-1/3 mb-0 mr-4 floating-title grow"
+                  [ngClass]="gForm(discount, 'amount').value ? 'value' : ''"
+                >
+                  <nz-form-label> <span i18n>Discount %</span></nz-form-label>
+                  <nz-form-control>
+                    <nz-input-group nzSize="large" class="relative">
+                      <nz-input-number
+                        class="w-full max-w-80"
+                        [nzMin]="0"
+                        [nzMax]="100"
+                        [nzStep]="1"
+                        [nzPlaceHolder]="'Discount %'"
+                        [nzFormatter]="formatterPercent"
+                        [nzParser]="parserPercent"
+                        nzSize="large"
+                        i18n-nzPlaceHolder
+                        [formControl]="gForm(discount, 'amount')"
+                      ></nz-input-number>
+                      <wen-icon-trash
+                        class="absolute translate-y-1/2 cursor-pointer text-icons-destructive dark:text-icons-destructive-dark"
+                        (click)="removeDiscount(i)"
+                      ></wen-icon-trash>
+                    </nz-input-group>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="deviceService.isMobile$ | async">
+              <div class="mt-8" *ngFor="let discount of discounts.controls; let i = index">
+                <div class="flex items-center justify-between">
+                  <div class="text-xs font-bold"><span i18n>Discount</span> #0{{ i + 1 }}</div>
+                  <div class="flex items-center">
+                    <wen-icon-trash
+                      class="cursor-pointer text-icons-destructive dark:text-icons-destructive-dark"
+                      (click)="removeDiscount(i)"
+                    ></wen-icon-trash>
+                  </div>
+                </div>
+
+                <div class="mt-2 mb-5 separator"></div>
+
+                <div class="text-xs font-medium text-foregrounds-tertiary" i18n>Discount XP</div>
+
+                <nz-input-number
+                  i18n-nzPlaceHolder
+                  [nzPlaceHolder]="'Token amount higher than'"
+                  nzSize="large"
+                  class="w-full mt-2 mb-5"
+                  [nzMin]="0"
+                  [formControl]="gForm(discount, 'xp')"
+                ></nz-input-number>
+
+                <div class="text-xs font-medium text-foregrounds-tertiary" i18n>Token</div>
+
+                <nz-form-item class="w-full mt-2 mb-5">
+                  <nz-form-control i18n-nzErrorTip nzErrorTip="Token is required.">
+                    <nz-select class="w-full" nzSize="large" nzShowSearch></nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+
+                <div class="text-xs font-medium text-foregrounds-tertiary" i18n>
+                  Discount Amount
+                </div>
+
+                <nz-input-number
+                  class="w-full mt-2 mb-5"
+                  [nzMin]="1"
+                  [nzMax]="100"
+                  [nzStep]="1"
+                  [nzFormatter]="formatterPercent"
+                  [nzParser]="parserPercent"
+                  nzSize="large"
+                  [formControl]="gForm(discount, 'amount')"
+                ></nz-input-number>
+              </div>
+            </ng-container>
+          </div>
+
+          <button
+            nz-button
+            *ngIf="discounts.controls.length < maxDiscountCount"
+            nzType="link"
+            class="flex items-center mt-3 wen-secondary"
+            [disabled]="priceControl.invalid"
+            (click)="addDiscount()"
+          >
+            <wen-icon-plus class="mr-0.5"></wen-icon-plus>
+            <span i18n>Add discount level</span>
+          </button>
+        </nz-card>
+      </div>
+
+      <div
+        class="mt-4 space-y-4 lg:mt-0 lg:max-w-450"
+        nz-col
+        [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+      >
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Space Info"
+            i18n-nzDescription
+            nzDescription="This is the space that will be minting the NFT collection. Only spaces with verified wallets show up in the dropdown list. Please make sure you choose the correct space because all funds from the NFT sale will go to this space's verified wallet."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-6">
+            <wen-select-space
+              class="block w-full"
+              [includeDefaultSpace]="false"
+              [formControl]="spaceControl"
+              [spaces]="getSpaceListOptions(spaces$ | async)"
+              size="large"
+            >
+            </wen-select-space>
+          </nz-form-item>
+        </nz-card>
+
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Collection Type"
+            i18n-nzDescription
+            nzDescription="Each type has different characteristics. This cannot be changed after creation."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-4">
+            <nz-form-control>
+              <nz-radio-group class="wen-radio-group" [formControl]="typeControl">
+                <wen-radio
+                  *ngFor="let type of collectionTypes; trackBy: trackByValue"
+                  [value]="type.value"
+                >
+                  <span
+                    class="flex items-center text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                  >
+                    {{ type.key }}
+                    <wen-icon-question-circle
+                      class="ml-1"
+                      nz-tooltip
+                      i18n-nzTooltipTitle
+                      [nzTooltipTitle]="getTooltip(type.value, '')"
+                    >
+                    </wen-icon-question-circle>
+                  </span>
+                </wen-radio>
+              </nz-radio-group>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-card>
+
+        <nz-card [nzBordered]="false" *ngIf="!bannerUrlControl.disabled">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Banner"
+            i18n-nzDescription
+            [nzDescription]="editMode ? 'Upload new to replace existing.' : 'Upload banner image for you Collection.'"
+          >
+          </nz-card-meta>
+
+          <div class="mt-6">
+            <nz-form-item>
+              <nz-form-control>
+                <nz-upload
+                  class="wen-banner"
+                  nzName="banner"
+                  nzType="drag"
+                  nzListType="picture-card"
+                  [nzLimit]="1"
+                  [nzCustomRequest]="uploadFileBanner.bind(this)"
+                  (nzChange)="uploadChangeBanner($event)"
+                  nzFileType="image/png,image/jpg,image/jpeg,image/webp"
+                  [nzFileList]="uploadedBanner ? [uploadedBanner] : []"
+                  [nzShowUploadList]="{ showPreviewIcon: false, showDownloadIcon: false, showRemoveIcon: true }"
+                >
+                  <ng-container>
+                    <i class="upload-icon" nz-icon nzType="upload"></i>
+                    <span class="pl-2 text-xs">jpeg/png/webp</span>
+                  </ng-container>
+                </nz-upload>
+                <div
+                  class="text-accent-primary dark:text-accent-primary-darkest"
+                  *ngIf="bannerUrlControl.invalid && !bannerUrlControl.pristine"
+                  i18n
+                >
+                  Banner is required.
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+
+        <nz-card [nzBordered]="false" *ngIf="showPlaceholder() && !placeholderUrlControl.disabled">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Placeholder"
+            i18n-nzDescription
+            [nzDescription]="editMode ? 'Upload new to replace existing.' : 'Upload image. Will be used as an NFT placeholder.'"
+          >
+          </nz-card-meta>
+          <div class="mt-6">
+            <nz-form-item>
+              <nz-form-control>
+                <nz-upload
+                  class="wen-banner"
+                  nzName="banner"
+                  nzType="drag"
+                  nzListType="picture-card"
+                  [nzLimit]="1"
+                  [nzCustomRequest]="uploadFilePlaceholder.bind(this)"
+                  (nzChange)="uploadChangePlaceholder($event)"
+                  nzFileType="image/png,image/jpg,image/jpeg,image/webp,video/mp4"
+                  [nzFileList]="uploadedPlaceholder ? [uploadedPlaceholder] : []"
+                  [nzShowUploadList]="{ showPreviewIcon: false, showDownloadIcon: false, showRemoveIcon: true }"
+                >
+                  <ng-container>
+                    <i class="upload-icon" nz-icon nzType="upload"></i>
+                    <span class="pl-2 text-xs">jpg/jpeg/png/webp/mp4</span>
+                  </ng-container>
+                </nz-upload>
+                <div
+                  class="text-accent-primary dark:text-accent-primary-darkest"
+                  *ngIf="placeholderUrlControl.invalid && !placeholderUrlControl.pristine"
+                  i18n
+                >
+                  Placeholder is required.
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Category"
+            i18n-nzDescription
+            nzDescription="Category is used when filtering content."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-4">
+            <nz-form-control i18n-nzErrorTip nzErrorTip="Category.">
+              <nz-select
+                class="w-full"
+                nzSize="large"
+                nzShowSearch
+                nzAllowClear
+                i18n-nzPlaceHolder
+                nzPlaceHolder="Category"
+                [formControl]="categoryControl"
+              >
+                <nz-option
+                  *ngFor="let cc of collectionCategories"
+                  i18n-nzLabel
+                  [nzLabel]="cc.value"
+                  [nzValue]="cc.key"
+                >
+                </nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-card>
+
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Collection Setup"
+            i18n-nzDescription
+            nzDescription="Who has access to a given collection."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-4">
+            <nz-form-control>
+              <nz-radio-group class="wen-radio-group" [formControl]="selectedAccessControl">
+                <wen-radio [value]="targetAccess.OPEN"
+                  ><span class="flex items-center"
+                    ><span class="text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n
+                      >Open Sale</span
+                    >
+                    <wen-icon-question-circle
+                      class="ml-1"
+                      nz-tooltip
+                      i18n-nzTooltipTitle
+                      nzTooltipTitle="Everyone has access to this collection."
+                    ></wen-icon-question-circle> </span
+                ></wen-radio>
+                <wen-radio [value]="targetAccess.GUARDIANS_ONLY"
+                  ><span class="flex items-center"
+                    ><span class="text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n
+                      >Space Guardians Only</span
+                    >
+                    <wen-icon-question-circle
+                      class="ml-1"
+                      nz-tooltip
+                      i18n-nzTooltipTitle
+                      nzTooltipTitle="Only Space Guardians can access."
+                    >
+                    </wen-icon-question-circle> </span
+                ></wen-radio>
+                <wen-radio [value]="targetAccess.MEMBERS_ONLY"
+                  ><span class="flex items-center"
+                    ><span class="text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n
+                      >Space Members Only</span
+                    >
+                    <wen-icon-question-circle
+                      class="ml-1"
+                      nz-tooltip
+                      i18n-nzTooltipTitle
+                      nzTooltipTitle="Only Space Members can access."
+                    >
+                    </wen-icon-question-circle> </span
+                ></wen-radio>
+                <wen-radio [value]="targetAccess.MEMBERS_WITH_BADGE"
+                  ><span class="flex items-center"
+                    ><span class="text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n
+                      >Space Members with Badge Only</span
+                    >
+                    <wen-icon-question-circle
+                      class="ml-1"
+                      nz-tooltip
+                      i18n-nzTooltipTitle
+                      nzTooltipTitle="Only Space Members with badge can access."
+                    ></wen-icon-question-circle> </span
+                ></wen-radio>
+                <wen-radio [value]="targetAccess.MEMBERS_WITH_NFT_FROM_COLLECTION"
+                  ><span class="flex items-center"
+                    ><span class="text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n
+                      >At least one NFT from Collections</span
+                    >
+                    <wen-icon-question-circle
+                      class="ml-1"
+                      nz-tooltip
+                      nzTooltipTitle="Member must hold at least one NFT from each selected collection."
+                    ></wen-icon-question-circle> </span
+                ></wen-radio>
+              </nz-radio-group>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-card>
+        <nz-card [nzBordered]="false" i18n-nzTitle nzTitle="Collection Options">
+          <nz-form-item>
+            <label nz-checkbox [formControl]="limitedEditionControl">
+              <div class="flex items-center">
+                <div class="font-medium mr-2.5" i18n>Limited Edition</div>
+                <i
+                  nz-icon
+                  nzType="info-circle"
+                  class="cursor-pointer text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                  nz-tooltip
+                  nzTooltipTitle="NFT can't be added after approval."
+                ></i>
+              </div>
+            </label>
+          </nz-form-item>
+          <nz-form-item>
+            <label nz-checkbox [formControl]="onePerMemberOnlyControl">
+              <div class="flex items-center">
+                <div class="font-medium mr-2.5" i18n>One NFT per Member Only</div>
+                <i
+                  nz-icon
+                  nzType="info-circle"
+                  class="cursor-pointer text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                  nz-tooltip
+                  nzTooltipTitle="One NFT per Member Only"
+                ></i>
+              </div>
+            </label>
+          </nz-form-item>
+
+          <nz-form-item
+            *ngIf="selectedAccessControl.value === targetAccess.MEMBERS_WITH_NFT_FROM_COLLECTION"
+          >
+            <nz-form-control>
+              <nz-select
+                class="w-full"
+                nzSize="large"
+                nzMode="multiple"
+                [nzOptions]="(filteredCollections$ | async) || []"
+                [nzServerSearch]="true"
+                nzShowSearch
+                nzAllowClear
+                i18n-nzPlaceHolder
+                nzPlaceHolder="Select collection"
+                (nzOnSearch)="searchCollection($event)"
+                [formControl]="accessCollectionsControl"
+              >
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item *ngIf="selectedAccessControl.value === targetAccess.MEMBERS_WITH_BADGE">
+            <nz-form-control>
+              <nz-select
+                class="w-full"
+                nzSize="large"
+                nzMode="multiple"
+                [nzOptions]="(filteredAwards$ | async) || []"
+                [nzServerSearch]="true"
+                nzShowSearch
+                nzAllowClear
+                i18n-nzPlaceHolder
+                nzPlaceHolder="Select award"
+                (nzOnSearch)="searchAward($event)"
+                [formControl]="accessAwardsControl"
+              >
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-card>
+      </div>
+    </div>
+  </form>
+
+  <button
+    nz-button
+    nzType="primary"
+    class="w-full mt-8 lg:w-auto mb-18 lg:mb-6 lg:mt-0"
+    nzSize="large"
+    type="button"
+    (click)="create()"
+    *ngIf="!editMode"
+    i18n
+  >
+    Create collection
+  </button>
+
+  <button
+    nz-button
+    nzType="primary"
+    class="w-full mt-8 lg:w-auto mb-18 lg:mb-6 lg:mt-0"
+    nzSize="large"
+    type="button"
+    (click)="save()"
+    *ngIf="editMode"
+    i18n
+  >
+    Save collection
+  </button>
+</wen-content>

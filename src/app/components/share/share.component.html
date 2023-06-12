@@ -1,0 +1,60 @@
+<div
+  class="flex items-center"
+  *ngIf="
+    size === shareSizes.LARGE || (size === shareSizes.DEFAULT && (deviceService.isDesktop$ | async))
+  "
+>
+  <a
+    nz-button
+    nzType="default"
+    nzSize="default"
+    target="_new"
+    [href]="getShareUrl()"
+    class="flex items-center justify-center grow w-full text-foregrounds-primary dark:text-foregrounds-primary-dark mr-4 w-1/2"
+  >
+    <wen-icon-twitter></wen-icon-twitter>
+    <div class="ml-2.5 text-xs font-medium" i18n>Share</div>
+  </a>
+  <button
+    nz-button
+    nzType="default"
+    nzSize="default"
+    (click)="copy()"
+    class="flex items-center justify-center grow w-full text-foregrounds-primary dark:text-foregrounds-primary-dark w-1/2"
+  >
+    <wen-icon-copy></wen-icon-copy>
+    <div class="ml-2.5 text-xs font-medium">
+      <ng-container *ngIf="isCopied; else isNotCopied" i18n>Copied</ng-container>
+      <ng-template #isNotCopied i18n>Copy to clipboard</ng-template>
+    </div>
+  </button>
+</div>
+
+<div
+  class="flex items-center"
+  *ngIf="
+    size === shareSizes.SMALL || (size === shareSizes.DEFAULT && (deviceService.isMobile$ | async))
+  "
+>
+  <div class="mr-4 text-xs font-medium text-foregrounds-secondary" i18n>Share</div>
+  <!-- Used style because ant-design overwrites tailwind's padding -->
+  <a
+    nz-button
+    nzType="default"
+    nzSize="default"
+    target="_new"
+    [href]="getShareUrl()"
+    class="flex items-center justify-center px-4 py-3 mr-3 text-foregrounds-primary dark:text-foregrounds-primary-dark w-max"
+  >
+    <wen-icon-twitter></wen-icon-twitter>
+  </a>
+  <button
+    nz-button
+    nzType="default"
+    nzSize="default"
+    (click)="copy()"
+    class="flex items-center justify-center px-4 py-3 text-foregrounds-primary dark:text-foregrounds-primary-dark w-max"
+  >
+    <wen-icon-link></wen-icon-link>
+  </button>
+</div>

@@ -1,0 +1,26 @@
+<div
+  class="flex items-center justify-center w-full h-full overflow-hidden bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+>
+  <div class="flex flex-col justify-center items-center max-w-lg px-16 py-10 text-center">
+    <wen-icon-sad-cry
+      class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    ></wen-icon-sad-cry>
+    <div class="font-bold text-2xl mt-1.5" i18n>Oops, it's in another universe</div>
+    <div
+      class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark mt-2"
+      i18n
+    >
+      NFT you are looking for no longer exists on Soonaverse.
+    </div>
+    <button
+      [routerLink]="marketplaceRoute"
+      class="mt-6"
+      nz-button
+      nzType="primary"
+      nzSize="small"
+      i18n
+    >
+      Back to Marketplace
+    </button>
+  </div>
+</div>

@@ -1,0 +1,273 @@
+{
+  "$schema": "../../node_modules/@angular/cli/lib/config/schema.json",
+  "cli": {
+    "analytics": false
+  },
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "soonaverse": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:application": {
+          "strict": true
+        },
+        "@schematics/angular:component": {
+          "style": "less",
+          "changeDetection": "OnPush"
+        },
+        "@ngneat/spectator:spectator-component": {
+          "jest": true
+        }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "wen",
+      "i18n": {
+        "sourceLocale": {
+          "baseHref": "",
+          "code": "en"
+        },
+        "locales": {
+          "de": {
+            "translation": "src/locale/messages.de-DE.xlf",
+            "baseHref": ""
+          },
+          "es": {
+            "translation": "src/locale/messages.es-ES.xlf",
+            "baseHref": ""
+          },
+          "fr": {
+            "translation": "src/locale/messages.fr-FR.xlf",
+            "baseHref": ""
+          },
+          "it": {
+            "translation": "src/locale/messages.it-IT.xlf",
+            "baseHref": ""
+          },
+          "ko": {
+            "translation": "src/locale/messages.ko-KR.xlf",
+            "baseHref": ""
+          },
+          "nl": {
+            "translation": "src/locale/messages.nl-NL.xlf",
+            "baseHref": ""
+          },
+          "zh-CN": {
+            "translation": "src/locale/messages.zh-CN.xlf",
+            "baseHref": ""
+          }
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/soonaverse",
+            "index": "src/index.html",
+            "main": "src/main.ts",
+            "polyfills": "src/polyfills.ts",
+            "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "less",
+            "assets": [
+              "src/favicon.ico",
+              "src/maintenance.html",
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "src/assets/static-home",
+                "output": "/home"
+              },
+              {
+                "glob": "**/*",
+                "input": "../../node_modules/@ant-design/icons-angular/src/inline-svg/",
+                "output": "/assets/"
+              }
+            ],
+            "styles": [
+              "src/theme/styles.less",
+              "../../node_modules/instantsearch.css/themes/satellite.css"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "15mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            },
+            "de": {
+              "localize": ["de"],
+              "i18nMissingTranslation": "warning"
+            },
+            "es": {
+              "localize": ["es"],
+              "i18nMissingTranslation": "warning"
+            },
+            "fr": {
+              "localize": ["fr"],
+              "i18nMissingTranslation": "warning"
+            },
+            "it": {
+              "localize": ["it"],
+              "i18nMissingTranslation": "warning"
+            },
+            "ko": {
+              "localize": ["ko"],
+              "i18nMissingTranslation": "warning"
+            },
+            "nl": {
+              "localize": ["nl"],
+              "i18nMissingTranslation": "warning"
+            },
+            "zh-CN": {
+              "localize": ["zh-CN"],
+              "i18nMissingTranslation": "warning"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "test:build:production"
+            },
+            "development": {
+              "browserTarget": "soonaverse:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "soonaverse:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "polyfills": "src/polyfills.ts",
+            "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.js",
+            "inlineStyleLanguage": "scss",
+            "assets": ["src/favicon.ico", "src/assets"],
+            "styles": [],
+            "scripts": []
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+          }
+        },
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath": "dist/soonaverse-server",
+            "main": "server.ts",
+            "tsConfig": "tsconfig.server.json",
+            "inlineStyleLanguage": "less"
+          },
+          "configurations": {
+            "production": {
+              "outputHashing": "media",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true,
+              "extractLicenses": false
+            },
+            "de": {
+              "i18nMissingTranslation": "warning"
+            },
+            "es": {
+              "i18nMissingTranslation": "warning"
+            },
+            "fr": {
+              "i18nMissingTranslation": "warning"
+            },
+            "it": {
+              "i18nMissingTranslation": "warning"
+            },
+            "ko": {
+              "i18nMissingTranslation": "warning"
+            },
+            "nl": {
+              "i18nMissingTranslation": "warning"
+            },
+            "zh-CN": {
+              "i18nMissingTranslation": "warning"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve-ssr": {
+          "builder": "@nguniversal/builders:ssr-dev-server",
+          "configurations": {
+            "development": {
+              "browserTarget": "soonaverse:build:development",
+              "serverTarget": "soonaverse:server:development"
+            },
+            "production": {
+              "browserTarget": "soonaverse:build:production",
+              "serverTarget": "soonaverse:server:production"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "prerender": {
+          "builder": "@nguniversal/builders:prerender",
+          "options": {
+            "routes": ["/"]
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "soonaverse:build:production",
+              "serverTarget": "soonaverse:server:production"
+            },
+            "development": {
+              "browserTarget": "soonaverse:build:development",
+              "serverTarget": "soonaverse:server:development"
+            }
+          },
+          "defaultConfiguration": "production"
+        }
+      }
+    }
+  },
+  "defaultProject": "soonaverse"
+}

@@ -1,0 +1,382 @@
+<wen-modal-drawer
+  i18n-title
+  title="Stake your token"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <p>
+    <span i18n
+      >Select or define the amount you want to stake and the period for how long you want to lock
+      it.
+    </span>
+    <ng-container *ngIf="staticStakeEnabled">
+      <span i18n>Since you are a guardian you can also </span>
+      <a class="wen-btn-link" (click)="staticStake = true">perform static stake</a>.
+    </ng-container>
+  </p>
+
+  <div [ngSwitch]="currentStep" class="w-full mt-6">
+    <ng-container *ngSwitchCase="stepType.CONFIRM">
+      <ng-container *ngTemplateOutlet="confirmTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.TRANSACTION">
+      <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.COMPLETE">
+      <ng-container *ngTemplateOutlet="completeTemplate"></ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #confirmTemplate>
+  <nz-collapse
+    nzGhost
+    class="flex items-center justify-between px-5 py-3.5 mt-4 mb-6 rounded-2xl bg-accent-selected dark:bg-accent-selected-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+  >
+    <nz-collapse-panel
+      [nzHeader]="header"
+      [nzExpandedIcon]="icon"
+      (nzActiveChange)="setCollapsed($event)"
+      [nzActive]="isInfoCollapsed()"
+      [nzDisabled]="false"
+    >
+      <ul class="space-y-3 text-sm font-medium">
+        <li i18n>- Choose an amount and for how long you’d like to lock it.</li>
+        <li i18n>
+          - Your funds stay at your wallet, but you will not be able to use them during the staking
+          period.
+        </li>
+        <li *ngIf="!staticStake && isSoonToken()" i18n>
+          - You will get staked points based on your input.
+        </li>
+        <li *ngIf="!staticStake && isSoonToken()">
+          - The more {{ token?.symbol | uppercase }} you stake, the more rewards you get.
+        </li>
+        <li *ngIf="!staticStake && isSoonToken()">
+          - <span i18n>See Staking reward page for more info</span>
+          <a class="font-medium wen-btn-link" [href]="['/soon-staking']" i18n> here.</a>
+        </li>
+      </ul>
+    </nz-collapse-panel>
+
+    <ng-template #header>
+      <div class="flex">
+        <wen-icon-info-circle class="mr-2.5 lg:mr-3.5"></wen-icon-info-circle>
+        <h5 i18n>How it works</h5>
+      </div>
+    </ng-template>
+    <ng-template #icon>
+      <div class="float-right">
+        <wen-icon-angle-down></wen-icon-angle-down>
+      </div>
+    </ng-template>
+  </nz-collapse>
+
+  <div>
+    <div>
+      <div
+        class="mt-6 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        How much {{ token?.symbol | uppercase }} you want to stake?
+      </div>
+      <div class="relative flex items-center justify-between w-full mt-1.5">
+        <input
+          class="w-full no-arrows"
+          type="number"
+          step="any"
+          [placeholder]="'0'"
+          [formControl]="amountControl"
+          nz-input
+          nzSize="large"
+        />
+        <div class="absolute flex flex-col items-end -translate-y-1/2 right-5 top-1/2">
+          <div class="flex items-center">
+            <nz-avatar
+              [nzSrc]="token?.icon"
+              [nzSize]="24"
+              class="wen-avatar-background min-w-6 min-h-6"
+              nzShape="circle"
+            >
+            </nz-avatar>
+            <div
+              class="ml-2 font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            >
+              {{ token?.symbol }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="my-2 space-x-2">
+      <button
+        class="border border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+        nz-button
+        nzType="default"
+        nzSize="small"
+        (click)="amountControl.setValue(amountControl.value + 1000)"
+      >
+        +1000
+        <nz-avatar
+          [nzSrc]="token?.icon"
+          [nzSize]="24"
+          class="ml-2 wen-avatar-background min-w-6 min-h-6"
+          nzShape="circle"
+        >
+        </nz-avatar>
+      </button>
+      <button
+        nz-button
+        nzType="default"
+        nzSize="small"
+        class="border border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+        (click)="amountControl.setValue(amountControl.value + 2000)"
+      >
+        +2000
+        <nz-avatar
+          [nzSrc]="token?.icon"
+          [nzSize]="24"
+          class="ml-2 wen-avatar-background min-w-6 min-h-6"
+          nzShape="circle"
+        >
+        </nz-avatar>
+      </button>
+      <button
+        nz-button
+        class="border border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+        nzType="default"
+        nzSize="small"
+        (click)="amountControl.setValue(amountControl.value + 5000)"
+      >
+        +5000
+        <nz-avatar
+          [nzSrc]="token?.icon"
+          [nzSize]="24"
+          class="ml-2 wen-avatar-background min-w-6 min-h-6"
+          nzShape="circle"
+        >
+        </nz-avatar>
+      </button>
+    </div>
+
+    <div>
+      <div
+        class="mt-6 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        For how long you want to stake?
+      </div>
+      <nz-select
+        nzSize="large"
+        class="relative flex items-center justify-between w-full mt-1.5"
+        [formControl]="weekControl"
+      >
+        <nz-option
+          *ngFor="let w of weeksOptions"
+          i18n-nzLabel
+          [nzLabel]="w + (w === 1 ? ' week' : ' weeks')"
+          [nzValue]="w"
+        ></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="relative flex flex-col mt-6 space-y-4 font-medium lg:mt-6" *ngIf="!staticStake">
+      <div class="info-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+        <div i18n>Rewards Multiplier</div>
+        <div class="mt-1">
+          <span *ngIf="multiplierControl.value >= 1"
+            >{{ multiplierControl.value | number : '1.0-2' }}x</span
+          >
+          <span *ngIf="!multiplierControl.value">-</span>
+          <span
+            class="ml-1 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+          >
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative flex flex-col mt-6 space-y-4 font-medium lg:mt-4" *ngIf="!staticStake">
+      <div class="info-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+        <div i18n>
+          Staking Value
+          <wen-icon-question-circle
+            [size]="18"
+            class="float-right ml-2 text-icons-secondary dark:text-icons-secondary-dark"
+            nz-tooltip
+            i18n-nzTooltipTitle
+            nzTooltipTitle="Staked amount * Rewards Multiplier"
+          ></wen-icon-question-circle>
+        </div>
+        <div class="mt-1">
+          {{ stakeControl.value }}
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="relative flex flex-col mt-4 space-y-4 font-medium lg:mt-4"
+      *ngIf="!staticStake && rewards?.length"
+    >
+      <div class="info-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+        <div i18n>You will earn</div>
+        <div class="mt-1">VIP LEVEL {{ levelControl.value }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col items-center w-full">
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-10 lg:w-auto"
+      i18n
+      [disabled]="!(amountControl.value > 0)"
+      (click)="stakeToken()"
+    >
+      Confirm and generate address
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #transactionTemplate>
+  <div class="relative flex flex-col mt-6 font-medium lg:mt-6">
+    <div
+      class="flex-1 w-full px-6 py-2 mt-2 rounded-3xl bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-h-14"
+    >
+      <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+        Total staked
+      </div>
+      <div class="mt-1 text-lg font-bold">
+        {{
+          { value: amountControl.value, exponents: token?.decimals }
+            | formatToken : token?.uid : false : false
+            | async
+        }}
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="px-4 py-2.5 rounded-2xl border border-alerts-error flex items-center lg:w-max mx-auto mt-6"
+  >
+    <wen-icon-stopwatch class="mr-2 lg:mr-3 text-alerts-error"></wen-icon-stopwatch>
+    <div class="text-base font-medium">
+      <span *ngIf="!helper.isExpired(transaction$ | async)">{{
+        expiryTicker$ | async | countdownTime
+      }}</span>
+      <span class="text-alerts-error" *ngIf="!helper.isExpired(transaction$ | async)" i18n>
+        remaining to make the transfer.</span
+      >
+      <span class="text-alerts-error" *ngIf="helper.isExpired(transaction$ | async)" i18n
+        >Expired</span
+      >
+    </div>
+  </div>
+
+  <nz-alert
+    class="mt-2"
+    nzType="warning"
+    nzShowIcon
+    *ngIf="!helper.isExpired(transaction$ | async) && invalidPayment"
+    nzMessage="We received invalid amount. Try again. Make sure to set expiration time and gift storage deposit."
+  ></nz-alert>
+
+  <wen-send-funds
+    class="block w-full"
+    *ngIf="!helper.isExpired(transaction$ | async)"
+    [targetAddress]="targetAddress"
+    [formattedAmount]="
+      ({ value: amountControl.value, exponents: token?.decimals }
+        | formatToken : token?.uid : true : false
+        | async) +
+      ' ' +
+      token?.symbol
+    "
+  >
+  </wen-send-funds>
+
+  <wen-wallet-deeplink
+    class="mt-6"
+    [targetAddress]="targetAddress"
+    [network]="token?.mintingData?.network"
+    [tokenId]="token?.mintingData?.tokenId"
+    [tokenAmount]="(amountControl.value | convertToken : token?.uid | async) || undefined"
+    [targetAmount]="(targetAmount || 0).toString()"
+  ></wen-wallet-deeplink>
+
+  <div
+    class="w-full my-8 mt-12 border border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+  >
+    <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+    <div class="wen-modal-history-log">
+      <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+        <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+        <a
+          class="absolute text-sm font-medium underline left-16 wen-btn-link"
+          target="_blank"
+          *ngIf="t.link"
+          [href]="transactionService.getExplorerLink(t.transaction)"
+          >{{ t.label }}</a
+        >
+        <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #completeTemplate>
+  <div
+    class="w-full my-8 mt-10 border border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+  >
+    <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+    <div class="wen-modal-history-log">
+      <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+        <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+        <a
+          class="absolute text-sm font-medium underline left-16 wen-btn-link"
+          target="_blank"
+          *ngIf="t.link"
+          [href]="transactionService.getExplorerLink(t.transaction)"
+          >{{ t.label }}</a
+        >
+        <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex mt-10 lg:items-center lg:justify-center">
+    <div
+      class="flex items-center justify-center w-10 h-10 rounded-full bg-alerts-success dark:bg-alerts-success-dark"
+    >
+      <wen-icon-check
+        class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+      ></wen-icon-check>
+    </div>
+    <div class="ml-3.5 text-lg font-medium" i18n>Stake complete. Congratulations.</div>
+  </div>
+
+  <div class="flex flex-col items-center w-full mt-10 lg:flex-row lg:w-auto lg:justify-center">
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full lg:w-auto lg:mr-2"
+      (click)="close()"
+      i18n
+    >
+      Close
+    </button>
+  </div>
+</ng-template>

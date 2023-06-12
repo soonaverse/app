@@ -1,0 +1,84 @@
+<wen-content>
+  <h1 i18n class="flex items-end mt-0 lg:mt-12">
+    Swap
+    <h5 class="mx-2 my-0">by</h5>
+    <div>
+      <img
+        [src]="(themeService.theme$ | async) === theme.Light ? '/assets/logos/bee_dark.svg' : '/assets/logos/bee_light.svg'"
+        alt="BEE logo"
+      />
+    </div>
+  </h1>
+  <div class="mt-4 lg:mt-6 lg:px-10">
+    <div class="flex flex-col lg:flex-row lg:w-auto">
+      <div class="flex flex-col-reverse w-full h-auto lg:flex-col lg:w-1/2 grow">
+        <article
+          class="flex flex-col m-3 lg:m-6 h-1/2 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:flex-row rounded-large"
+        >
+          <div class="relative flex flex-col w-full p-6 space-y-6 lg:h-full lg:p-10 grow">
+            <h3 class="flex flex-col justify-end mb-4 text-4xl text-center grow" i18n>
+              What is Swap?
+            </h3>
+            <p class="flex flex-col items-center text-lg font-medium text-center grow">
+              Iotabee's semi-centralized crosschain Swap is coming to Soonaverse. You will SOON be
+              able to swap assets between different chains including IOTA, Shimmer, Shimmer EVM and
+              BSC.
+            </p>
+          </div>
+        </article>
+
+        <article class="m-3 h-1/2 lg:m-6">
+          <div class="w-full h-64 mr-8 overflow-hidden rounded-large image-container lg:h-full">
+            <img alt="" src="/assets/mocks/Skyscraper_FIN.jpg" class="object-cover w-full h-full" />
+            <div class="overlay color"></div>
+            <div class="overlay">
+              <h1 class="text-center text-foregrounds-on-primary" i18n>Coming SOON</h1>
+              <a nz-button type="button" i18n target="_blank" href="https://iotabee.com/swap">
+                See Swap
+                <p class="hidden ml-1 lg:block">on iotabee</p>
+              </a>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <article
+        class="flex flex-col-reverse m-3 lg:w-1/2 lg:m-6 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-large"
+      >
+        <div class="relative px-5 py-16 space-y-12 text-center h-3/5 lg:p-10 lg:space-y-6">
+          <h3 class="mb-1 text-4xl" i18n>What is iotabee?</h3>
+          <p class="text-base font-medium lg:mb-0 lg:text-lg" i18n>
+            Iotabee is a combination of a decentralized peer-to-peer DEX protocol and a
+            semi-centralized crosschain SWAP that people can use to create liquidity and trade
+            tokens on IOTA, Shimmer, Shimmer EVM and other EVM chains like BSC.
+          </p>
+
+          <p
+            class="flex flex-col text-base text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          >
+            To understand iotabee continue to:
+            <a nz-button type="button" i18n target="_blank" href="https://iotabee.com/">
+              iotabee.com
+            </a>
+          </p>
+        </div>
+        <div class="relative overflow-hidden lg:h-full rounded-large">
+          <video
+            width="100%"
+            height="auto"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="yes"
+            poster="/assets/mocks/Iotabee_FIN_1.jpg"
+            tabindex="0"
+          >
+            <source src="/assets/mocks/Iotabee_FIN_logo02.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </article>
+    </div>
+  </div>
+</wen-content>

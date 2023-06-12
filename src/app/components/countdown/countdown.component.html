@@ -1,0 +1,98 @@
+<div
+  [class]="
+    'w-full p-4 rounded-xl text-foregrounds-primary dark:text-foregrounds-primary-dark ' +
+    wrapperClassName
+  "
+  [ngClass]="{
+    'px-5 pb-5': size === 'small'
+  }"
+>
+  <div
+    class="flex"
+    [ngClass]="{
+      'items-center': size === 'large'
+    }"
+  >
+    <wen-icon-time
+      *ngIf="size !== 'small'"
+      class="text-icons-secondary dark:text-icons-secondary"
+    ></wen-icon-time>
+    <div
+      class="ml-2.5 grow"
+      [ngClass]="{
+        'flex items-center': size === 'large',
+        'text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark': size === 'small'
+      }"
+    >
+      <div [ngClass]="size === 'small' ? 'font-medium' : 'font-bold'">{{ title }}</div>
+      <div
+        class="font-medium"
+        *ngIf="showDate"
+        [ngClass]="{
+          'ml-2 xs:ml-auto': size === 'large'
+        }"
+      >
+        {{ finalDate | date : 'long' }}
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="flex items-center justify-between w-full mt-4 space-x-2"
+    [ngClass]="{ 'mt-2': size === 'small' }"
+  >
+    <div
+      [class]="'flex items-center justify-center grow py-3 font-medium rounded-2xl ' + tabClassName"
+      [ngClass]="{
+        'py-0 rounded-lg': size === 'small',
+        'font-bold': size !== 'small'
+      }"
+      *ngIf="getCountdownDays() > 0"
+    >
+      <div>
+        {{ getCountdownDays() }}
+      </div>
+      <div *ngIf="size !== 'large'" i18n>d</div>
+      <div *ngIf="size === 'large'" class="ml-1" i18n>days</div>
+    </div>
+    <div
+      [class]="'flex items-center justify-center grow py-3 font-medium rounded-2xl ' + tabClassName"
+      [ngClass]="{
+        'py-0 rounded-lg': size === 'small',
+        'font-bold': size !== 'small'
+      }"
+    >
+      <div>
+        {{ getCountdownHours() }}
+      </div>
+      <div *ngIf="size !== 'large'" i18n>h</div>
+      <div *ngIf="size === 'large'" class="ml-1" i18n>hours</div>
+    </div>
+    <div
+      [class]="'flex items-center justify-center grow py-3 font-medium rounded-2xl ' + tabClassName"
+      [ngClass]="{
+        'py-0 rounded-lg': size === 'small',
+        'font-bold': size !== 'small'
+      }"
+    >
+      <div>
+        {{ getCountdownMin() }}
+      </div>
+      <div *ngIf="size !== 'large'" i18n>m</div>
+      <div *ngIf="size === 'large'" class="ml-1" i18n>min</div>
+    </div>
+    <div
+      [class]="'flex items-center justify-center grow py-3 font-medium rounded-2xl ' + tabClassName"
+      [ngClass]="{
+        'py-0 rounded-lg': size === 'small',
+        'font-bold': size !== 'small'
+      }"
+    >
+      <div>
+        {{ getCountdownSec() }}
+      </div>
+      <div *ngIf="size !== 'large'" i18n>s</div>
+      <div *ngIf="size === 'large'" class="ml-1" i18n>sec</div>
+    </div>
+  </div>
+</div>

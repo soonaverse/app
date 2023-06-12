@@ -1,0 +1,45 @@
+<div class="flex items-center">
+  <wen-tabs
+    *ngIf="(deviceService.isDesktop$ | async) && sections?.length"
+    [tabs]="sections || []"
+    class="mr-10"
+  ></wen-tabs>
+  <wen-dropdown-tabs
+    *ngIf="(deviceService.isMobile$ | async) && !isSearchInputFocused && sections?.length"
+    [tabs]="sections || []"
+    [selectedTab]="selectedSection"
+  >
+  </wen-dropdown-tabs>
+
+  <wen-mobile-search
+    *ngIf="deviceService.isMobile$ | async"
+    [formControl]="filterControl"
+    class="ml-auto w-full"
+    i18n-placeholder
+    placeholder="Search"
+  >
+  </wen-mobile-search>
+
+  <nz-input-group
+    *ngIf="deviceService.isDesktop$ | async"
+    [nzSize]="searchSize"
+    [nzPrefix]="prefixIconSearch"
+    class="shadow-none border-inputs-border dark:border-inputs-border-dark outline-0"
+    nzSearch
+  >
+    <input
+      type="text"
+      [value]="this.state.query"
+      type="text"
+      nz-input
+      i18n-placeholder
+      placeholder="Start typing..."
+      class="text-base bg-inputs-background dark:bg-inputs-background-dark"
+      [formControl]="filterControl"
+    />
+  </nz-input-group>
+
+  <ng-template #prefixIconSearch>
+    <span nz-icon nzType="search" class="text-xl"></span>
+  </ng-template>
+</div>

@@ -1,0 +1,330 @@
+<wen-modal-drawer
+  i18n-title
+  title="Cast Vote"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <ng-container *ngIf="!helper.isBase(token || undefined)">
+    <div
+      class="mt-6 font-medium text-foregrounds-secondary dark:text-foregroundsd-secondary-dark"
+      i18n
+    >
+      Question
+    </div>
+    <div class="font-medium">{{ question }}</div>
+  </ng-container>
+
+  <div class="summary-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+    <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Selected option
+    </div>
+    <div class="font-bold whitespace-nowrap">{{ answer?.text }}</div>
+  </div>
+
+  <div
+    *ngIf="currentStep === stepType.CONFIRM"
+    class="mt-6 font-medium text-foregrounds-secondary dark:text-foregroundsd-secondary-dark"
+    i18n
+  >
+    How do you set your votes?
+  </div>
+
+  <nz-radio-group
+    *ngIf="currentStep === stepType.CONFIRM"
+    class="flex flex-col my-4 space-y-2 wen-radio-group"
+    [formControl]="voteTypeControl"
+  >
+    <wen-radio *ngFor="let op of voteTypeOptions" [value]="op.value">
+      <div
+        class="flex items-center -translate-y-1 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      >
+        <div i18n [ngClass]="voteTypeControl.value === op.value ? 'font-bold' : 'font-medium'">
+          {{ op.label }}
+        </div>
+      </div>
+    </wen-radio>
+  </nz-radio-group>
+
+  <div
+    class="relative flex items-center justify-between w-full mt-1.5"
+    *ngIf="voteTypeControl.value === voteTypes.NATIVE_TOKEN && currentStep === stepType.CONFIRM"
+  >
+    <input
+      class="w-full no-arrows"
+      type="number"
+      step="any"
+      [placeholder]="'Amount'"
+      [formControl]="amountControl"
+      nz-input
+      nzSize="large"
+    />
+    <div class="absolute flex flex-col items-end -translate-y-1/2 right-5 top-1/2">
+      <div class="flex items-center">
+        <nz-avatar
+          [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+          [nzSize]="24"
+          class="wen-avatar-background min-w-6 min-h-6"
+          nzShape="circle"
+        >
+        </nz-avatar>
+        <div
+          class="ml-2 font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >
+          {{ token?.symbol | uppercase }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="summary-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+    *ngIf="voteTypeControl.value === voteTypes.NATIVE_TOKEN && currentStep !== stepType.CONFIRM"
+  >
+    <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Total native tokens
+    </div>
+    <div class="font-bold whitespace-nowrap">
+      {{
+        (this.amountControl.value | formatToken : token?.uid : true : false | async) +
+          ' ' +
+          (token?.symbol === 'IOTA' ? 'M' : '') +
+          token?.symbol
+      }}
+    </div>
+  </div>
+
+  <div
+    class="summary-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+    *ngIf="voteTypeControl.value === voteTypes.STAKED_TOKEN"
+  >
+    <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Total staked tokens
+    </div>
+    <div class="font-bold whitespace-nowrap">
+      {{
+        (totalStaked | formatToken : token?.uid : true : false | async) +
+          ' ' +
+          (token?.symbol === 'IOTA' ? 'M' : '') +
+          token?.symbol
+      }}
+    </div>
+  </div>
+
+  <div class="summary-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+    <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Voting is active on
+    </div>
+    <div class="font-bold whitespace-nowrap" *ngIf="!helperProposal.isCommencing(proposal)">
+      {{ now$ | async | date : 'long' }}
+    </div>
+    <div class="font-bold whitespace-nowrap" *ngIf="helperProposal.isCommencing(proposal)">
+      {{ proposal?.settings?.startDate.toDate() | date : 'long' }}
+    </div>
+  </div>
+
+  <div class="summary-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+    <div class="font-bold text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Your total voting weight
+    </div>
+    <div class="font-bold whitespace-nowrap">
+      {{
+        (getWeight() | formatToken : token?.uid : true : false | async) +
+          ' ' +
+          (token?.symbol === 'IOTA' ? 'M' : '') +
+          token?.symbol
+      }}
+    </div>
+  </div>
+
+  <div
+    class="flex w-full p-4 mt-4 font-medium bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl"
+    *ngIf="voteTypeControl.value === voteTypes.STAKED_TOKEN && currentStep !== stepType.CONFIRM"
+  >
+    <wen-icon-alert-octagon
+      class="text-icons-primary dark:text-icons-primary-dark"
+    ></wen-icon-alert-octagon>
+    <div class="ml-2.5" i18n>
+      Note tha staked tokens can be used only for one voting. Your voting weight will be split if
+      you use staked tokens on other proposal.
+    </div>
+  </div>
+
+  <div [ngSwitch]="currentStep" class="w-full mt-6">
+    <ng-container *ngSwitchCase="stepType.CONFIRM">
+      <ng-container *ngTemplateOutlet="confirmTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.TRANSACTION">
+      <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.COMPLETE">
+      <ng-container *ngTemplateOutlet="completeTemplate"></ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #confirmTemplate>
+  <div class="flex flex-col items-center w-full">
+    <button
+      *ngIf="voteTypeControl.value === voteTypes.NATIVE_TOKEN"
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-10 lg:w-auto"
+      (click)="proceedWithVote()"
+    >
+      <span i18n>Confirm</span>&nbsp;
+      <span *ngIf="deviceService.isDesktop$ | async" i18n> and generate address</span>
+    </button>
+
+    <button
+      nz-button
+      (click)="proceedWithVote()"
+      *ngIf="voteTypeControl.value === voteTypes.STAKED_TOKEN"
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-10 lg:w-auto"
+    >
+      <span i18n>Cast Votes</span>&nbsp;
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #transactionTemplate>
+  <div class="relative flex flex-col mt-10 font-medium lg:mt-6">
+    <div
+      class="px-4 py-2.5 rounded-2xl border border-alerts-error flex items-center lg:w-max mx-auto mt-6"
+    >
+      <wen-icon-stopwatch class="mr-2 lg:mr-3 text-alerts-error"></wen-icon-stopwatch>
+      <div class="text-base font-medium">
+        <span *ngIf="!helper.isExpired(transaction$ | async)">{{
+          expiryTicker$ | async | countdownTime
+        }}</span>
+        <span class="text-alerts-error" *ngIf="!helper.isExpired(transaction$ | async)" i18n>
+          remaining to make the transfer.</span
+        >
+        <span class="text-alerts-error" *ngIf="helper.isExpired(transaction$ | async)" i18n
+          >Expired</span
+        >
+      </div>
+    </div>
+
+    <nz-alert
+      class="mt-2"
+      nzType="warning"
+      nzShowIcon
+      *ngIf="!helper.isExpired(transaction$ | async) && invalidPayment"
+      nzMessage="We received invalid amount. Try again."
+    ></nz-alert>
+  </div>
+
+  <wen-send-funds
+    class="block w-full"
+    *ngIf="!helper.isExpired(transaction$ | async)"
+    [targetAddress]="targetAddress"
+    [formattedAmount]="
+      ({ value: this.amountControl.value, exponents: token?.decimals }
+        | formatToken : token?.uid : true : false
+        | async) +
+      ' ' +
+      token?.symbol
+    "
+  >
+  </wen-send-funds>
+
+  <div
+    *ngIf="!helper.isBase(token || undefined)"
+    class="flex px-5 py-4 mt-6 rounded-xl bg-tags-commencing dark:bg-tags-commencing-dark text-foregrounds-primary dark:text-foregrounds-primary"
+  >
+    <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+    <div class="text-base font-medium mt-0.5" i18n>
+      Make sure the gift storage deposit options in your Firefly wallet is checked when sending
+      tokens.
+    </div>
+  </div>
+
+  <wen-wallet-deeplink
+    class="mt-6"
+    [targetAddress]="targetAddress"
+    [network]="
+      token?.symbol !== 'IOTA'
+        ? token?.mintingData?.networkFormat || token?.mintingData?.network
+        : undefined
+    "
+    [tokenId]="token?.symbol !== 'IOTA' ? token?.mintingData?.tokenId : undefined"
+    [tokenAmount]="(amountControl.value | convertToken : token?.uid | async) || undefined"
+    [targetAmount]="token?.symbol !== 'IOTA' ? getTargetAmount() + '' : amount + ''"
+  >
+  </wen-wallet-deeplink>
+
+  <div
+    class="w-full my-8 mt-12 border border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+  >
+    <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+    <div class="wen-modal-history-log">
+      <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+        <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+        <a
+          class="absolute text-sm font-medium underline left-16 wen-btn-link"
+          target="_blank"
+          *ngIf="t.link"
+          [href]="transactionService.getExplorerLink(t.transaction)"
+          >{{ t.label }}</a
+        >
+        <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #completeTemplate>
+  <div
+    class="w-full my-8 mt-10 border border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+  >
+    <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+    <div class="wen-modal-history-log">
+      <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+        <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+        <a
+          class="absolute text-sm font-medium underline left-16 wen-btn-link"
+          target="_blank"
+          *ngIf="t.link"
+          [href]="transactionService.getExplorerLink(t.transaction)"
+          >{{ t.label }}</a
+        >
+        <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex mt-10 lg:items-center lg:justify-center">
+    <div
+      class="flex items-center justify-center w-10 h-10 rounded-full bg-alerts-success dark:bg-alerts-success-dark"
+    >
+      <wen-icon-check
+        class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+      ></wen-icon-check>
+    </div>
+    <div class="ml-3.5 text-lg font-medium" i18n>Sell complete. Congratulations.</div>
+  </div>
+
+  <div class="flex flex-col items-center w-full mt-10 lg:flex-row lg:w-auto lg:justify-center">
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full lg:w-auto lg:mr-2"
+      (click)="close()"
+      i18n
+    >
+      Close checkout
+    </button>
+  </div>
+</ng-template>

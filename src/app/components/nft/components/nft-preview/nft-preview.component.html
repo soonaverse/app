@@ -1,0 +1,160 @@
+<nz-modal
+  *ngIf="deviceService.isDesktop$ | async"
+  [nzVisible]="!!nft"
+  nzCentered
+  [nzClosable]="false"
+  [nzMaskClosable]="true"
+  [nzMask]="true"
+  (nzOnCancel)="close()"
+  [nzBodyStyle]="{ padding: '0px' }"
+  [nzContent]="nftPreviewModalContent"
+  [nzFooter]="null"
+  [nzWidth]="1000"
+>
+  <ng-template #nftPreviewModalContent>
+    <div
+      class="w-full h-full p-6 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl"
+    >
+      <div class="flex items-start justify-between">
+        <div class="text-2xl font-bold" i18n>Preview</div>
+        <wen-icon-close class="cursor-pointer" (click)="close()"></wen-icon-close>
+      </div>
+
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </div>
+  </ng-template>
+</nz-modal>
+
+<nz-drawer
+  *ngIf="deviceService.isMobile$ | async"
+  [nzBodyStyle]="{ overflow: 'auto', padding: '20px' }"
+  [nzWidth]="'100vw'"
+  #drawer
+  [nzClosable]="false"
+  [nzVisible]="!!nft"
+>
+  <div *nzDrawerContent class="relative min-h-full h-max">
+    <div class="pb-4 text-3xl font-bold" i18n>Preview</div>
+    <button class="absolute right-0 z-10 top-1" (click)="close()">
+      <wen-icon-close></wen-icon-close>
+    </button>
+
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+  </div>
+</nz-drawer>
+
+<ng-template #content>
+  <div class="flex flex-col mt-12 lg:flex-row lg:mt-10" *ngIf="nft">
+    <div class="grow w-full lg:w-1/2 lg:mr-10">
+      <h1 class="mt-2">{{ nft.name }}</h1>
+
+      <div
+        class="flex items-center justify-between w-full h-12 p-4 mt-5 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-xl"
+        *ngIf="nft?.availableFrom"
+      >
+        <div class="flex items-center mr-8" [ngClass]="{ 'text-alerts-error': false }">
+          <wen-icon-time></wen-icon-time>
+          <div class="ml-2.5 font-bold" i18n>Sale Starts</div>
+        </div>
+        <div class="font-medium">
+          {{ nft?.availableFrom | date : 'short' }}
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center mt-5">
+        <div
+          class="grow h-20 px-4 py-3 mr-3 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark w-3/10 rounded-xl"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary" i18n>Current price</div>
+          <div class="flex items-center mt-2">
+            <div class="text-lg font-bold truncate">
+              {{ nft.price | formatToken : nft.mintingData?.network | async }}
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="grow h-20 px-4 py-3 mr-3 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark w-3/10 rounded-xl"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary" i18n>Author</div>
+          <div class="flex items-center mt-2">
+            <a [routerLink]="['/member', (auth.member$ | async)?.uid]" class="flex items-center">
+              <nz-avatar
+                [nzSrc]="(auth.member$ | async)?.avatar | resizeAvatar : filesizes.small"
+                class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-w-10"
+                style="max-width: 32px; min-width: 32px"
+                [nzSize]="32"
+              >
+              </nz-avatar>
+              <div class="ml-3 text-base font-medium truncate max-w-20">
+                @{{ (auth.member$ | async)?.name || (auth.member$ | async)?.uid }}
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div
+          class="grow h-20 px-4 py-3 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark w-3/10 rounded-xl"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary" i18n>Space</div>
+          <a class="flex items-center mt-2" [routerLink]="['/space', space?.uid]">
+            <nz-avatar
+              class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-w-10"
+              style="max-width: 32px; min-width: 32px"
+              [nzSize]="32"
+              [nzSrc]="previewImageService.getAvatarSize(space?.avatarUrl)"
+            >
+            </nz-avatar>
+
+            <div class="ml-3 text-base font-medium truncate max-w-20">
+              {{ space?.name || space?.uid }}
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="mt-12 font-medium" [innerHtml]="nft.description || '' | markdown"></div>
+
+      <wen-collapse i18n-title title="System info" class="mt-8">
+        <wen-description
+          [items]="[
+            { title: systemInfoLabels[0], value: systemInfoValues.preparing },
+            { title: systemInfoLabels[1], value: systemInfoValues.preparing }
+          ]"
+        ></wen-description>
+        <ng-template #migrateTooltipIcon>
+          <wen-icon-question-circle
+            nz-tooltip
+            i18n-nzTooltipTitle
+            nzTooltipTitle="The current address is not connected to a live mainnet. As soon as the functionality is supported on IOTA/Shimmer, you will have to ability to one-click migrate this NFT to your network of choice."
+          ></wen-icon-question-circle>
+        </ng-template>
+      </wen-collapse>
+
+      <wen-collapse i18n-title title="Properties" class="mt-4" *ngIf="nft.properties">
+        <wen-description [items]="getValues(nft.properties)"></wen-description>
+      </wen-collapse>
+
+      <wen-collapse i18n-title title="Stats" class="mt-4" *ngIf="nft.stats">
+        <wen-description [items]="getValues(nft.stats)"></wen-description>
+      </wen-collapse>
+    </div>
+
+    <div class="grow w-full max-w-screen-sm lg:w-1/2">
+      <div class="relative w-full overflow-hidden rounded-2xl">
+        <img
+          *ngIf="mediaType === 'image'"
+          i18n-alt
+          alt="NFT Image"
+          [src]="previewImageService.getUrl(nft?.media) || '/assets/mocks/no_banner.jpg'"
+          class="object-cover w-full h-full"
+        />
+
+        <video controls class="object-cover w-full h-full" *ngIf="mediaType === 'video'">
+          <source [src]="nft?.media" type="video/mp4" />
+          Your browser does not support HTML video.
+        </video>
+      </div>
+    </div>
+  </div>
+</ng-template>

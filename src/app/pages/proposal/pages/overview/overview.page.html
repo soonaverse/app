@@ -1,0 +1,96 @@
+<nz-card
+  class="mb-4"
+  *ngIf="!(data.proposal$ | async)?.rejected && helper.isComplete(data.proposal$ | async)"
+  i18n-nzTitle
+  nzTitle="Final Results"
+>
+  <div class="-mt-3" *ngFor="let q of (data.proposal$ | async)?.questions">
+    <p class="text-lg">{{q.text}}</p>
+
+    <ng-container *ngFor="let a of q.answers">
+      <p nz-typography class="text-xs">{{a.text}}</p>
+      <nz-progress
+        [nzPercent]="data.getProgress(data.proposal$ | async, a) | number : '1.2-2'"
+        nzStatus="active"
+      >
+      </nz-progress>
+    </ng-container>
+  </div>
+</nz-card>
+
+<ng-container
+  *ngIf="!(data.proposal$ | async)?.rejected && helper.isComplete(data.proposal$ | async) === false"
+>
+  <ng-container *ngFor="let q of (data.proposal$ | async)?.questions">
+    <nz-card [nzTitle]="titleText">
+      <span [innerHtml]="q.additionalInfo | markdown"></span>
+      <nz-radio-group
+        class="w-full mb-4 mt-9"
+        *ngIf="deviceService.isDesktop$ | async"
+        [nzDisabled]="!((data.proposal$ | async)?.approved && (data.canVote$ | async) && helper.isInProgress(data.proposal$ | async)) && (!helper.isNativeVote((data.proposal$ | async)?.type))"
+        [formControl]="voteControl"
+      >
+        <div *ngFor="let a of q.answers">
+          <wen-proposal-answer [answer]="a"> </wen-proposal-answer>
+        </div>
+      </nz-radio-group>
+
+      <wen-proposal-vote-action
+        *ngIf="deviceService.isDesktop$ | async"
+        [startDateTicker$]="startDateTicker$"
+        (wenOnVote)="vote()"
+      >
+      </wen-proposal-vote-action>
+
+      <ng-template #titleText>
+        <span class="whitespace-normal">{{ q.text }}</span>
+      </ng-template>
+    </nz-card>
+
+    <nz-radio-group
+      class="w-full"
+      *ngIf="deviceService.isMobile$ | async"
+      [nzDisabled]="!((data.proposal$ | async)?.approved && (data.canVote$ | async) && helper.isInProgress(data.proposal$ | async)) && (!helper.isNativeVote((data.proposal$ | async)?.type))"
+      [formControl]="voteControl"
+    >
+      <nz-card
+        *ngFor="let a of q.answers"
+        class="block mt-4"
+        [ngClass]="{
+          'border-2 border-solid border-accent-primary dark:border-accent-primary-dark': a.value === voteControl.value
+        }"
+      >
+        <wen-proposal-answer [answer]="a"> </wen-proposal-answer>
+      </nz-card>
+    </nz-radio-group>
+
+    <wen-proposal-vote-action
+      *ngIf="deviceService.isMobile$ | async"
+      class="block mt-10"
+      [startDateTicker$]="startDateTicker$"
+      (wenOnVote)="vote()"
+    >
+    </wen-proposal-vote-action>
+  </ng-container>
+</ng-container>
+
+<div class="mx-8 mt-10">
+  <h4 i18n>Proposal Description</h4>
+  <div
+    class="whitespace-pre-line text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    nz-typography
+    [innerHtml]="(data.proposal$ | async)?.additionalInfo | markdown"
+  ></div>
+</div>
+
+<wen-token-vote
+  *ngIf="isModalOpen"
+  [question]="(data.proposal$ | async)?.questions?.[0]?.text"
+  [answer]="(data.proposal$ | async)?.questions?.[0]?.answers?.[voteControl.value - 1]"
+  [space]="(data.space$ | async) || undefined"
+  [token]="(data.token$ | async) || undefined"
+  [proposal]="(data.proposal$ | async) || undefined"
+  [totalStaked]="loggedInUserTotalStake$ | async"
+  [isOpen]="isModalOpen"
+  (wenOnClose)="isModalOpen = false"
+></wen-token-vote>

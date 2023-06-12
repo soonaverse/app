@@ -1,0 +1,25 @@
+.ant-tag-checkable {
+  @apply h-10 rounded-3xl bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-base font-semibold px-4 mr-4 border-3  text-foregrounds-primary dark:text-foregrounds-primary-dark;
+  line-height: 2.125rem; // 2.5rem height - 2 * 3px border
+}
+
+.ant-tag-checkable:active,
+.ant-tag-checkable-checked {
+  @apply border-tabs-selected dark:border-tabs-selected-dark bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-tabs-selected dark:text-tabs-selected-dark;
+}
+
+.ant-tag-checkable:not(.ant-tag-checkable-checked):hover {
+  @apply text-tabs-text-on-hover dark:text-tabs-text-on-hover-dark;
+}
+
+.wen-status-tag {
+  @apply px-2 py-1 font-medium text-xs text-foregrounds-primary dark:text-foregrounds-primary-dark rounded-lg h-6 leading-none;
+
+  &.text-white {
+    color: @white;
+  }
+}
+
+.wen-xp-tag {
+  @apply font-medium text-sm px-3 py-2 rounded-3xl text-foregrounds-primary dark:text-foregrounds-primary-dark bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark border-backgrounds-secondary dark:border-backgrounds-secondary-dark border-2;
+}

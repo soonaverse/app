@@ -1,0 +1,290 @@
+<!-- TODO find better hack for preventing header from jumping because of the scrollbar -->
+<header
+  class="fixed right-0 z-30 flex items-center justify-end w-full lg:absolute lg:py-5 lg:space-x-8 lg:w-header lg:pr-8 xl:pr-16"
+>
+  <ng-container *ngIf="deviceService.isMobile$ | async; else isDesktop">
+    <wen-mobile-header
+      class="absolute top-0 z-10 w-full p-4 transition-transform duration-300 -translate-y-1 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark shadow-header"
+      [ngClass]="{
+        '-translate-y-full -top-1 ': !isScrolled && (routerService.isHomeRoute$ | async),
+        'shadow-none': !isScrolled && (routerService.isHomeRoute$ | async) === false,
+        'bg-tags-regular dark:bg-tags-regular-dark': routerService.isNewRoute$ | async
+      }"
+      [isMemberProfile]="isMemberProfile"
+      [isLandingPage]="isLandingPage"
+      [isMobileMenuVisible]="isMobileMenuVisible"
+      [notifications]="(notifications$ | async) || []"
+      [unreadNotificationCount]="unreadNotificationCount()"
+      [getNotificationDetails]="getNotificationDetails"
+      (wenOnVisibleChange)="isMobileMenuVisible = !isMobileMenuVisible"
+      (wenOnNotificationVisibleChange)="notificationVisibleChange()"
+    >
+    </wen-mobile-header>
+
+    <div class="p-4" *ngIf="!isScrolled">
+      <nz-badge [nzDot]="unreadNotificationCount() > 0">
+        <button
+          nz-button
+          nz-dropdown
+          nzType="default"
+          nzShape="circle"
+          nzTooltipPlacement="bottom"
+          [nzDropdownMenu]="notificationMenu"
+          [ngClass]="
+            isMemberProfile
+              ? 'bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark hover:bg-backgrounds-secondary'
+              : ''
+          "
+          class="inline-flex items-center justify-center border-0 wen-header-button"
+        >
+          <wen-icon-bell
+            class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          ></wen-icon-bell>
+        </button>
+      </nz-badge>
+
+      <button
+        nz-button
+        nzShape="circle"
+        class="inline-flex items-center justify-center ml-5 border-0 wen-header-button"
+        type="button"
+        (click)="isMobileMenuVisible = true"
+      >
+        <wen-icon-menu></wen-icon-menu>
+      </button>
+    </div>
+    <wen-mobile-menu
+      [enableCreateAwardProposal]="enableCreateAwardProposal"
+      [isVisible]="isMobileMenuVisible"
+      [isMemberProfile]="isMemberProfile"
+      [isLandingPage]="isLandingPage"
+      [filesizes]="filesizes"
+      (isVisibleChanged)="isMobileMenuVisible = $event"
+    >
+    </wen-mobile-menu>
+  </ng-container>
+
+  <ng-template #isDesktop>
+    <button
+      nz-button
+      *ngIf="isLandingPage"
+      class="flex items-center gap-2 wen-header-button"
+      [routerLink]="urlToDiscover"
+      type="button"
+      nzType="default"
+    >
+      <wen-icon-rocket></wen-icon-rocket><span i18n>Discover</span>
+    </button>
+
+    <button
+      nz-button
+      nz-dropdown
+      nzTrigger="click"
+      [nzDropdownMenu]="createMenu"
+      nz-tooltip
+      nzTooltipPlacement="bottom"
+      *ngIf="(isLoggedIn$ | async) && !isMemberProfile && !isLandingPage"
+      nzType="primary"
+      type="button"
+      class="flex items-center gap-2 pr-2"
+    >
+      <span i18n>Create new </span><wen-icon-angle-down></wen-icon-angle-down>
+    </button>
+
+    <nz-dropdown-menu #createMenu="nzDropdownMenu">
+      <wen-menu>
+        <wen-menu-item [routerLink]="routerService.urlToNewSpace">
+          <wen-icon-space icon></wen-icon-space><span i18n>Space</span>
+        </wen-menu-item>
+        <wen-menu-item
+          [routerLink]="routerService.urlToNewProposal"
+          *ngIf="enableCreateAwardProposal"
+        >
+          <wen-icon-check-circle icon></wen-icon-check-circle><span i18n>Proposal</span>
+        </wen-menu-item>
+        <wen-menu-item [routerLink]="routerService.urlToNewAward" *ngIf="enableCreateAwardProposal">
+          <wen-icon-award icon></wen-icon-award><span i18n>Award</span>
+        </wen-menu-item>
+        <div *ngIf="auth.memberLevel$ | async">
+          <wen-menu-item [routerLink]="routerService.urlToNewCollection">
+            <wen-icon-collection icon></wen-icon-collection><span i18n>Collection</span>
+          </wen-menu-item>
+          <wen-menu-item [routerLink]="routerService.urlToNewToken">
+            <wen-icon-token icon></wen-icon-token><span i18n>Token</span>
+          </wen-menu-item>
+        </div>
+        <div
+          *ngIf="(auth.memberLevel$ | async) === 0"
+          class="disabled-box dark:bg-foregrounds-placeholder-dark bg-[#FFF6E6]"
+        >
+          <a [href]="['/soon-staking']">
+            <div class="ant-dropdown-menu-item title">
+              <wen-icon-premium icon></wen-icon-premium>
+              <div class="mx-3 text-xs" i18n>
+                To unlock more features you<br />
+                have to stake SOON token.
+              </div>
+            </div>
+            <div class="ant-dropdown-menu-item">
+              <wen-icon-collection icon></wen-icon-collection><span i18n>Collection</span>
+            </div>
+            <div class="ant-dropdown-menu-item">
+              <wen-icon-token icon></wen-icon-token><span i18n>Token</span>
+            </div>
+          </a>
+        </div>
+      </wen-menu>
+    </nz-dropdown-menu>
+
+    <wen-sign-in
+      *ngIf="(isLoggedIn$ | async) === false"
+      [ngClass]="isMemberProfile ? 'isMember' : ''"
+    ></wen-sign-in>
+
+    <nz-badge [nzDot]="unreadNotificationCount() > 0">
+      <button
+        nz-button
+        nz-dropdown
+        nzType="default"
+        nzShape="circle"
+        *ngIf="isLoggedIn$ | async"
+        [nzDropdownMenu]="notificationMenu"
+        [ngClass]="
+          isMemberProfile
+            ? 'bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark hover:bg-backgrounds-secondary'
+            : ''
+        "
+        class="relative inline-flex items-center justify-center border-0 wen-header-button"
+        (nzVisibleChange)="notificationVisibleChange()"
+      >
+        <wen-icon-bell
+          class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        ></wen-icon-bell>
+      </button>
+    </nz-badge>
+
+    <button
+      nz-button
+      nz-dropdown
+      nzShape="round"
+      nzType="default"
+      nzTrigger="click"
+      nzSize="default"
+      [nzDropdownMenu]="userMenu"
+      [ngClass]="
+        isMemberProfile
+          ? 'bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark hover:bg-backgrounds-secondary'
+          : ''
+      "
+      class="inline-flex items-center h-16 gap-3 pl-2 font-bold border-0 wen-header-button"
+      *ngIf="isLoggedIn$ | async"
+    >
+      <nz-avatar
+        nzIcon="user"
+        [nzSrc]="(member$ | async)?.avatar | resizeAvatar : filesizes.small"
+        [nzSize]="48"
+        class="mr-1"
+      ></nz-avatar>
+      <div class="flex flex-col items-baseline">
+        <span>
+          {{
+            '@' + ((member$ | async)?.name || (member$ | async)?.uid || '') | truncate : [12]
+          }}</span
+        >
+        <nz-tag
+          class="wen-status-tag bg-tags-available dark:bg-tags-available-dark border-tags-available dark:border-tags-available-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          i18n
+          >VIP LEVEL {{ auth.memberLevel$ | async }}
+        </nz-tag>
+      </div>
+      <wen-icon-angle-down></wen-icon-angle-down>
+    </button>
+  </ng-template>
+
+  <nz-dropdown-menu #notificationMenu="nzDropdownMenu">
+    <wen-menu>
+      <div
+        class="flex justify-between w-full px-5 py-4 cursor-pointer"
+        *ngFor="
+          let nt of notifications$ | async;
+          trackBy: trackByUid;
+          let first = first;
+          let index = index
+        "
+        [ngClass]="{
+          'border-t': !first
+        }"
+      >
+        <nz-badge [nzDot]="index < unreadNotificationCount()">
+          <a [routerLink]="['/', 'nft', nt.params.nft.uid]">
+            <div class="font-bold break-words line-clamp-1">
+              {{ getNotificationDetails(nt).title }}
+            </div>
+            <div
+              class="max-w-sm mt-1 text-sm font-medium break-words text-foregrounds-secondary line-clamp-2"
+            >
+              {{ getNotificationDetails(nt).content }}
+            </div>
+          </a>
+        </nz-badge>
+      </div>
+
+      <div *ngIf="(notifications$ | async)?.length === 0" i18n>None.</div>
+    </wen-menu>
+  </nz-dropdown-menu>
+
+  <nz-dropdown-menu #userMenu="nzDropdownMenu">
+    <wen-menu>
+      <wen-menu-item (click)="goToMyProfile()">
+        <wen-icon-unamused icon></wen-icon-unamused>
+        <span i18n>My Profile</span>
+      </wen-menu-item>
+      <wen-sign-out></wen-sign-out>
+    </wen-menu>
+  </nz-dropdown-menu>
+</header>
+
+<wen-sign-in-modal></wen-sign-in-modal>
+
+<wen-nft-checkout
+  *ngIf="isCheckoutOpen"
+  [isOpen]="isCheckoutOpen"
+  [nft]="currentCheckoutNft"
+  [collection]="currentCheckoutCollection"
+  (wenOnClose)="closeCheckout()"
+></wen-nft-checkout>
+
+<ng-template #notCompletedNotification>
+  <div class="flex">
+    <wen-icon-alert-octagon
+      class="text-alerts-warning mr-3.5 text-alerts-error dark:text-alerts-error-dark"
+      [size]="20"
+    ></wen-icon-alert-octagon>
+    <div>
+      <div class="w-4/5 font-bold text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n>
+        Purchase has not been completed
+      </div>
+      <div
+        class="mt-2 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+        <span i18n>You have </span
+        ><span class="text-alerts-error">{{ expiryTicker$ | async | countdownTime }}</span
+        ><span i18n> to finish your transaction</span>
+      </div>
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="small"
+        class="mt-5"
+        (click)="onOpenCheckout()"
+        i18n
+      >
+        Open Checkout
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #emptyIcon>
+  <!-- nothing -->
+</ng-template>

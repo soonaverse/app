@@ -1,0 +1,151 @@
+<nz-form-item
+  class="w-full m-0 lg:w-auto border border-inputs-border dark:border-inputs-border-dark rounded-3xl"
+>
+  <nz-form-control i18n-nzErrorTip nzErrorTip="Collection is required.">
+    <nz-select
+      class="w-full"
+      [ngClass]="{ 'select-search-margin': collectionControl.value }"
+      [nzSize]="size"
+      [nzShowSearch]="deviceService.isDesktop$ | async"
+      [nzCustomTemplate]="selectTpl"
+      [formControl]="collectionControl"
+      i18n-nzPlaceHolder
+      nzPlaceHolder="Select Collection"
+      [nzDropdownClassName]="(deviceService.isMobile$ | async) ? 'hidden' : ''"
+      [nzDropdownStyle]="{ 'min-width': '400px', 'max-width': '100%' }"
+      (nzOpenChange)="onSelectClick()"
+    >
+      <nz-option
+        *ngFor="let c of collections; trackBy: trackByValue"
+        nzCustomContent
+        [nzLabel]="c.label"
+        [nzValue]="c.value"
+      >
+        <nz-avatar
+          *ngIf="c?.img && isSelectOpen"
+          [nzSrc]="previewImageService.getCollectionSize(c.img)"
+          [nzSize]="24"
+          class="mr-3 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+          nzShape="circle"
+        >
+        </nz-avatar>
+        <wen-icon-collection
+          *ngIf="!c?.img"
+          class="inline-block mr-3 align-middle"
+        ></wen-icon-collection>
+        {{ c.label }}
+      </nz-option>
+    </nz-select>
+    <ng-template #selectTpl let-c>
+      <div class="flex items-center overflow-x-hidden">
+        <div class="mr-3">
+          <nz-avatar
+            *ngIf="getCollection(c.nzValue)?.img; else defaultAvatar"
+            [nzSrc]="previewImageService.getCollectionSize(getCollection(c.nzValue)?.img)"
+            [nzSize]="24"
+            class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark min-w-6 min-h-6"
+            nzShape="circle"
+          >
+          </nz-avatar>
+          <ng-template #defaultAvatar>
+            <wen-icon-collection></wen-icon-collection>
+          </ng-template>
+        </div>
+        <span
+          class="inline-block text-base"
+          [ngClass]="
+            size === 'small'
+              ? 'truncate font-medium'
+              : 'line-clamp-2 break-words whitespace-normal leading-5 font-bold'
+          "
+        >
+          {{ c.nzLabel }}</span
+        >
+      </div>
+    </ng-template>
+  </nz-form-control>
+</nz-form-item>
+
+<nz-drawer
+  *ngIf="deviceService.isMobile$ | async"
+  [nzBodyStyle]="{ overflow: 'auto', padding: '20px' }"
+  [nzWidth]="'100vw'"
+  [nzClosable]="false"
+  [nzVisible]="isDrawerOpen"
+>
+  <div *nzDrawerContent class="relative h-full">
+    <button
+      class="absolute top-0 right-0 z-10"
+      (click)="isDrawerOpen = false; isSelectOpen = false"
+    >
+      <wen-icon-close></wen-icon-close>
+    </button>
+    <div class="text-3xl font-bold" i18n>Select a Collection</div>
+
+    <div
+      class="absolute z-20 w-full pt-1 pb-5 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl"
+    >
+      <div class="flex items-center mt-3">
+        <wen-icon-search></wen-icon-search>
+        <input
+          class="w-full px-3 py-2 text-sm text-gray-600 outline-0"
+          [formControl]="searchControl"
+          i18n-placeholder
+          placeholder="Search"
+          nz-input
+          nzSize="large"
+          [nzBorderless]="true"
+        />
+        <wen-icon-erase
+          *ngIf="searchControl.value"
+          (click)="searchControl.setValue('')"
+          class="cursor-pointer"
+        ></wen-icon-erase>
+      </div>
+
+      <div
+        class="w-full h-px mt-2 mb-2 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark"
+      ></div>
+
+      <div
+        *ngIf="shownCollections.length === 0 && collections.length > 0"
+        class="flex items-center justify-center text-xs font-medium min-h-24 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+        <span i18n>No results for</span> "{{ searchControl.value }}"
+      </div>
+
+      <div
+        class="overflow-x-hidden overflow-y-hidden lg:max-h-56"
+        style="max-height: calc(100% - 40)"
+      >
+        <div
+          *ngFor="let opt of shownCollections; trackBy: trackByValue"
+          class="flex items-center mt-4 cursor-pointer lg:mt-5 hover:text-accent-primary dark:text-accent-primary-dark whitespace-nowrap"
+          (click)="collectionControl.setValue(opt.value)"
+          [ngClass]="{
+            'text-accent-primary dark:text-accent-primary-dark':
+              opt.value === collectionControl.value
+          }"
+        >
+          <div class="mr-2">
+            <nz-avatar
+              *ngIf="opt?.img && isDrawerOpen"
+              [nzSrc]="previewImageService.getCollectionSize(opt.img)"
+              [nzSize]="24"
+              class="mr-3 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+              nzShape="circle"
+            >
+            </nz-avatar>
+
+            <wen-icon-collection *ngIf="!opt?.img" class="block mr-3"></wen-icon-collection>
+          </div>
+          <span class="inline-block truncate">{{ opt.label }}</span>
+          <wen-icon-check
+            *ngIf="opt.value === collectionControl.value"
+            class="ml-3"
+          ></wen-icon-check>
+        </div>
+      </div>
+    </div>
+  </div>
+</nz-drawer>

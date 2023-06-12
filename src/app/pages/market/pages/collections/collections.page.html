@@ -1,0 +1,207 @@
+<ais-instantsearch [config]="config">
+  <header class="header" id="header">
+    <div class="header-searchbox">
+      <wen-search-box [sections]="[]" [reset$]="reset$"></wen-search-box>
+    </div>
+  </header>
+  <div class="relative mt-11 lg:mt-10">
+    <ais-stats data-layout="mobile">
+      <ng-template let-state="state">
+        <span
+          class="font-medium ais-Stats-text text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >
+          {{ state.nbHits | number }} <ng-container i18n>records</ng-container>
+        </span>
+      </ng-template>
+    </ais-stats>
+    <button
+      class="absolute top-0 right-0 z-10 wen-secondary"
+      nz-button
+      nzSize="small"
+      (click)="filterStorageService.marketCollectionsFiltersVisible$.next(!filterStorageService.marketCollectionsFiltersVisible$.value)"
+    >
+      <wen-icon-collapse-arrow
+        *ngIf="deviceService.isDesktop$ | async"
+        [size]="16"
+        class="mr-1 transition-all"
+        [ngClass]="{ 'rotate-180': (filterStorageService.marketCollectionsFiltersVisible$ | async) === false}"
+      >
+      </wen-icon-collapse-arrow>
+      <div i18n>Filters&Sort</div>
+    </button>
+  </div>
+  <main class="flex justify-between mx-auto">
+    <div
+      class="container-results"
+      [ngClass]="{ 'mr-5': filterStorageService.marketCollectionsFiltersVisible$ | async }"
+    >
+      <ais-infinite-hits [transformItems]="convertAllToSoonaverseModel">
+        <ng-template let-hits="hits" let-refine="showMore">
+          <div class="mt-6 xl:grid place-items-start">
+            <div class="mb-10 wen-cards-wrapper-light">
+              <wen-collection-card
+                class="w-full h-full outline-none"
+                *ngFor="let hit of hits; trackBy: trackByUid"
+                [collection]="hit"
+                [fullWidth]="(deviceService.isMobile$ | async) || false"
+              >
+              </wen-collection-card>
+              <div (wenVisible)="refine()"></div>
+            </div>
+          </div>
+        </ng-template>
+      </ais-infinite-hits>
+    </div>
+
+    <div
+      class="overflow-hidden transition-all -translate-y-5 container-filters"
+      *ngIf="(deviceService.isMobile$ | async) !== true"
+      [ngClass]="(filterStorageService.marketCollectionsFiltersVisible$ | async) ? 'max-w-screen-2xl ml-6' : 'max-w-0'"
+    >
+      <wen-algolia-clear
+        *ngIf="filterStorageService.marketCollectionsResetVisible$ | async"
+        (wenOnClear)="reset$.next()"
+      ></wen-algolia-clear>
+      <!-- This div is for filters positioning -->
+      <div
+        class="mb-12"
+        *ngIf="(filterStorageService.marketCollectionsResetVisible$ | async) === false"
+      ></div>
+
+      <ng-container *ngTemplateOutlet="filters"></ng-container>
+    </div>
+
+    <wen-drawer
+      *ngIf="deviceService.isMobile$ | async"
+      [isVisible]="filterStorageService.marketCollectionsFiltersVisible$ | async"
+      bodyClasses="overflow-auto p-5"
+    >
+      <div class="pb-4 text-3xl font-bold" i18n>Filters&sort</div>
+      <button
+        class="absolute right-4 z-10 top-4"
+        (click)="filterStorageService.marketCollectionsFiltersVisible$.next(false)"
+      >
+        <wen-icon-close></wen-icon-close>
+      </button>
+
+      <ng-container *ngTemplateOutlet="filters"></ng-container>
+    </wen-drawer>
+
+    <ng-template #filters>
+      <div class="mt-8 container-body lg:mt-6">
+        <wen-collapse
+          i18n-title
+          title="Sort by"
+          class="mb-2 transition-all"
+          [isCollapsed]="false"
+          [type]="collapseTypes.UNDERLINE"
+          (wenOnCollapse)="sortOpen = !$event"
+          [ngClass]="{ 'mb-10': sortOpen }"
+        >
+          <wen-sort-by
+            [items]="filterStorageService.marketCollectionsFiltersOptions.sortItems"
+            [value]="(filterStorageService.marketCollectionsFilters$ | async)?.sortBy"
+            (wenChange)="filterStorageService.marketCollectionsFilters$.next(
+                {
+                  sortBy: $event,
+                  refinementList: filterStorageService.marketCollectionsFilters$.value.refinementList,
+                  range: filterStorageService.marketCollectionsFilters$.value.range
+                }
+              )"
+          ></wen-sort-by>
+        </wen-collapse>
+        <wen-collapse
+          i18n-title
+          title="Sale type"
+          class="mb-2 transition-all"
+          [isCollapsed]="false"
+          [type]="collapseTypes.UNDERLINE"
+          (wenOnCollapse)="saleFilterOpen = !$event"
+          [ngClass]="{ 'mb-10': saleFilterOpen }"
+        >
+          <wen-algolia-checkbox
+            attribute="access"
+            [transformItems]="algoliaService.convertToAccessName"
+            [filterType]="algoliaCheckboxFilterTypes.SALE"
+            [reset$]="reset$"
+            [value]="(filterStorageService.marketCollectionsFilters$ | async)?.refinementList?.access"
+            (wenChange)="filterStorageService.marketCollectionsFilters$.next(
+                {
+                  sortBy: filterStorageService.marketCollectionsFilters$.value.sortBy,
+                  range: filterStorageService.marketCollectionsFilters$.value.range,
+                  refinementList: {
+                    category: filterStorageService.marketCollectionsFilters$.value.refinementList?.category,
+                    space: filterStorageService.marketCollectionsFilters$.value.refinementList?.space,
+                    access: $event
+                  }
+                }
+              )"
+          >
+          </wen-algolia-checkbox>
+        </wen-collapse>
+        <wen-collapse
+          class="mb-2 transition-all"
+          i18n-title
+          title="Spaces"
+          [isCollapsed]="false"
+          [type]="collapseTypes.UNDERLINE"
+          (wenOnCollapse)="spaceFilterOpen = !$event"
+          [ngClass]="{ 'mb-10': spaceFilterOpen }"
+        >
+          <wen-algolia-checkbox
+            attribute="space"
+            [limit]="15"
+            [showMoreLimit]="5"
+            showMoreLabel="See more"
+            showLessLabel="See less"
+            [filterType]="algoliaCheckboxFilterTypes.SPACE"
+            [reset$]="reset$"
+            [value]="(filterStorageService.marketCollectionsFilters$ | async)?.refinementList?.space"
+            (wenChange)="filterStorageService.marketCollectionsFilters$.next(
+                {
+                  sortBy: filterStorageService.marketCollectionsFilters$.value.sortBy,
+                  range: filterStorageService.marketCollectionsFilters$.value.range,
+                  refinementList: {
+                    access: filterStorageService.marketCollectionsFilters$.value.refinementList?.access,
+                    category: filterStorageService.marketCollectionsFilters$.value.refinementList?.category,
+                    space: $event
+                  }
+                }
+              )"
+          >
+          </wen-algolia-checkbox>
+        </wen-collapse>
+        <wen-collapse
+          class="mb-2 transition-all"
+          i18n-title
+          title="Category"
+          [isCollapsed]="true"
+          [type]="collapseTypes.UNDERLINE"
+          (wenOnCollapse)="categoryFilterOpen = !$event"
+          [ngClass]="{ 'mb-10': categoryFilterOpen }"
+        >
+          <wen-algolia-checkbox
+            attribute="category"
+            [transformItems]="algoliaService.convertCollectionCategory"
+            [filterType]="algoliaCheckboxFilterTypes.DEFAULT"
+            [reset$]="reset$"
+            [value]="(filterStorageService.marketCollectionsFilters$ | async)?.refinementList?.category"
+            (wenChange)="filterStorageService.marketCollectionsFilters$.next(
+                {
+                  sortBy: filterStorageService.marketCollectionsFilters$.value.sortBy,
+                  range: filterStorageService.marketCollectionsFilters$.value.range,
+                  refinementList: {
+                    access: filterStorageService.marketCollectionsFilters$.value.refinementList?.access,
+                    space: filterStorageService.marketCollectionsFilters$.value.refinementList?.space,
+                    category: $event
+                  }
+                }
+              )"
+          >
+          </wen-algolia-checkbox>
+        </wen-collapse>
+        <div></div>
+      </div>
+    </ng-template>
+  </main>
+</ais-instantsearch>

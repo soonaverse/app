@@ -1,0 +1,15 @@
+<div class="flex items-center pb-2">
+  <div
+    *ngIf="label"
+    class="text-xs mr-2"
+    [ngClass]="formControl.value ? 'font-bold' : 'font-medium'"
+  >
+    {{ label }}
+  </div>
+  <nz-switch [formControl]="formControl"></nz-switch>
+  <div
+    class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark text-xs font-medium mx-1"
+  >
+    ({{ state?.value?.count }})
+  </div>
+</div>

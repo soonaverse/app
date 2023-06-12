@@ -1,0 +1,75 @@
+<wen-modal-drawer
+  i18n-title
+  title="Manage addresses"
+  [isOpen]="isOpen"
+  [content]="content"
+  [primaryColor]="false"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <nz-table
+    #addressesTable
+    class="block w-full h-full mt-4"
+    [nzData]="availableNetworks"
+    [nzShowPagination]="false"
+  >
+    <thead>
+      <tr>
+        <th class="text-xs font-medium" i18n>Network</th>
+        <th class="text-xs font-medium" i18n>Address</th>
+        <th class="text-xs font-medium right" i18n>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of addressesTable.data">
+        <td class="text-sm font-medium flex items-center space-x-2">
+          <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+            <wen-icon-shimmer
+              *ngIf="item === networks.SMR || item === networks.RMS"
+              [size]="20"
+            ></wen-icon-shimmer>
+            <wen-icon-iota-no-border
+              *ngIf="item === networks.IOTA || item === networks.ATOI"
+              [size]="20"
+            ></wen-icon-iota-no-border>
+          </div>
+          <div>{{ item | uppercase }}</div>
+          <div
+            *ngIf="deviceService.isDesktop$ | async"
+            class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          >
+            {{ networkDetails[item].label }}
+          </div>
+        </td>
+        <td class="text-sm font-medium">
+          <span
+            *ngIf="address(item); else notVerified"
+            class="text-alerts-success dark:text-alerts-success-dark"
+          >
+            {{ address(item)?.substring(0, (deviceService.isDesktop$ | async) ? 24 : 3) }}...{{
+              address(item)?.substring(
+                (address(item)?.length || 0) - ((deviceService.isDesktop$ | async) ? 8 : 4)
+              )
+            }}</span
+          >
+          <ng-template #notVerified>
+            <span class="text-alerts-error dark:text-alerts-error-dark" i18n>
+              Not yet verified</span
+            >
+          </ng-template>
+        </td>
+        <td class="right">
+          <a class="text-sm font-medium wen-btn-link" (click)="wenOnChange.emit(item)">
+            <ng-container *ngIf="deviceService.isDesktop$ | async">
+              <ng-container *ngIf="address(item); else notVerifiedBtn" i18n> Change </ng-container>
+              <ng-template #notVerifiedBtn i18n> Verify </ng-template>
+            </ng-container>
+            <i *ngIf="deviceService.isMobile$ | async" nz-icon nzType="edit"></i>
+          </a>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</ng-template>

@@ -1,0 +1,63 @@
+<nz-card class="lg:mt-4" *ngIf="canManage || dataset?.isVerified">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center">
+      <nz-avatar
+        [nzSrc]="'/assets/logos/audit_one_logo.png'"
+        class="mr-2 min-w-8"
+        nzShape="circle"
+        [nzSize]="32"
+      >
+      </nz-avatar>
+      <div class="text-lg font-bold" i18n>AuditOne</div>
+    </div>
+    <a
+      class="flex items-center ml-6 text-xs font-semibold cursor-pointer wen-btn-link whitespace-nowrap"
+      *ngIf="canManage"
+      (click)="openAuditOneModal()"
+    >
+      <span i18n>Manage</span>
+      <wen-icon-angle-right></wen-icon-angle-right>
+    </a>
+  </div>
+  <div
+    class="flex items-center justify-between bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl pl-5 pr-4 py-2.5"
+  >
+    <div class="flex items-center">
+      <wen-icon-verified
+        *ngIf="dataset?.isVerified"
+        [ngClass]="
+          !dataset?.isVerified
+            ? 'text-foregrounds-secondary dark:text-foregrounds-secondary-dark'
+            : 'text-alerts-primary'
+        "
+        [size]="24"
+      ></wen-icon-verified>
+      <wen-icon-alert-octagon
+        *ngIf="dataset && !dataset?.isVerified"
+        class="text-alerts-error dark:text-alerts-error-dark"
+        [size]="24"
+      ></wen-icon-alert-octagon>
+      <div class="ml-3 font-bold">
+        <span
+          *ngIf="!dataset?.isVerified"
+          class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+          >{{ dataset?.status?.label || 'Loading...' }}</span
+        >
+        <span *ngIf="dataset?.isVerified" i18n class="text-alerts-primary">Verified</span>
+      </div>
+    </div>
+    <button nz-button nzType="default" nzSize="small" (click)="openAuditOneModal()">
+      <wen-icon-external-link [size]="16"></wen-icon-external-link>
+      <span class="ml-2" i18n>See more</span>
+    </button>
+  </div>
+</nz-card>
+
+<wen-audit-one-modal
+  [dataset]="dataset"
+  *ngIf="isAuditOneModalOpen"
+  [canManage]="canManage"
+  [entity]="this.entity"
+  (wenOnClose)="closeAuditOneModal()"
+></wen-audit-one-modal>

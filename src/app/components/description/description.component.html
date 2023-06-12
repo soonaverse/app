@@ -1,0 +1,102 @@
+<ng-container *ngFor="let item of items">
+  <div
+    *ngIf="item"
+    [class]="
+      'flex justify-between flex-col lg:flex-row w-full p-4 lg:py-3 mb-2 lg:mb-4 rounded-xl font-medium text-sm bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark ' +
+      (item.backgroundClass || '')
+    "
+    [ngClass]="{
+      'flex-col': (deviceService.isMobile$ | async) && item.link
+    }"
+  >
+    <span
+      nz-typography
+      class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark flex items-center"
+      [ngClass]="{
+        'w-2/5 justify-start': (deviceService.isDesktop$ | async) || !item.link,
+        'w-full justify-between': (deviceService.isMobile$ | async) && item.link
+      }"
+    >
+      <div *ngIf="item.titleIcon" class="mr-2.5 flex items-center justify-center">
+        <ng-container *ngTemplateOutlet="item.titleIcon"></ng-container>
+      </div>
+      <div>{{ item.title }}</div>
+      <div *ngIf="item.titleTemplate" class="ml-2.5 flex items-center justify-center">
+        <ng-container *ngTemplateOutlet="item.titleTemplate"></ng-container>
+      </div>
+      <a
+        class="ml-1.5 underline text-textlink-enabled dark:text-textlink-enabled-dark"
+        *ngIf="item.link && (deviceService.isMobile$ | async)"
+        [href]="item.link.href"
+        target="_blank"
+        >{{ item.link.label }}</a
+      >
+    </span>
+    <div
+      nz-typography
+      class="flex flex-wrap items-center text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      [ngClass]="{
+        'w-1/2 justify-end': (deviceService.isDesktop$ | async) || !item.link,
+        'w-full justify-between mt-3 justify-between':
+          (deviceService.isMobile$ | async) && item.link
+      }"
+    >
+      <ng-container *ngIf="item.value">
+        <div
+          *ngIf="!item.type || item.type === descriptionItemTypes.DEFAULT"
+          class="break-words line-clamp-1 max-w-[80%]"
+          [ngClass]="{
+            'mr-1': item.extraValue,
+            'text-right': (deviceService.isDesktop$ | async) || !item.link
+          }"
+        >
+          {{ item.value }}
+        </div>
+
+        <div
+          *ngIf="item.type === descriptionItemTypes.DEFAULT_NO_TRUNCATE"
+          [ngClass]="{
+            'mr-1': item.extraValue,
+            'text-right': (deviceService.isDesktop$ | async) || !item.link
+          }"
+        >
+          {{ item.value }}
+        </div>
+
+        <a
+          class="ml-1.5 text-textlink-enabled dark:text-textlink-enabled-dark"
+          *ngIf="item.type === descriptionItemTypes.LINK"
+          (click)="item.action ? item.action() : null"
+        >
+          {{ item.value }}</a
+        >
+
+        <button
+          *ngIf="item.type === descriptionItemTypes.BUTTON"
+          nz-button
+          nzType="primary"
+          nzSize="small"
+          (click)="item?.action()"
+        ></button>
+      </ng-container>
+
+      <a
+        class="ml-1.5 underline text-textlink-enabled dark:text-textlink-enabled-dark"
+        *ngIf="item.link && (deviceService.isDesktop$ | async)"
+        [href]="item.link.href"
+        target="_blank"
+        >{{ item.link.label }}</a
+      >
+
+      <span
+        *ngIf="item.extraValue"
+        class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+        {{ item.extraValue }}</span
+      >
+      <div *ngIf="item.valueTemplate" class="ml-1.5 flex items-center justify-center">
+        <ng-container *ngTemplateOutlet="item.valueTemplate"></ng-container>
+      </div>
+    </div>
+  </div>
+</ng-container>

@@ -1,0 +1,20 @@
+<div
+  class="mx-5 lg:mx-10 xl:mx-8 2xl:ml-8"
+  [ngClass]="
+    (device.viewWithSearch$ | async)
+      ? '2xl:max-w-1776 2xl:mr-8 4xl:mx-auto'
+      : '2xl:max-w-1296 2xl:mr-auto 3xl:mx-auto'
+  "
+>
+  <button
+    nz-button
+    class="z-10 mt-0 lg:mt-14 wen-secondary"
+    (click)="nav.goBack()"
+    *ngIf="showBackButton"
+  >
+    <wen-icon-angle-left class="flex"></wen-icon-angle-left>
+    <span>{{ title | async }}</span>
+  </button>
+
+  <ng-content></ng-content>
+</div>

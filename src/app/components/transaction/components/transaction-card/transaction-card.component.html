@@ -1,0 +1,45 @@
+<div
+  class="relative w-full bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:px-6 py-3.5 rounded-2xl flex flex-col lg:flex-row lg:items-center cursor-pointer"
+>
+  <div class="w-full lg:w-3/12 px-6 lg:px-0 font-bold text-lg truncate">{{ transaction.uid }}</div>
+
+  <div
+    *ngIf="deviceService.isMobile$ | async"
+    class="h-px w-full bg-foregrounds-separator dark:bg-foregrounds-separator-dark mt-6"
+  ></div>
+
+  <div class="font-medium w-full lg:w-3/12 px-6 lg:px-0 mt-6 lg:mt-0">
+    <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Type
+    </div>
+    <div class="mt-0.5">
+      {{ transactionService.getTitle(transaction) }}
+    </div>
+  </div>
+
+  <div class="font-medium w-full lg:w-2/12 px-6 lg:px-0 mt-6 lg:mt-0">
+    <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Date
+    </div>
+    <div class="mt-0.5">
+      {{ transaction.createdOn?.toDate() | date : 'medium' }}
+    </div>
+  </div>
+
+  <ng-container *ngIf="transactionService.getExplorerLink(transaction)">
+    <div
+      *ngIf="deviceService.isMobile$ | async"
+      class="h-px w-full bg-foregrounds-separator dark:bg-foregrounds-separator-dark mt-4"
+    ></div>
+
+    <div class="flex items-center justify-center w-full mt-4 lg:mt-0">
+      <a
+        class="font-medium underline wen-btn-link"
+        [href]="transactionService.getExplorerLink(transaction)"
+        target="_blank"
+        i18n
+        >Transaction</a
+      >
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,127 @@
+<nz-card>
+  <ng-container *ngIf="airdropData.length === 0">
+    <div class="flex items-center justify-between w-full font-medium">
+      <div
+        class="text-lg font-bold text-foregrouds-primary dark:text-foregrounds-primary-dark"
+        i18n
+      >
+        Create airdrop
+      </div>
+      <a class="underline wen-btn-link" (click)="generateTemplate()" i18n>Download CSV template</a>
+    </div>
+
+    <div
+      class="mt-6 font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      i18n
+    >
+      You can create a governance token airdrop for your members. To do this, upload a .csv file
+      containing user addresses and allocation details.
+    </div>
+
+    <div
+      class="mt-3 font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      i18n
+    >
+      If you don’t know how to prepare CSV file, you can download our template made for you.
+    </div>
+
+    <div class="mt-10">
+      <nz-form-item>
+        <nz-form-control class="w-full">
+          <nz-upload
+            class="wen-banner"
+            nzName="banner"
+            nzType="drag"
+            nzListType="picture-card"
+            [nzDirectory]="false"
+            [nzBeforeUpload]="beforeCSVUpload.bind(this)"
+            nzFileType="text/csv,application/vnd.ms-excel"
+          >
+            <ng-container>
+              <i class="upload-icon" nz-icon nzType="upload"></i>
+            </ng-container>
+          </nz-upload>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="airdropData.length > 0">
+    <div class="flex items-center justify-between w-full font-medium">
+      <div
+        class="text-lg font-bold text-foregrouds-primary dark:text-foregrounds-primary-dark"
+        i18n
+      >
+        {{ fileName }}
+      </div>
+      <wen-icon-trash
+        class="cursor-pointer text-icons-destructive dark:text-icons-destructive-dark"
+        (click)="airdropData = []"
+      ></wen-icon-trash>
+    </div>
+
+    <nz-table class="block px-5 mt-5" [nzData]="airdropData" [nzShowPagination]="false">
+      <thead>
+        <tr>
+          <th
+            *ngFor="let c of tableConfig; let last = last"
+            [ngStyle]="{ 'text-align': last ? 'right' : 'left' }"
+            i18n
+          >
+            {{ c.label }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Had to use inline style to overwrite ng-zorro -->
+        <tr *ngFor="let item of airdropData">
+          <ng-container *ngFor="let r of (item | keyvalue); let first = first">
+            <td
+              class="text-sm font-medium text-foregrounds-primary dark:text-foregrounds-primary"
+              [ngClass]="{ 'text-right': !first }"
+            >
+              {{ r.value }}
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+
+  <div class="flex items-center text-alerts-error" *ngIf="errors.length > 0">
+    <div class="mr-1 text-xs font-medium" i18n>Some rows have been removed</div>
+    <span
+      nz-icon
+      nzType="info-circle"
+      nz-tooltip
+      i18n-nzTooltipTitle
+      [nzTooltipTitle]="tooltip"
+      class="cursor-pointer"
+    ></span>
+    <ng-template #tooltip>
+      <div *ngFor="let err of errors" class="text-sm font-medium break-words text-alerts-error">
+        {{ err }}
+      </div>
+    </ng-template>
+  </div>
+</nz-card>
+
+<button
+  nz-button
+  nzType="primary"
+  nzSize="large"
+  class="w-full mt-12"
+  *ngIf="airdropData.length > 0"
+  (click)="submit()"
+  i18n
+>
+  Submit airdrop
+</button>
+
+<wen-token-airdrop-network
+  *ngIf="isAirdropModalOpen"
+  [isOpen]="isAirdropModalOpen"
+  [token]="(data.token$ | async) || undefined"
+  [drops]="formatSubmitData()?.drops"
+  (wenOnClose)="isAirdropModalOpen = false"
+></wen-token-airdrop-network>

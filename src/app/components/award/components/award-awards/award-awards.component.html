@@ -1,0 +1,44 @@
+<nz-card nzTitle="Reward">
+  <div
+    class="absolute top-6 right-6"
+    *ngIf="
+      (data.award$ | async)?.approved &&
+      !(data.award$ | async)?.completed &&
+      (data.isGuardianWithinSpace$ | async)
+    "
+  >
+    <a nz-button nzType="default" nzSize="small" (click)="isCsvBadgeModalOpen = true">
+      <div class="text-xs mr-0.5" i18n>Give badges</div>
+      <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+    </a>
+  </div>
+  <div class="flex flex-row flex-wrap items-center space-x-4">
+    <ng-container *ngIf="(data.award$ | async)?.badge?.tokenReward">
+      <nz-tag class="wen-xp-tag">{{
+        ((data.award$ | async)?.badge?.tokenReward || 0
+          | formatToken : (data.token$ | async)?.uid : true : false
+          | async) +
+          ' ' +
+          (data.token$ | async)?.symbol | uppercase
+      }}</nz-tag>
+      <p>+</p>
+    </ng-container>
+    <nz-avatar
+      [nzSrc]="(data.award$ | async)?.badge?.image"
+      class="wen-avatar-background"
+      nzShape="circle"
+      nz-tooltip
+      nzTooltipPlacement="bottom"
+      i18n-nzTooltipTitle
+      nzTooltipTitle="Once issued, this badge is sent to the rewarded participant's wallet."
+    >
+    </nz-avatar>
+  </div>
+</nz-card>
+
+<wen-award-give-badges
+  [isOpen]="isCsvBadgeModalOpen"
+  (wenOnClose)="isCsvBadgeModalOpen = false"
+  *ngIf="data.award$ | async"
+  [award]="(data.award$ | async)!"
+></wen-award-give-badges>

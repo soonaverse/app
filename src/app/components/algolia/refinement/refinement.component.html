@@ -1,0 +1,34 @@
+<div [class]="cx()" *ngIf="!isHidden">
+  <ul [class]="cx('list')">
+    <li
+      [class]="getItemClass(item)"
+      *ngFor="let item of state.items"
+      (click)="refine($event, item)"
+    >
+      <label [class]="cx('label')">
+        <input
+          [class]="cx('checkbox')"
+          type="checkbox"
+          value="{{ item.value }}"
+          [checked]="item.isRefined"
+        />
+        <span class="mr-2" *ngIf="showIcon">
+          <wen-icon-globe></wen-icon-globe>
+        </span>
+        <span [class]="cx('labelText')">
+          <ais-highlight attribute="highlighted" [hit]="item"></ais-highlight>
+        </span>
+        <span [class]="cx('count')">{{ item.count }}</span>
+      </label>
+    </li>
+  </ul>
+
+  <button
+    [class]="cx('showMore')"
+    *ngIf="showMore"
+    (click)="state.toggleShowMore()"
+    [disabled]="!state.canToggleShowMore"
+  >
+    {{ state.isShowingMore ? showLessLabel : showMoreLabel }}
+  </button>
+</div>

@@ -1,0 +1,49 @@
+<div
+  class="flex flex-col items-start w-full text-current bg-transparent border-b-0 lg:items-center mt-7 lg:mt-12 h-break:p-4 h-break:my-2"
+>
+  <ng-container
+    *ngFor="let item of auth.desktopMenuItems$ | async; trackBy: trackByTitle; let i = index"
+  >
+    <!-- This should only happen when logged in -->
+    <div
+      *ngIf="showSeperator(item, (auth.isLoggedIn$ | async) || false)"
+      class="h-0.5 w-full lg:w-6 bg-foregrounds-separator dark:bg-foregrounds-separator-dark my-3"
+    ></div>
+
+    <a
+      *ngIf="(deviceService.isNotBreakHeight$ | async) || (deviceService.isMobile$ | async)"
+      nz-popover
+      nzPopoverPlacement="right"
+      nz-menu-item
+      class="flex item"
+      [ngClass]="{ item__selected: isSelectedRoute(item.route) }"
+      [routerLink]="item.route"
+      [nzPopoverContent]="item.title"
+    >
+      <div class="ml-4 lg:ml-0">
+        <ng-template [wenMenuItem]="item"></ng-template>
+      </div>
+      <div
+        *ngIf="deviceService.isMobile$ | async"
+        class="ml-5 mr-4 text-lg font-bold lg:ml-0 lg:mr-0"
+      >
+        {{ item.title }}
+      </div>
+    </a>
+
+    <a
+      *ngIf="(deviceService.isDesktop$ | async) && (deviceService.isBreakHeight$ | async)"
+      class="flex item_menu"
+      nz-menu-item
+      [ngClass]="{ item__selected: isSelectedRoute(item.route) }"
+      [routerLink]="item.route"
+    >
+      <div class="mr-4">
+        <ng-template [wenMenuItem]="item"></ng-template>
+      </div>
+      <div class="ml-5 mr-4 text-lg font-bold lg:ml-0 lg:mr-0">
+        {{ item.title }}
+      </div>
+    </a>
+  </ng-container>
+</div>

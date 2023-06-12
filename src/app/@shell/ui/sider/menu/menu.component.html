@@ -1,0 +1,26 @@
+<nav
+  nz-menu
+  nzMode="horizontal"
+  class="flex flex-col items-start w-full gap-5 text-current bg-transparent border-b-0 lg:items-center mt-7 lg:mt-12"
+>
+  <a
+    nz-popover
+    nzPopoverPlacement="right"
+    *ngFor="let item of menuItems; trackBy: trackByTitle"
+    nz-menu-item
+    class="h-12 p-0 pl-8 text-current lg:w-10 lg:h-10 rounded-3xl"
+    [routerLink]="item.route"
+    [nzPopoverContent]="item.title"
+    [nzSelected]="isSelectedRoute(item.route)"
+  >
+    <div class="ml-4 lg:ml-0">
+      <ng-template [wenMenuItem]="item"></ng-template>
+    </div>
+    <div
+      *ngIf="deviceService.isMobile$ | async"
+      class="ml-5 mr-4 text-lg font-bold lg:ml-0 lg:mr-0"
+    >
+      {{ item.title }}
+    </div>
+  </a>
+</nav>

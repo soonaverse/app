@@ -1,0 +1,86 @@
+<button
+  nz-button
+  nzType="primary"
+  nzBlock
+  nzSize="large"
+  (click)="wenOnVote.emit()"
+  *ngIf="(data.proposal$ | async)?.approved && (data.canVote$ | async)"
+  [disabled]="
+    !((data.canVote$ | async) && helper.isInProgress(data.proposal$ | async)) &&
+    !helper.isNativeVote((data.proposal$ | async)?.type) &&
+    !helper.isCommencing(data.proposal$ | async) &&
+    !helper.isInProgress(data.proposal$ | async)
+  "
+>
+  <span
+    *ngIf="
+      (helper.isNativeVote((data.proposal$ | async)?.type) &&
+        helper.isCommencing(data.proposal$ | async)) ||
+      helper.isInProgress(data.proposal$ | async)
+    "
+  >
+    <ng-container *ngIf="(data.currentMembersVotes$ | async)?.length" i18n>
+      Change Vote
+    </ng-container>
+    <ng-container *ngIf="!(data.currentMembersVotes$ | async)?.length" i18n>
+      Vote Now
+    </ng-container>
+  </span>
+  <span
+    *ngIf="
+      helper.isInProgressIgnoreStatus(data.proposal$ | async) === false &&
+      !(data.currentMembersVotes$ | async)?.length &&
+      !(
+        helper.isNativeVote((data.proposal$ | async)?.type) &&
+        helper.isCommencing(data.proposal$ | async)
+      )
+    "
+    ><span i18n>Voting starts</span> {{ startDateTicker$ | async | relativeTime }}</span
+  >
+</button>
+
+<nz-alert
+  nzShowIcon
+  nzType="error"
+  *ngIf="
+    (data.canVote$ | async) === false &&
+    (auth.isLoggedIn$ | async) &&
+    !helper.isNativeVote((data.proposal$ | async)?.type)
+  "
+  i18n-nzMessage
+  nzMessage="You are not part of the vote"
+  [nzDescription]="bodyTpl"
+>
+  <ng-template #bodyTpl class="block">
+    <span i18n> In order to vote, you must be part of the space before proposal was created. </span>
+  </ng-template>
+</nz-alert>
+
+<nz-alert
+  nzShowIcon
+  class="mb-2"
+  nzType="info"
+  *ngIf="(auth.isLoggedIn$ | async) === false"
+  i18n-nzMessage
+  nzMessage="Log in to vote"
+  [nzDescription]="bodyTpl"
+>
+  <ng-template #bodyTpl class="block">
+    <span i18n> In order to vote, you must login first. </span>
+  </ng-template>
+</nz-alert>
+
+<nz-alert
+  nzShowIcon
+  nzType="info"
+  *ngIf="
+    (data.proposal$ | async)?.approved === false && (data.proposal$ | async)?.rejected === false
+  "
+  i18n-nzMessage
+  nzMessage="Pending Guardian Approval"
+  [nzDescription]="bodyTpl"
+>
+  <ng-template #bodyTpl class="block">
+    <span i18n> This proposal has not been approved by any Guardian yet. </span>
+  </ng-template>
+</nz-alert>

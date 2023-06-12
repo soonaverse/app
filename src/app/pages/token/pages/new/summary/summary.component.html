@@ -1,0 +1,368 @@
+<div class="py-4" nz-row [nzGutter]="24">
+  <div
+    class="font-medium"
+    nz-col
+    nzFlex="auto"
+    [ngStyle]="{
+      'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+    }"
+  >
+    <div
+      class="px-8 pt-6 pb-8 rounded-2xl bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+    >
+      <div class="flex items-center justify-between">
+        <div class="text-lg font-bold" i18n>Token info</div>
+        <button
+          nz-button
+          nzType="link"
+          class="wen-secondary"
+          (click)="wenOnTabChange.emit(stepTypes.METRICS)"
+          i18n
+        >
+          Edit
+        </button>
+      </div>
+
+      <div
+        class="mt-6 text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Name
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ newService.nameControl.value }}
+      </div>
+
+      <div
+        class="mt-6 text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Symbol
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ newService.symbolControl.value }}
+      </div>
+
+      <div
+        class="mt-6 text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Decimals
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ newService.decimalsControl.value }}
+      </div>
+    </div>
+
+    <div
+      class="px-8 pt-6 pb-8 mt-6 rounded-2xl bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+    >
+      <div class="flex items-center justify-between">
+        <div class="text-lg font-bold" i18n>Token supply</div>
+        <button
+          nz-button
+          nzType="link"
+          class="wen-secondary"
+          (click)="wenOnTabChange.emit(stepTypes.METRICS)"
+          i18n
+        >
+          Edit
+        </button>
+      </div>
+
+      <div
+        class="mt-6 text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Price per token
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ newService.priceControl.value }}
+      </div>
+
+      <div
+        class="mt-6 text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Total token supply
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{
+          (newService.totalSupplyControl.value | number : '1.0-2') +
+            ' ' +
+            newService.symbolControl.value
+        }}
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-10">
+      <div class="text-lg font-bold" i18n>Token description</div>
+      <button
+        nz-button
+        nzType="link"
+        class="wen-secondary"
+        (click)="wenOnTabChange.emit(stepTypes.OVERVIEW)"
+        i18n
+      >
+        Edit
+      </button>
+    </div>
+
+    <div
+      class="px-8 pt-6 pb-8 mt-6 rounded-2xl bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+    >
+      <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+        Description title
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ newService.titleControl.value }}
+      </div>
+
+      <div
+        class="mt-6 text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Description
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ newService.descriptionControl.value }}
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-10">
+      <div class="text-lg font-bold" i18n>Short description</div>
+      <button
+        nz-button
+        nzType="link"
+        class="wen-secondary"
+        (click)="wenOnTabChange.emit(stepTypes.OVERVIEW)"
+        i18n
+      >
+        Edit
+      </button>
+    </div>
+
+    <div
+      class="px-8 pt-6 pb-8 mt-6 rounded-2xl bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+    >
+      <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+        Short description title
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ newService.shortTitleControl.value }}
+      </div>
+
+      <div
+        class="mt-6 text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Short description
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ newService.shortDescriptionControl.value }}
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-10">
+      <div class="text-lg font-bold" i18n>Token allocation</div>
+      <button
+        nz-button
+        nzType="link"
+        class="wen-secondary"
+        (click)="wenOnTabChange.emit(stepTypes.METRICS)"
+        i18n
+      >
+        Edit
+      </button>
+    </div>
+
+    <div
+      *ngFor="let allocation of newService.allocations?.controls; let i = index"
+      class="px-8 pt-6 pb-8 mt-6 rounded-2xl bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+    >
+      <div class="text-lg font-bold">{{ getAllocationTitle(i + 1) }}</div>
+
+      <div
+        class="mt-6 text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Allocation title
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ newService.gForm(allocation, 'title')?.value }}
+      </div>
+
+      <div
+        class="mt-6 text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        % of tokens for sale (Default 100%)
+      </div>
+
+      <div class="mt-0.5 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        {{ newService.gForm(allocation, 'percentage')?.value }}
+      </div>
+
+      <div
+        *ngIf="newService.gForm(allocation, 'isPublicSale')?.value"
+        class="flex items-center mt-6"
+      >
+        <div
+          class="flex items-center justify-center w-5 h-5 rounded-full bg-alerts-success dark:bg-alerts-success-dark"
+        >
+          <wen-icon-check></wen-icon-check>
+        </div>
+        <div class="ml-2.5" i18n>Public sale</div>
+      </div>
+    </div>
+
+    <button
+      *ngIf="deviceService.isDesktop$ | async"
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-12"
+      (click)="wenOnSubmit.emit()"
+      i18n
+    >
+      Submit token
+    </button>
+  </div>
+
+  <div
+    *ngIf="deviceService.isMobile$ | async"
+    class="w-screen h-px my-8 bg-foregrounds-separator dark:bg-foregrounds-separator-dark"
+  ></div>
+
+  <div
+    class="mt-4 space-y-4 lg:mt-0 lg:max-w-450"
+    nz-col
+    [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+  >
+    <nz-card i18n-nzTitle nzTitle="Space">
+      <div class="flex items-center w-full px-6 lg:px-0" *ngIf="newService.spaceControl?.value">
+        <nz-avatar
+          [nzSrc]="
+            previewImageService.getAvatarSize(
+              (cache.getSpace(newService.spaceControl.value) | async)?.avatarUrl
+            )
+          "
+          class="border-2 border-tags-border dark:border-tags-border-dark min-w-12"
+          nzShape="circle"
+          [nzSize]="48"
+        >
+        </nz-avatar>
+        <div
+          class="ml-4 text-2xl font-bold text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        >
+          {{ (cache.getSpace(newService.spaceControl.value) | async)?.name }}
+        </div>
+      </div>
+    </nz-card>
+
+    <nz-card>
+      <nz-card-meta
+        i18n-nzTitle
+        nzTitle="Token icon"
+        i18n-nzDescription
+        nzDescription="(Recommended size: 400 x 400px)"
+      >
+      </nz-card-meta>
+
+      <nz-avatar
+        [nzSrc]="previewImageService.getAvatarSize(newService.iconControl.value)"
+        class="mt-6 border-2 border-tags-border dark:border-tags-border-dark min-w-30"
+        nzShape="circle"
+        [nzSize]="120"
+      >
+      </nz-avatar>
+    </nz-card>
+
+    <nz-card>
+      <nz-card-meta
+        i18n-nzTitle
+        nzTitle="Token price"
+        i18n-nzDescription
+        nzDescription="Distribution of the token happens after the token offering end date."
+      >
+      </nz-card-meta>
+
+      <nz-form-item class="mt-6">
+        <nz-form-control>
+          <nz-radio-group class="wen-radio-group" [formControl]="newService.distributionControl">
+            <wen-radio
+              *ngFor="let opt of newService.distributionOptions"
+              [value]="opt?.value || ''"
+            >
+              <span
+                class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                >{{ opt.label }}</span
+              >
+            </wen-radio>
+          </nz-radio-group>
+        </nz-form-control>
+      </nz-form-item>
+    </nz-card>
+
+    <nz-card i18n-nzTitle nzTitle="Links">
+      <div *ngFor="let link of newService.links?.controls" class="truncate">
+        <a
+          nz-button
+          class="wen-links"
+          nzType="link"
+          target="new"
+          [href]="newService.gForm(link, 'url')?.value"
+        >
+          <wen-icon-link class="link-icon"></wen-icon-link>
+          <span>{{ newService.gForm(link, 'url')?.value.toString() }}</span>
+        </a>
+      </div>
+    </nz-card>
+
+    <nz-card>
+      <nz-card-meta
+        i18n-nzTitle
+        nzTitle="Token terms and conditions"
+        i18n-nzDescription
+        nzDescription="Some description"
+      >
+      </nz-card-meta>
+
+      <a
+        nz-button
+        class="mt-6 wen-links"
+        nzType="link"
+        target="new"
+        [href]="newService.termsAndConditionsLinkControl.value"
+      >
+        <wen-icon-file-check class="link-icon" [size]="20"></wen-icon-file-check>
+        <span>
+          {{ newService.nameControl.value | truncate : [16] }}:
+          <ng-container i18n>Terms&conditions</ng-container>
+        </span>
+      </a>
+    </nz-card>
+  </div>
+</div>
+
+<button
+  *ngIf="deviceService.isMobile$ | async"
+  nz-button
+  nzType="primary"
+  nzSize="large"
+  class="w-full mt-12"
+  (click)="wenOnSubmit.emit()"
+  i18n
+>
+  Submit token
+</button>

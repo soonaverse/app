@@ -1,0 +1,98 @@
+<article
+  class="relative flex w-full p-4 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl wen-card"
+  [ngClass]="fullWidth ? 'w-auto lg:h-auto justify-between' : 'w-full lg:h-60'"
+  *ngIf="member"
+>
+  <div class="relative" [ngClass]="fullWidth ? 'w-3/4 lg:w-4/5' : 'w-full'">
+    <div class="relative flex flex-col w-full" [ngClass]="fullWidth ? 'h-auto' : 'lg:h-40'">
+      <a class="flex items-center w-full space-x-4" [routerLink]="['/', this.path, member.uid]">
+        <nz-avatar
+          class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-w-10"
+          style="max-width: 48px; min-width: 48px"
+          [nzSize]="48"
+          [nzSrc]="member.avatar | resizeAvatar : filesizes.small"
+        ></nz-avatar>
+        <h5
+          nz-typography
+          class="m-auto truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        >
+          {{ member.name ? '@' + member.name : member.uid }}
+        </h5>
+        <nz-tag
+          *ngIf="role && (deviceService.isDesktop$ | async)"
+          class="wen-status-tag"
+          [ngClass]="
+            role === 'Member'
+              ? 'bg-tags-member dark:bg-tags-member-dark border-tags-member dark:border-tags-member-dark text-foregrounds-primary dark:text-foregrounds-primary-dark'
+              : 'bg-tags-guardian dark:bg-tags-guardian-dark border-tags-guardian dark:border-tags-guardian-dark text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark'
+          "
+        >
+          {{ role }}</nz-tag
+        >
+      </a>
+      <div class="flex items-center mt-4 lg:mt-0">
+        <nz-tag
+          *ngIf="role && (deviceService.isMobile$ | async)"
+          class="wen-status-tag h-6 lg:h-8 px-1 lg:px-3 py-0 lg:py-2 text=xs lg:text-sm"
+          [ngClass]="
+            role === 'Member'
+              ? 'bg-tags-member dark:bg-tags-member-dark border-tags-member dark:border-tags-member-dark text-foregrounds-primary dark:text-foregrounds-primary-dark'
+              : 'bg-tags-guardian dark:bg-tags-guardian-dark border-tags-guardian dark:border-tags-guardian-dark text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark'
+          "
+        >
+          {{ role }}</nz-tag
+        >
+
+        <span
+          nz-typography
+          class="truncate lg:mt-3 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          [ngClass]="fullWidth ? 'text-xs lg:text-base' : 'text-xs'"
+        >
+          <span>{{ createdOnLabel }}</span>
+          {{ (createdOn || member.createdOn)?.toDate() | date : 'short' }}
+        </span>
+      </div>
+      <p
+        class="mt-2 mb-3 leading-5 whitespace-pre-line text-accent-secondary dark:text-accent-secondary-dark truncate-line-3 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        [ngClass]="fullWidth ? 'text-base' : 'text-xs'"
+      >
+        {{ about !== undefined ? about : member.about }}
+      </p>
+    </div>
+
+    <div
+      class="bottom-0 flex lg:relative"
+      [ngClass]="fullWidth ? 'flex-col lg:flex-row' : 'flex-col w-full'"
+    >
+      <div class="relative inline-flex items-center space-x-3">
+        <nz-tag
+          class="flex items-center space-x-3 bg-transparent border-transparent wen-status-tag"
+        >
+          <wen-icon-award
+            class="w-4 h-4 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          ></wen-icon-award>
+          <span>{{ getTotal() | async }} <span i18n>awards</span> </span>
+        </nz-tag>
+      </div>
+
+      <div class="inline-flex" [ngClass]="fullWidth ? 'mt-5 lg:mt-0 lg:ml-4' : 'mt-4'">
+        <nz-avatar
+          *ngFor="let badge of badges$ | async | slice : 0 : totalVisibleBadges"
+          [nzSrc]="badge.payload.image | ipfsBadge : filesizes.small"
+          class="mr-2 wen-avatar-background lg:mr-0"
+          nzShape="circle"
+          [nzSize]="(deviceService.isDesktop$ | async) ? 'default' : 24"
+        >
+        </nz-avatar>
+      </div>
+    </div>
+  </div>
+  <div
+    [ngClass]="
+      (deviceService.isDesktop$ | async) ? 'w-1/5 pl-4 pr-2 text-right' : 'absolute right-4 top-4'
+    "
+    *ngIf="fullWidth && ((deviceService.isDesktop$ | async) || allowMobileContent)"
+  >
+    <ng-content></ng-content>
+  </div>
+</article>

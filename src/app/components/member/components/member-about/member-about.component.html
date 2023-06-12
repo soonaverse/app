@@ -1,0 +1,159 @@
+<div
+  class="absolute h-auto min-h-screen px-4 pb-12 mr-auto text-center bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:px-8 lg:pt-40 lg:pb-20 top-18 lg:top-0 lg:right-0 rounded-l-large"
+  [ngStyle]="{ width: (deviceService.isDesktop$ | async) ? '420px' : '100%' }"
+  #sidebar
+>
+  <wen-audit-one-badge
+    [entity]="(data.member$ | async)?.uid"
+    [dataset]="data.auditOneStatus$ | async"
+  >
+    <nz-avatar [nzSize]="124" [nzSrc]="avatarSrc"> </nz-avatar>
+  </wen-audit-one-badge>
+
+  <div class="flex items-baseline justify-center mt-6">
+    <h3 class="max-w-full mx-4 text-left break-words whitespace-pre-wrap">
+      @{{ (data.member$ | async)?.name || ((data.member$ | async)?.uid | truncate : [12]) }}
+    </h3>
+    <div *ngIf="(data.member$ | async)?.uid === (loggedInMember | async)?.uid">
+      <button
+        nz-button
+        nzSize="default"
+        nzShape="circle"
+        nzType="primary"
+        (click)="openDrawer()"
+        class="ml-4 text-center text-current"
+      >
+        <span nz-icon nzType="edit" class="text-white"></span>
+      </button>
+      <wen-member-edit-drawer
+        [isDesktop]="(deviceService.isDesktop$ | async) === true"
+        *ngIf="(drawerVisible$ | async) || false"
+        (wenOnClose)="closeDrawer()"
+      >
+      </wen-member-edit-drawer>
+    </div>
+  </div>
+
+  <p class="mt-4" nz-typography nzType="secondary" *ngIf="(data.member$ | async)?.about">
+    {{ (data.member$ | async)!.about }}
+  </p>
+
+  <div
+    class="mt-6 space-x-6"
+    *ngIf="
+      (data.member$ | async)?.github ||
+      (data.member$ | async)?.twitter ||
+      (data.member$ | async)?.discord
+    "
+  >
+    <a
+      *ngIf="(data.member$ | async)?.github"
+      nz-button
+      nzType="link"
+      target="new"
+      [href]="'https://github.com/' + (data.member$ | async)!.github"
+    >
+      <wen-icon-github
+        class="text-foregrounds-primary dark:text-foregrounds-primary-dark hover:text-buttons-primary-on-hover dark:text-buttons-primary-on-hover-dark"
+      ></wen-icon-github>
+    </a>
+    <a
+      *ngIf="(data.member$ | async)?.twitter"
+      nz-button
+      nzType="link"
+      target="new"
+      [href]="'https://twitter.com/' + (data.member$ | async)!.twitter"
+    >
+      <wen-icon-twitter
+        class="text-foregrounds-primary dark:text-foregrounds-primary-dark hover:text-buttons-primary-on-hover dark:text-buttons-primary-on-hover-dark"
+      ></wen-icon-twitter>
+    </a>
+    <a
+      *ngIf="(data.member$ | async)?.discord"
+      nz-button
+      nzType="link"
+      target="new"
+      nz-tooltip
+      [nzTooltipTitle]="(data.member$ | async)!.discord"
+    >
+      <wen-icon-discord
+        class="text-foregrounds-primary dark:text-foregrounds-primary-dark hover:text-buttons-primary-on-hover dark:text-buttons-primary-on-hover-dark"
+      ></wen-icon-discord>
+    </a>
+  </div>
+
+  <div
+    class="mt-10 text-left"
+    *ngIf="(data.member$ | async)?.uid === (loggedInMember | async)?.uid"
+  >
+    <h4 class="flex items-center justify-between">
+      <span i18n>Verified addresses</span>
+      <a
+        *ngIf="(data.member$ | async)?.uid === (auth.member$ | async)?.uid"
+        class="flex items-center ml-6 text-xs font-semibold cursor-pointer wen-btn-link whitespace-nowrap"
+        (click)="isManageAddressesOpen = true"
+      >
+        <span i18n>Manage</span>
+        <wen-icon-angle-right></wen-icon-angle-right>
+      </a>
+    </h4>
+    <wen-wallet-address
+      [entityType]="walletAddressEntities.MEMBER"
+      [entity]="data.member$ | async"
+      [enableVerification]="(data.member$ | async)?.uid === (loggedInMember | async)?.uid"
+      [isManageAddressesOpen]="isManageAddressesOpen"
+      (wenOnManageAddressClose)="isManageAddressesOpen = false"
+    >
+    </wen-wallet-address>
+  </div>
+
+  <wen-audit-one-widget
+    [dataset]="data.auditOneStatus$ | async"
+    [canManage]="(data.member$ | async)?.uid === (loggedInMember | async)?.uid"
+    class="block mt-4 -m-6"
+    [entity]="(data.member$ | async)?.uid"
+  ></wen-audit-one-widget>
+
+  <div class="mt-10 text-left">
+    <h4 class="flex items-center justify-between">
+      <span i18n>Recently joined spaces</span>
+      <a
+        class="flex items-center ml-6 text-xs font-semibold cursor-pointer wen-btn-link whitespace-nowrap"
+        [routerLink]="['/member', (data.member$ | async)?.uid, 'spaces']"
+      >
+        <span i18n>All</span>
+        <wen-icon-angle-right></wen-icon-angle-right>
+      </a>
+    </h4>
+    <div class="flex flex-wrap gap-2">
+      <article
+        *ngFor="let s of data.space$ | async | slice : 0 : 4; trackBy: trackByUid"
+        class="flex flex-col items-center justify-center w-full p-3 lg:h-16 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl"
+      >
+        <a class="flex items-center justify-between w-full" [routerLink]="['/space', s.uid]">
+          <nz-avatar
+            [nzSrc]="previewImageService.getAvatarSize(s.avatarUrl)"
+            class="wen-avatar-background min-w-10"
+            nzShape="circle"
+          >
+          </nz-avatar>
+          <span
+            class="pl-2 grow"
+            [ngClass]="{
+              truncate: deviceService.isDesktop$ | async
+            }"
+            >{{ s.name }}</span
+          >
+          <wen-icon-angle-left class="flex rotate-180"></wen-icon-angle-left>
+        </a>
+      </article>
+
+      <article
+        *ngIf="!(data.space$ | async)?.length"
+        class="flex flex-col items-center justify-center w-full h-16 p-3 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+        <span i18n>No Contribution Yet.</span>
+      </article>
+    </div>
+  </div>
+</div>

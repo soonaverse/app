@@ -1,0 +1,133 @@
+<wen-content
+  [showBackButton]="((data.member$ | async)?.uid !== (loggedInMember$ | async)?.uid) || (deviceService.isMobile$ | async) === true"
+>
+  <div
+    class="relative w-full lg:w-auto lg:mr-420 2xl:mr-90 3xl:mr-75 4xl:mr-40"
+    [ngClass]="(deviceService.isMobile$ | async) && ((data.member$ | async)?.uid !== (loggedInMember$ | async)?.uid) ? 'py-2' : 'py-12'"
+  >
+    <div class="flex justify-between">
+      <h1>
+        <ng-container
+          *ngIf="((data.member$ | async)?.uid === (loggedInMember$ | async)?.uid) && (deviceService.isMobile$ | async)"
+          i18n
+          >My profile</ng-container
+        >
+        <ng-container *ngIf="deviceService.isDesktop$ | async" i18n>Profile</ng-container>
+      </h1>
+
+      <button
+        *ngIf="(deviceService.isMobile$ | async) && ((data.member$ | async)?.uid === (loggedInMember$ | async)?.uid)"
+        nz-button
+        nzType="default"
+        nzSize="small"
+        class="w-max"
+        (click)="isAboutMemberVisible = true"
+        i18n
+      >
+        Profile info
+      </button>
+    </div>
+
+    <div
+      *ngIf="(deviceService.isMobile$ | async) && ((data.member$ | async)?.uid !== (loggedInMember$ | async)?.uid)"
+      class="flex items-center flex-col"
+    >
+      <nz-avatar
+        [nzSize]="124"
+        [nzSrc]="(data.member$ | async)?.avatar | resizeAvatar:filesizes.large"
+      >
+      </nz-avatar>
+      <h3 class="max-w-full mt-6 text-left break-words whitespace-pre-wrap">
+        @{{ (data.member$ | async)?.name || ((data.member$ | async)?.uid | truncate:[12]) }}
+      </h3>
+      <div class="mt-3 font-medium w-2/3 text-center" *ngIf="(data.member$ | async)?.about">
+        {{(data.member$ | async)!.about}}
+      </div>
+
+      <div class="text-foregrounds-secondary flex items-center mt-5 font-medium text-xs">
+        <wen-icon-calendar></wen-icon-calendar>
+        <span class="mx-1" i18n>Joined</span> {{ ((data.member$ | async)?.createdOn)?.toDate() |
+        date:"longDate" }}
+      </div>
+
+      <div
+        class="mt-5 mb-6"
+        *ngIf="(data.member$ | async)?.github || (data.member$ | async)?.twitter || (data.member$ | async)?.discord"
+      >
+        <a
+          *ngIf="(data.member$ | async)?.github"
+          nz-button
+          nzType="link"
+          target="new"
+          [href]="'https://github.com/' + (data.member$ | async)!.github"
+        >
+          <wen-icon-github
+            class="text-foregrounds-primary dark:text-foregrounds-primary-dark hover:text-buttons-primary-on-hover dark:text-buttons-primary-on-hover-dark"
+          ></wen-icon-github>
+        </a>
+        <a
+          *ngIf="(data.member$ | async)?.twitter"
+          nz-button
+          nzType="link"
+          target="new"
+          [href]="'https://twitter.com/' + (data.member$ | async)!.twitter"
+        >
+          <wen-icon-twitter
+            class="text-foregrounds-primary dark:text-foregrounds-primary-dark hover:text-buttons-primary-on-hover dark:text-buttons-primary-on-hover-dark"
+          ></wen-icon-twitter>
+        </a>
+        <a
+          *ngIf="(data.member$ | async)?.discord"
+          nz-button
+          nzType="link"
+          target="new"
+          nz-tooltip
+          [nzTooltipTitle]="(data.member$ | async)!.discord"
+        >
+          <wen-icon-discord
+            class="text-foregrounds-primary dark:text-foregrounds-primary-dark hover:text-buttons-primary-on-hover dark:text-buttons-primary-on-hover-dark"
+          ></wen-icon-discord>
+        </a>
+      </div>
+    </div>
+
+    <wen-tabs
+      class="block w-screen lg:w-max -ml-5 lg:ml-0 overflow-x-auto overflow-y-hidden"
+      [tabs]="sections"
+    ></wen-tabs>
+
+    <div
+      *ngIf="deviceService.isMobile$ | async"
+      class="h-px w-screen -ml-5 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark mt-6"
+    ></div>
+
+    <div class="relative w-full py-12 lg:w-auto" [style.min-height]="(height$ | async) + 'px'">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  <wen-member-about
+    [avatarSrc]="(data.member$ | async)?.avatar | resizeAvatar:filesizes.large"
+    [loggedInMember]="loggedInMember$"
+    *ngIf="deviceService.isDesktop$ | async"
+  ></wen-member-about>
+
+  <nz-drawer
+    *ngIf="((data.member$ | async)?.uid === (loggedInMember$ | async)?.uid) && (deviceService.isMobile$ | async)"
+    [nzBodyStyle]="{ overflow: 'auto', padding: '8px' }"
+    [nzWidth]="'100vw'"
+    [nzClosable]="false"
+    [nzVisible]="isAboutMemberVisible"
+  >
+    <div *nzDrawerContent class="relative h-full">
+      <button class="absolute z-10 -top-0 right-5" (click)="isAboutMemberVisible = false">
+        <wen-icon-close></wen-icon-close>
+      </button>
+
+      <wen-member-about
+        [avatarSrc]="(data.member$ | async)?.avatar | resizeAvatar:filesizes.large"
+        [loggedInMember]="loggedInMember$"
+      ></wen-member-about>
+    </div>
+  </nz-drawer>
+</wen-content>

@@ -1,0 +1,100 @@
+<div class="space-y-4 lg:space-y-6">
+  <nz-card
+    i18n-nzTitle
+    nzTitle="Sale Info"
+    *ngIf="helper.isScheduledForSale((data.token$ | async) || undefined)"
+  >
+    <wen-description
+      type="card"
+      i18n-title
+      title="Sale schedule"
+      [items]="[
+        {
+          title: tokenScheduleLabels[0],
+          type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+          value: (data.token$ | async)?.saleStartDate?.toDate() | date : 'full'
+        },
+        {
+          title: tokenScheduleLabels[1],
+          type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+          value: helper.saleEndDate((data.token$ | async) || undefined).toDate() | date : 'full'
+        },
+        (data.token$ | async)?.coolDownEnd?.toMillis() !==
+        helper
+          .saleEndDate((data.token$ | async) || undefined)
+          .toDate()
+          .valueOf()
+          ? {
+              title: tokenScheduleLabels[2],
+              type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+              value: (data.token$ | async)?.coolDownEnd?.toDate() | date : 'full'
+            }
+          : null
+      ]"
+    ></wen-description>
+    <ng-template #cooldownTooltipIcon>
+      <wen-icon-question-circle
+        class="cursor-help"
+        [size]="20"
+        nz-tooltip
+        i18n-nzTooltipTitle
+        nzTooltipTitle="During cooldown period you are able to trigger refund."
+      ></wen-icon-question-circle>
+    </ng-template>
+
+    <div
+      *ngIf="(data.token$ | async)?.autoProcessAt100Percent"
+      class="flex items-start px-4 py-4 mt-6 rounded-xl bg-tags-regular dark:bg-tags-regular-dark text-foregrounds-primary dark:text-foregrounds-primary"
+    >
+      <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+      <div
+        class="font-medium text-sm text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        i18n
+      >
+        No Oversale. Sale ends with 100% reached.
+      </div>
+    </div>
+
+    <div
+      *ngIf="
+        !(
+          (data.token$ | async)?.coolDownEnd?.toMillis() !==
+          helper
+            .saleEndDate((data.token$ | async) || undefined)
+            .toDate()
+            .valueOf()
+        )
+      "
+      class="flex items-start px-4 py-4 mt-6 rounded-xl bg-tags-regular dark:bg-tags-regular-dark text-foregrounds-primary dark:text-foregrounds-primary"
+    >
+      <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+      <div
+        class="font-medium text-sm text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        i18n
+      >
+        No Cooldown. Participants can't refund.
+      </div>
+    </div>
+  </nz-card>
+
+  <nz-card i18n-nzTitle nzTitle="Token Info">
+    <wen-token-info-description
+      [token]="(data.token$ | async) || undefined"
+    ></wen-token-info-description>
+  </nz-card>
+
+  <wen-audit-one-widget
+    [canManage]="!!(data.isGuardianWithinSpace$ | async)"
+    [dataset]="data.auditOneStatus$ | async"
+    [entity]="(data.token$ | async)?.uid"
+  ></wen-audit-one-widget>
+
+  <nz-card i18n-nzTitle nzTitle="Related Links">
+    <div *ngFor="let l of (data.token$ | async)?.links" class="truncate">
+      <a nz-button class="wen-links" nzType="link" target="new" [href]="l">
+        <wen-icon-link></wen-icon-link>
+        <div>{{ l.toString() }}</div>
+      </a>
+    </div>
+  </nz-card>
+</div>

@@ -1,0 +1,19 @@
+<nz-radio-group *ngIf="!isHidden" class="wen-radio-group" [formControl]="formControl">
+  <wen-radio
+    *ngFor="let item of initialItemsList.length ? initialItemsList : state.items"
+    [value]="item?.value || ''"
+  >
+    <div
+      class="text-xs text-foregrounds-primary dark:text-foregrounds-primary-dark flex items-center -translate-y-1"
+    >
+      <div [ngClass]="item.value === formControl.value ? 'font-bold' : 'font-medium'">
+        {{ item?.label }}
+      </div>
+      <div
+        class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark text-xs font-medium mx-1"
+      >
+        ({{ item.count }})
+      </div>
+    </div>
+  </wen-radio>
+</nz-radio-group>

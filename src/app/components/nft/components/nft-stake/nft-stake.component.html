@@ -1,0 +1,222 @@
+<wen-modal-drawer
+  i18n-title
+  title="Stake NFT"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="w-full pb-4 overflow-x-auto lg:pb-0">
+    <wen-transaction-steps
+      class="mx-6 mt-10"
+      [steps]="steps"
+      [currentNum]="getCurrentSequenceNum()"
+    ></wen-transaction-steps>
+  </div>
+
+  <div [ngSwitch]="true" class="wen-modal-tabs">
+    <ng-container *ngSwitchCase="currentStep === stepType.SELECT">
+      <ng-container *ngTemplateOutlet="selectTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="currentStep === stepType.TRANSACTION">
+      <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="currentStep === stepType.WAIT">
+      <ng-container *ngTemplateOutlet="waitTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="currentStep === stepType.CONFIRMED">
+      <ng-container *ngTemplateOutlet="confirmTemplate"></ng-container>
+    </ng-container>
+  </div>
+
+  <ng-template #selectTemplate>
+    <div class="wen-transaction-select-container">
+      <div
+        class="flex w-full p-4 font-medium bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl"
+      >
+        <wen-icon-alert-octagon
+          class="text-icons-primary dark:text-icons-primary-dark"
+        ></wen-icon-alert-octagon>
+        <div class="ml-2.5" i18n>
+          Your NFT will be sent back to your with time lock. Please note you have to provide enough
+          storage deposit for timelock. Just set tag to "soonaverse" in your wallet.
+        </div>
+      </div>
+
+      <div class="w-full">
+        <div
+          class="mt-6 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          For how long you want to stake?
+        </div>
+        <nz-select
+          nzSize="large"
+          class="relative flex items-center justify-between w-full mt-1.5"
+          [formControl]="weekControl"
+        >
+          <nz-option
+            *ngFor="let w of weeksOptions"
+            i18n-nzLabel
+            [nzLabel]="w + (w === 1 ? ' week' : ' weeks')"
+            [nzValue]="w"
+          ></nz-option>
+        </nz-select>
+      </div>
+
+      <div class="w-full">
+        <div
+          class="mt-6 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          Stake type?
+        </div>
+        <nz-select
+          nzSize="large"
+          class="relative flex items-center justify-between w-full mt-1.5"
+          [formControl]="stakeTypeControl"
+        >
+          <nz-option
+            *ngFor="let s of stakeTypes"
+            i18n-nzLabel
+            [nzLabel]="s.label"
+            [nzValue]="s.value"
+          ></nz-option>
+        </nz-select>
+      </div>
+
+      <wen-select-network
+        class="block w-full"
+        [selectedNetwork]="selectedNetwork"
+        (selectNetwork)="selectedNetwork = $event"
+        [title]="'What network is your NFT minted on?'"
+      >
+      </wen-select-network>
+
+      <wen-terms-and-conditions
+        class="w-full mt-8"
+        [isChecked]="agreeTermsConditions"
+        documentLink="https://docs.google.com/document/d/1ng67fXTdINhmgkLpnbS_SkiDlZSsDAqrd13cbwXQCcQ"
+        (wenOnCheckChange)="agreeTermsConditions = $event"
+      >
+      </wen-terms-and-conditions>
+
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="large"
+        class="w-full mt-6 lg:w-auto"
+        [disabled]="!agreeTermsConditions || selectedNetwork === undefined"
+        (click)="proceedWithStake()"
+        i18n
+      >
+        Confirm & Start Stake
+      </button>
+    </div>
+  </ng-template>
+
+  <ng-template #transactionTemplate>
+    <div class="wen-transaction-active-container">
+      <div class="px-4 py-2.5 rounded-2xl border border-alerts-error flex">
+        <wen-icon-stopwatch class="mr-2 lg:mr-3"></wen-icon-stopwatch>
+        <div class="text-base font-medium">
+          <span *ngIf="!helper.isExpired(transaction$ | async)">{{
+            expiryTicker$ | async | countdownTime
+          }}</span>
+          <span class="text-alerts-error" *ngIf="!helper.isExpired(transaction$ | async)" i18n>
+            remaining to make the transfer.</span
+          >
+          <span class="text-alerts-error" *ngIf="helper.isExpired(transaction$ | async)" i18n
+            >Expired</span
+          >
+        </div>
+      </div>
+
+      <div
+        class="flex w-full p-4 mt-8 font-medium bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl"
+      >
+        <wen-icon-alert-octagon
+          class="text-icons-primary dark:text-icons-primary-dark"
+        ></wen-icon-alert-octagon>
+        <div class="ml-2.5" i18n>
+          Your NFT will be sent back to your with time lock. Please note you have to provide enough
+          storage deposit for timelock. Just set tag to "soonaverse" in your wallet.
+        </div>
+      </div>
+
+      <nz-alert
+        class="mt-2"
+        nzType="warning"
+        nzShowIcon
+        *ngIf="!isExpired(transaction$ | async) && invalidPayment"
+        nzMessage="We received invalid NFT. Try again."
+      ></nz-alert>
+
+      <wen-send-funds
+        class="block w-full"
+        *ngIf="!helper.isExpired(transaction$ | async)"
+        targetText-i18n
+        targetText="Send NFT to following address"
+        [targetAddress]="targetAddress"
+      >
+      </wen-send-funds>
+    </div>
+  </ng-template>
+
+  <ng-template #waitTemplate>
+    <div class="wen-transaction-wait-container">
+      <div
+        class="w-full mt-10 border border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+      >
+        <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+        <div class="wen-modal-history-log">
+          <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+            <div class="mr-2 text-sm font-medium text-foregrounds-secondary">
+              {{ t.date | Time }}
+            </div>
+            <a
+              class="absolute text-sm font-medium underline left-16 wen-btn-link"
+              target="_blank"
+              *ngIf="t.link"
+              [href]="transactionService.getExplorerLink(t.transaction)"
+              >{{ t.label }}</a
+            >
+            <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #confirmTemplate>
+    <div class="wen-transaction-wait-container">
+      <div class="flex items-center mt-10 lg:w-3/5">
+        <div
+          class="flex items-center justify-center w-10 h-10 rounded-full min-w-10 min-h-10 bg-alerts-success dark:bg-alerts-success-dark"
+        >
+          <wen-icon-check
+            class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+          ></wen-icon-check>
+        </div>
+        <div class="ml-3.5 text-lg font-medium" i18n>NFT has been staked.</div>
+      </div>
+
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="large"
+        class="mt-10"
+        (click)="goToCollection()"
+        i18n
+      >
+        See Collection
+      </button>
+    </div>
+  </ng-template>
+</ng-template>

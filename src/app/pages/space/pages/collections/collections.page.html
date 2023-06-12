@@ -1,0 +1,81 @@
+<div class="space-y-12">
+  <div class="space-y-4">
+    <div class="inline-flex justify-between w-full">
+      <div class="flex items-center">
+        <ng-container *ngIf="deviceService.isDesktop$ | async; else hotTagsMobileBlock">
+          <nz-tag
+            *ngFor="let tag of hotTags"
+            nzMode="checkable"
+            [nzChecked]="selectedListControl.value === tag.value"
+            (nzCheckedChange)="handleFilterChange(tag.value)"
+          >
+            {{ tag.label }}
+          </nz-tag>
+        </ng-container>
+
+        <ng-template #hotTagsMobileBlock>
+          <nz-select
+            class="w-fit wen-sort-button min-w-32"
+            [ngModel]="selectedListControl.value"
+            (ngModelChange)="handleFilterChange($event)"
+          >
+            <nz-option
+              *ngFor="let tag of hotTags"
+              i18n-nzLabel
+              [nzLabel]="tag.label"
+              [nzValue]="tag.value"
+            ></nz-option>
+          </nz-select>
+        </ng-template>
+      </div>
+
+      <span
+        nz-tooltip
+        [nzTooltipTitle]="!(data.space$ | async)?.validatedAddress?.iota ? 'You must set validated addresses on the space.' : undefined"
+      >
+        <button
+          nz-button
+          class="bg-buttons-primary-enabled dark:bg-buttons-primary-enabled-dark border-buttons-primary-enabled dark:border-buttons-primary-enabled-dark hover:bg-buttons-primary-on-hover dark:bg-buttons-primary-on-hover-dark hover:border-buttons-primary-on-hover dark:border-buttons-primary-on-hover-dark"
+          [disabled]="!(data.space$ | async)?.validatedAddress"
+          nzType="primary"
+          nzSize="default"
+          type="button"
+          (click)="create()"
+          *ngIf="data.isMemberWithinSpace$ | async"
+        >
+          <span nz-icon nzType="plus" nzTheme="outline"></span>
+          <span>
+            <span i18n>New </span>
+            <ng-container *ngIf="(deviceService.isDesktop$ | async)" i18n>Collection</ng-container>
+          </span>
+        </button>
+      </span>
+    </div>
+
+    <nz-skeleton
+      *ngIf="data.isLoading(getList() | async)"
+      class="p-4 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl"
+      [nzActive]="true"
+      [nzAvatar]="{ size: 'default' }"
+      [nzParagraph]="{ rows: 1, width: 100 }"
+    ></nz-skeleton>
+
+    <nz-card class="w-full" *ngIf="data.isEmpty(getList() | async)">
+      <div class="flex flex-col justify-center text-center h-36">
+        <span
+          class="leading-7 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          No Collections
+        </span>
+      </div>
+    </nz-card>
+    <wen-collection-card
+      class="block"
+      [fullWidth]="true"
+      *ngFor="let collection of getList() | async; trackBy: trackByUid"
+      [collection]="collection"
+    >
+    </wen-collection-card>
+  </div>
+</div>

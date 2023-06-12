@@ -1,0 +1,397 @@
+<form nz-form nzLayout="vertical" [formGroup]="nftForm">
+  <div class="py-4" nz-row [nzGutter]="24">
+    <div
+      class="space-y-4"
+      nz-col
+      nzFlex="auto"
+      [ngStyle]="{
+                'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+            }"
+    >
+      <nz-card [nzBordered]="false">
+        <nz-card-meta
+          i18n-nzTitle
+          nzTitle="NFT info"
+          i18n-nzDescription
+          nzDescription="Name and description will be included on the NFT."
+        >
+        </nz-card-meta>
+        <div class="mt-4 space-y-4">
+          <nz-form-item class="floating-title" [ngClass]="nameControl.value ? 'value' : ''">
+            <nz-form-label i18n>Name</nz-form-label>
+            <nz-form-control i18n-nzErrorTip nzErrorTip="Name is required.">
+              <input
+                nz-input
+                i18n-placeholder
+                placeholder="Name"
+                nzSize="large"
+                [formControl]="nameControl"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item class="floating-title" [ngClass]="descriptionControl.value ? 'value' : ''">
+            <nz-form-label i18n>Description</nz-form-label>
+            <nz-form-control i18n-nzErrorTip nzErrorTip="Description is required.">
+              <textarea
+                nz-input
+                i18n-placeholder
+                placeholder="Description"
+                nzSize="large"
+                rows="4"
+                [formControl]="descriptionControl"
+              ></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </nz-card>
+
+      <nz-card [nzBordered]="false">
+        <nz-card-meta
+          i18n-nzTitle
+          nzTitle="Sales info"
+          i18n-nzDescription
+          nzDescription="All times are reflected in user's timezone. For generated NFT and SFT the price is set per collection and cannot be changed here."
+        >
+        </nz-card-meta>
+
+        <div class="mt-4 space-y-4">
+          <wen-iota-input
+            class="pb-2"
+            [formControl]="priceControl"
+            [collection]="collection"
+          ></wen-iota-input>
+
+          <nz-form-item
+            class="floating-title"
+            [ngClass]="availableFromControl.value ? 'value' : ''"
+          >
+            <nz-form-label i18n>Available on</nz-form-label>
+            <nz-form-control i18n-nzErrorTip nzErrorTip="Available On is required.">
+              <nz-date-picker
+                class="flex grow"
+                [nzDisabledDate]="disabledStartDate.bind(this)"
+                [nzDisabledTime]="disabledDateTime.bind(this)"
+                nzSize="large"
+                [nzShowTime]="{ nzFormat: 'HH:mm', nzMinuteStep: 5, nzHideDisabledOptions: true }"
+                nzFormat="yyyy-MM-dd HH:mm"
+                [formControl]="availableFromControl"
+                i18n-nzPlaceHolder
+                nzPlaceHolder="Available on"
+              >
+              </nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </nz-card>
+
+      <nz-card [nzBordered]="false">
+        <nz-card-meta
+          i18n-nzTitle
+          nzTitle="Properties"
+          i18n-nzDescription
+          nzDescription="Properties show up underneath your item."
+        >
+        </nz-card-meta>
+
+        <div class="pt-8">
+          <ng-container *ngIf="deviceService.isDesktop$ | async">
+            <div
+              class="flex items-center text-xs font-medium text-foregrounds-secondary"
+              *ngIf="properties.controls.length > 0"
+            >
+              <div class="w-1/2" i18n>Property name (E.g. Character)</div>
+              <div class="w-1/2" i18n>Value (E.g. Soonanaut)</div>
+            </div>
+
+            <div class="my-2 separator"></div>
+
+            <ng-container *ngFor="let property of properties.controls; let i = index">
+              <div class="flex flex-col items-center justify-between mt-4 lg:flex-row">
+                <input
+                  type="text"
+                  nz-input
+                  nzSize="default"
+                  i18n-placeholder
+                  placeholder="Property name"
+                  class="mr-8"
+                  [formControl]="gForm(property, 'name')"
+                />
+
+                <input
+                  type="text"
+                  nz-input
+                  nzSize="default"
+                  i18n-placeholder
+                  placeholder="Value"
+                  class="mr-3"
+                  [formControl]="gForm(property, 'value')"
+                />
+
+                <wen-icon-trash
+                  class="cursor-pointer text-accent-primary dark:text-accent-primary-darkest"
+                  (click)="removeProperty(i)"
+                ></wen-icon-trash>
+              </div>
+              <div class="my-4 separator"></div>
+            </ng-container>
+          </ng-container>
+
+          <ng-container *ngIf="deviceService.isMobile$ | async">
+            <div class="mt-8" *ngFor="let property of properties.controls; let i = index">
+              <div class="flex items-center justify-between">
+                <div class="text-xs font-bold"><span i18n>Property</span> #0{{ i + 1 }}</div>
+                <wen-icon-trash
+                  class="cursor-pointer text-accent-primary dark:text-accent-primary-darkest"
+                  (click)="removeProperty(i)"
+                ></wen-icon-trash>
+              </div>
+
+              <div class="mt-2 mb-5 separator"></div>
+
+              <div class="text-xs font-medium text-foregrounds-tertiary" i18n>Property name</div>
+
+              <input
+                type="text"
+                nz-input
+                nzSize="default"
+                i18n-placeholder
+                placeholder="Property name"
+                class="w-full mt-2 mb-5"
+                [formControl]="gForm(property, 'name')"
+              />
+
+              <div class="text-xs font-medium text-foregrounds-tertiary" i18n>Value</div>
+
+              <input
+                type="text"
+                nz-input
+                nzSize="default"
+                i18n-placeholder
+                placeholder="Value"
+                class="w-full mt-2 mb-5"
+                [formControl]="gForm(property, 'value')"
+              />
+            </div>
+          </ng-container>
+        </div>
+
+        <button
+          nz-button
+          *ngIf="properties.controls.length < maxPropertyCount"
+          class="flex items-center mt-3 wen-secondary"
+          (click)="addProperty()"
+        >
+          <wen-icon-plus class="mr-0.5"></wen-icon-plus>
+          <span i18n>Add property</span>
+        </button>
+      </nz-card>
+
+      <nz-card [nzBordered]="false">
+        <nz-card-meta
+          i18n-nzTitle
+          nzTitle="Stats"
+          i18n-nzDescription
+          nzDescription="Stats show up underneath your item."
+        >
+        </nz-card-meta>
+
+        <div class="pt-8">
+          <ng-container *ngIf="deviceService.isDesktop$ | async">
+            <div
+              class="flex items-center text-xs font-medium text-foregrounds-secondary"
+              *ngIf="stats.controls.length > 0"
+            >
+              <div class="w-1/2" i18n>Stats name (E.g. Stamina)</div>
+              <div class="w-1/2 translate-x-2" i18n>Value (E.g. 10, 1/10 , etc.)</div>
+            </div>
+
+            <div class="my-2 separator"></div>
+
+            <ng-container *ngFor="let stat of stats.controls; let i = index">
+              <div class="flex flex-col items-center justify-between mt-4 lg:flex-row">
+                <input
+                  type="text"
+                  nz-input
+                  nzSize="default"
+                  i18n-placeholder
+                  placeholder="Stat name"
+                  class="w-1/2 mr-8 grow"
+                  [formControl]="gForm(stat, 'name')"
+                />
+
+                <input
+                  type="text"
+                  nz-input
+                  nzSize="default"
+                  i18n-nzPlaceHolder
+                  nzPlaceHolder="Value"
+                  class="w-1/2 mr-3 grow"
+                  [formControl]="gForm(stat, 'value')"
+                />
+
+                <wen-icon-trash
+                  class="cursor-pointer grow text-accent-primary dark:text-accent-primary-darkest"
+                  (click)="removeStat(i)"
+                ></wen-icon-trash>
+              </div>
+
+              <div class="my-4 separator"></div>
+            </ng-container>
+          </ng-container>
+
+          <ng-container *ngIf="deviceService.isMobile$ | async">
+            <div class="mt-8" *ngFor="let stat of stats.controls; let i = index">
+              <div class="flex items-center justify-between">
+                <div class="text-xs font-bold"><span i18n>Stat</span> #0{{ i + 1 }}</div>
+                <wen-icon-trash
+                  class="cursor-pointer text-accent-primary dark:text-accent-primary-darkest"
+                  (click)="removeStat(i)"
+                ></wen-icon-trash>
+              </div>
+
+              <div class="mt-2 mb-5 separator"></div>
+
+              <div class="text-xs font-medium text-foregrounds-tertiary" i18n>Stat name</div>
+
+              <input
+                type="text"
+                nz-input
+                nzSize="default"
+                i18n-placeholder
+                placeholder="Stat name"
+                class="w-full mt-2 mb-5"
+                [formControl]="gForm(stat, 'name')"
+              />
+
+              <div class="text-xs font-medium text-foregrounds-tertiary" i18n>Value</div>
+
+              <nz-input-number
+                nzSize="default"
+                i18n-nzPlaceHolder
+                nzPlaceHolder="Value"
+                class="w-full mt-2 mb-5"
+                [nzMin]="0"
+                [formControl]="gForm(stat, 'value')"
+              ></nz-input-number>
+            </div>
+          </ng-container>
+        </div>
+
+        <button
+          nz-button
+          *ngIf="stats.controls.length < maxStatCount"
+          class="flex items-center mt-3 wen-secondary"
+          (click)="addStat()"
+        >
+          <wen-icon-plus class="mr-0.5"></wen-icon-plus>
+          <span i18n>Add stat</span>
+        </button>
+      </nz-card>
+    </div>
+
+    <div
+      class="mt-4 space-y-4 lg:mt-0 lg:max-w-450"
+      nz-col
+      [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+      [style.max-width]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+    >
+      <nz-card [nzBordered]="false">
+        <nz-card-meta
+          i18n-nzTitle
+          nzTitle="NFT Image"
+          i18n-nzDescription
+          nzDescription="Upload image of your NFT. File types supported: PNG, JPEG, WEBP, MP4. Max size: 100 MB."
+        >
+        </nz-card-meta>
+
+        <div class="mt-6">
+          <nz-form-item>
+            <nz-form-control>
+              <nz-upload
+                class="wen-banner"
+                nzName="banner"
+                nzType="drag"
+                nzListType="picture-card"
+                [nzLimit]="1"
+                [nzCustomRequest]="uploadMediaFile.bind(this)"
+                (nzChange)="uploadMediaChange($event)"
+                [nzFilter]="uploadFilter"
+                nzFileType="image/png,image/jpg,image/jpeg,image/webp,video/mp4"
+                [nzFileList]="uploadedFile ? [uploadedFile] : []"
+                [nzShowUploadList]="{ showPreviewIcon: false, showDownloadIcon: false, showRemoveIcon: true }"
+              >
+                <ng-container>
+                  <i class="upload-icon" nz-icon nzType="upload"></i>
+                  <span class="pl-2 text-xs">jpg/jpeg/png/webp/mp4</span>
+                </ng-container>
+              </nz-upload>
+              <div
+                class="text-accent-primary dark:text-accent-primary-darkest"
+                *ngIf="fileUploadError || (mediaControl.invalid && !mediaControl.pristine)"
+              >
+                <ng-container *ngIf="(mediaControl.invalid && !mediaControl.pristine)" i18n
+                  >Media is required</ng-container
+                >
+                <br />
+                <ng-container *ngIf="fileUploadError">{{ fileUploadError }}</ng-container>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </nz-card>
+
+      <nz-card [nzBordered]="false">
+        <nz-card-meta
+          i18n-nzTitle
+          nzTitle="Collection"
+          i18n-nzDescription
+          nzDescription="Select one of your collections to display this NFT."
+        >
+        </nz-card-meta>
+        <nz-form-item class="mt-4">
+          <nz-form-control i18n-nzErrorTip nzErrorTip="Collection is required.">
+            <nz-select
+              class="w-full"
+              nzSize="large"
+              [nzOptions]="(filteredCollections$ | async) || []"
+              [nzServerSearch]="true"
+              nzShowSearch
+              nzAllowClear
+              i18n-nzPlaceHolder
+              nzPlaceHolder="Select collection"
+              (nzOnSearch)="searchCollection($event)"
+              [formControl]="collectionControl"
+            >
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </nz-card>
+    </div>
+  </div>
+</form>
+
+<div class="flex flex-col items-center mt-8 lg:flex-row mb-18 lg:mb-6 lg:mt-0">
+  <button
+    nz-button
+    nzType="primary"
+    nzSize="large"
+    class="w-full lg:w-auto"
+    type="button"
+    (click)="create()"
+    i18n
+  >
+    Create NFT
+  </button>
+  <button
+    nz-button
+    nzSize="large"
+    class="w-full mt-4 wen-secondary lg:ml-4 lg:w-auto lg:mt-0"
+    type="button"
+    (click)="preview()"
+    i18n
+  >
+    Preview NFT
+  </button>
+</div>
+
+<wen-nft-preview [nft]="previewNft" (wenOnClose)="previewNft = null"></wen-nft-preview>

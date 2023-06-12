@@ -1,0 +1,26 @@
+<div
+  class="flex items-center justify-between w-full p-4 mt-6 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-xl"
+>
+  <div class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+    Selected Network
+  </div>
+
+  <div class="flex items-center">
+    <ng-container *ngIf="selectedNetwork === networkTypes.SMR">
+      <wen-icon-shimmer [size]="20"></wen-icon-shimmer>
+      <div class="ml-1 text-sm font-semibold" i18n>Shimmer</div>
+    </ng-container>
+    <ng-container *ngIf="selectedNetwork === networkTypes.RMS">
+      <wen-icon-shimmer [size]="20"></wen-icon-shimmer>
+      <div class="ml-1 text-sm font-semibold" i18n>Shimmer Testnet</div>
+    </ng-container>
+    <ng-container *ngIf="selectedNetwork === networkTypes.IOTA">
+      <wen-icon-iota [size]="20"></wen-icon-iota>
+      <div class="ml-1 text-sm font-semibold" i18n>IOTA</div>
+    </ng-container>
+    <ng-container *ngIf="selectedNetwork === networkTypes.ATOI">
+      <wen-icon-iota [size]="20"></wen-icon-iota>
+      <div class="ml-1 text-sm font-semibold" i18n>IOTA Devnet</div>
+    </ng-container>
+  </div>
+</div>

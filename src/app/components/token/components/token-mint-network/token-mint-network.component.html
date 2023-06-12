@@ -1,0 +1,286 @@
+<wen-modal-drawer
+  i18n-title
+  title="Mint token on network"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="w-full pb-4 overflow-x-auto lg:pb-0">
+    <wen-transaction-steps
+      class="mx-6 mt-10"
+      [steps]="steps"
+      [currentNum]="getCurrentSequenceNum()"
+    ></wen-transaction-steps>
+  </div>
+
+  <div [ngSwitch]="true" class="wen-modal-tabs">
+    <ng-container *ngSwitchCase="currentStep === stepType.SELECT">
+      <ng-container *ngTemplateOutlet="selectTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="currentStep === stepType.TRANSACTION">
+      <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container
+      *ngSwitchCase="currentStep === stepType.WAIT || currentStep === stepType.CONFIRMED"
+    >
+      <ng-container *ngTemplateOutlet="waitTemplate"></ng-container>
+    </ng-container>
+  </div>
+
+  <ng-template #selectTemplate>
+    <div class="wen-transaction-select-container">
+      <div
+        *ngIf="helper.canSchedulePublicSale(token) && !helper.isMinted(token)"
+        class="flex w-full p-4 mb-3 font-bold bg-tags-pending dark:bg-tags-pending-dark rounded-xl"
+      >
+        <wen-icon-alert-octagon
+          class="text-icons-primary dark:text-icons-primary-dark"
+        ></wen-icon-alert-octagon>
+        <div class="ml-2.5" i18n>
+          Public sale will no longer be available after bringing token to a network.
+        </div>
+      </div>
+
+      <div
+        class="flex w-full p-4 font-medium bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl"
+      >
+        <wen-icon-info-circle
+          class="text-icons-primary dark:text-icons-primary-dark"
+        ></wen-icon-info-circle>
+        <div class="ml-2.5" i18n>
+          Once minted all owners will have the option to migrate their tokens to the selected
+          network.
+        </div>
+      </div>
+
+      <div
+        class="flex w-full p-4 mt-3 font-medium bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl"
+      >
+        <wen-icon-info-circle
+          class="text-icons-primary dark:text-icons-primary-dark"
+        ></wen-icon-info-circle>
+        <div class="ml-2.5" i18n>
+          Note that the ownership and all undistributed tokens will be deposited to your member
+          profile.
+        </div>
+      </div>
+
+      <div class="flex items-center w-full mt-10">
+        <nz-avatar
+          [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+          class="border-2 border-tags-border dark:border-tags-border-dark min-w-12"
+          nzShape="circle"
+          [nzSize]="48"
+        >
+        </nz-avatar>
+        <div class="ml-4 text-lg font-bold">{{ token?.name }}</div>
+        <div class="ml-3 font-medium">({{ token?.symbol }})</div>
+      </div>
+
+      <div
+        class="flex items-center justify-between w-full px-5 py-4 mt-6 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-xl"
+      >
+        <div
+          class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          Tokens to migrate
+        </div>
+        <div class="font-bold">
+          {{ token?.totalSupply | formatToken : token?.uid : false : false | async }}
+          {{ token?.symbol }}
+        </div>
+      </div>
+
+      <div
+        class="flex items-center justify-between w-full px-5 py-4 mt-3 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-xl"
+      >
+        <div
+          class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          Locked public tokens
+        </div>
+        <div class="font-bold">
+          {{ lockedPublicTokens | formatToken : token?.uid : false : false | async }}
+          {{ token?.symbol }}
+        </div>
+      </div>
+
+      <wen-select-network
+        class="block w-full"
+        [selectedNetwork]="selectedNetwork"
+        (selectNetwork)="selectedNetwork = $event"
+      >
+      </wen-select-network>
+
+      <wen-terms-and-conditions
+        class="w-full mt-8"
+        [isChecked]="agreeTermsConditions"
+        documentLink="https://docs.google.com/document/d/1ng67fXTdINhmgkLpnbS_SkiDlZSsDAqrd13cbwXQCcQ"
+        (wenOnCheckChange)="agreeTermsConditions = $event"
+      >
+      </wen-terms-and-conditions>
+
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="large"
+        class="w-full mt-6 lg:w-auto"
+        [disabled]="!agreeTermsConditions || selectedNetwork === undefined"
+        (click)="proceedWithMint()"
+        i18n
+      >
+        Confirm & Start minting
+      </button>
+
+      <div
+        class="w-3/5 mt-6 text-sm font-medium text-center text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Once you agree with the terms, the generated address will remain active during the whole
+        process.
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #transactionTemplate>
+    <div class="wen-transaction-active-container">
+      <div class="flex items-center w-full">
+        <nz-avatar
+          [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+          class="border-2 border-tags-border dark:border-tags-border-dark min-w-12"
+          nzShape="circle"
+          [nzSize]="48"
+        >
+        </nz-avatar>
+        <div class="ml-4 text-lg font-bold">{{ token?.name }}</div>
+        <div class="ml-3 font-medium">({{ token?.symbol }})</div>
+      </div>
+
+      <div
+        class="flex items-center justify-between w-full p-4 mt-6 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-xl"
+      >
+        <div
+          class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          Tokens to migrate
+        </div>
+
+        <div class="font-bold">
+          {{ token?.totalSupply | formatToken : token?.uid : false : false | async }}
+          {{ token?.symbol }}
+        </div>
+      </div>
+
+      <div
+        class="flex items-center justify-between w-full p-4 mt-3 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-xl"
+      >
+        <div
+          class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          Locked public tokens
+        </div>
+
+        <div class="font-bold">
+          {{ lockedPublicTokens | formatToken : token?.uid : undefined : false | async }}
+          {{ token?.symbol }}
+        </div>
+      </div>
+
+      <wen-selected-network
+        class="block w-full"
+        [selectedNetwork]="selectedNetwork"
+      ></wen-selected-network>
+
+      <nz-alert
+        class="mt-2"
+        nzType="warning"
+        nzShowIcon
+        *ngIf="!isExpired(transaction$ | async) && invalidPayment"
+        nzMessage="We received invalid amount. Try again."
+      ></nz-alert>
+
+      <wen-send-funds
+        class="block w-full"
+        *ngIf="!isExpired(transaction$ | async)"
+        [targetAddress]="targetAddress"
+        [formattedAmount]="targetAmount | formatToken : selectedNetwork : false | async"
+      >
+      </wen-send-funds>
+
+      <wen-wallet-deeplink
+        *ngIf="!isExpired(transaction$ | async)"
+        class="w-full mt-6 lg:w-auto"
+        [targetAddress]="targetAddress"
+        [network]="selectedNetwork"
+        [targetAmount]="(targetAmount || 0).toString()"
+      >
+      </wen-wallet-deeplink>
+    </div>
+  </ng-template>
+
+  <ng-template #waitTemplate>
+    <div class="wen-transaction-wait-container">
+      <div class="flex items-center w-full mt-10">
+        <nz-avatar
+          [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+          class="border-2 border-tags-border dark:border-tags-border-dark min-w-12"
+          nzShape="circle"
+          [nzSize]="48"
+        >
+        </nz-avatar>
+        <div class="ml-4 text-lg font-bold">{{ token?.name }}</div>
+        <div class="ml-3 font-medium">({{ token?.symbol }})</div>
+      </div>
+
+      <wen-selected-network [selectedNetwork]="selectedNetwork"></wen-selected-network>
+
+      <div
+        class="w-full mt-10 border border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+      >
+        <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+        <div class="wen-modal-history-log">
+          <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+            <div class="mr-2 text-sm font-medium text-foregrounds-secondary">
+              {{ t.date | Time }}
+            </div>
+            <a
+              class="absolute text-sm font-medium underline left-16 wen-btn-link"
+              target="_blank"
+              *ngIf="t.link"
+              [href]="transactionService.getExplorerLink(t.transaction)"
+              >{{ t.label }}</a
+            >
+            <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngIf="currentStep === stepType.CONFIRMED">
+        <div class="flex items-center mt-10 lg:w-3/5">
+          <div
+            class="flex items-center justify-center w-10 h-10 rounded-full min-w-10 min-h-10 bg-alerts-success dark:bg-alerts-success-dark"
+          >
+            <wen-icon-check
+              class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+            ></wen-icon-check>
+          </div>
+          <div class="ml-3.5 text-lg font-medium" i18n>Transaction complete. Congratulations.</div>
+        </div>
+
+        <button nz-button nzType="primary" nzSize="large" class="mt-10" (click)="close()" i18n>
+          Finish Mint
+        </button>
+      </ng-container>
+    </div>
+  </ng-template>
+</ng-template>

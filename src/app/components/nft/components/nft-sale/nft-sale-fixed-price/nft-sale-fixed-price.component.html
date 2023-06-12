@@ -1,0 +1,157 @@
+<div class="px-6 py-5">
+  <div
+    class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    i18n
+  >
+    Set your price
+  </div>
+
+  <nz-form-item class="mt-2">
+    <nz-form-control>
+      <nz-input-group nzSize="large" class="relative">
+        <nz-input-number
+          i18n-nzPlaceHolder
+          [nzPlaceHolder]="'Price (' + unitsService.label(nft?.mintingData?.network) + ')'"
+          nzSize="large"
+          class="w-full"
+          [nzMin]="0"
+          [formControl]="priceControl"
+        ></nz-input-number>
+        <i
+          nz-icon
+          nzType="info-circle"
+          class="absolute -translate-y-1/2 cursor-pointer right-6 top-1/2 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          nz-tooltip
+          i18n-nzTooltipTitle
+          [nzTooltipTitle]="
+            'Minimum price is ' +
+            (minimumPrice | formatToken : nft?.mintingData?.network | async) +
+            ' and Maximum price is ' +
+            (maximumPrice | formatToken : nft?.mintingData?.network | async)
+          "
+        ></i>
+      </nz-input-group>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div class="flex flex-col justify-between mt-5 space-y-4 lg:space-y-0 lg:flex-row lg:space-x-4">
+    <div
+      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      i18n
+    >
+      Available time
+    </div>
+    <div class="flex space-x-4">
+      <div
+        class="available-time-option"
+        (click)="availableTimeOption$.next(availableTimeOptionTypes.NOW)"
+        [ngClass]="{
+          'available-time-option__selected':
+            (availableTimeOption$ | async) === availableTimeOptionTypes.NOW
+        }"
+        i18n
+      >
+        NOW
+      </div>
+      <div
+        class="available-time-option"
+        (click)="availableTimeOption$.next(availableTimeOptionTypes.CUSTOM)"
+        [ngClass]="{
+          'available-time-option__selected':
+            (availableTimeOption$ | async) === availableTimeOptionTypes.CUSTOM
+        }"
+        i18n
+      >
+        Select Date/Time
+      </div>
+    </div>
+  </div>
+
+  <nz-form-item class="mt-2">
+    <nz-form-control i18n-nzErrorTip nzErrorTip="Available On is required.">
+      <nz-date-picker
+        class="flex grow"
+        [nzDisabledDate]="disabledStartDate.bind(this)"
+        nzSize="large"
+        [nzShowTime]="{ nzFormat: 'HH:mm', nzMinuteStep: 5, nzHideDisabledOptions: true }"
+        nzFormat="yyyy-MM-dd HH:mm"
+        [formControl]="availableFromControl"
+        i18n-nzPlaceHolder
+        nzPlaceHolder="Available on"
+        [nzDisabled]="(availableTimeOption$ | async) === availableTimeOptionTypes.NOW"
+      >
+      </nz-date-picker>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div class="flex flex-col justify-between mt-5 space-y-4 lg:space-y-0 lg:flex-row lg:space-x-4">
+    <div
+      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      i18n
+    >
+      Sale type
+    </div>
+    <div class="flex space-x-4">
+      <div
+        class="target-access-option"
+        (click)="targetAccessOption$.next(targetAccess.OPEN)"
+        [ngClass]="{
+          'target-access-option__selected': (targetAccessOption$ | async) === targetAccess.OPEN
+        }"
+        i18n
+      >
+        Open Sale
+      </div>
+      <div
+        class="target-access-option"
+        (click)="targetAccessOption$.next(targetAccess.MEMBERS)"
+        [ngClass]="{
+          'target-access-option__selected': (targetAccessOption$ | async) === targetAccess.MEMBERS
+        }"
+        i18n
+      >
+        Specific member(s)
+      </div>
+    </div>
+  </div>
+
+  <nz-form-item class="mt-2">
+    <nz-form-control>
+      <nz-select
+        class="w-full"
+        nzMode="multiple"
+        nzSize="large"
+        [nzOptions]="(filteredMembers$ | async) || []"
+        [nzServerSearch]="true"
+        nzShowSearch
+        nzAllowClear
+        i18n-nzPlaceHolder
+        [nzPlaceHolder]="
+          (targetAccessOption$ | async) === targetAccess.OPEN
+            ? 'Open Sale'
+            : 'Select specific member(s)'
+        "
+        (nzOnSearch)="searchMember($event)"
+        [formControl]="buyerControl"
+        [nzDisabled]="(targetAccessOption$ | async) === targetAccess.OPEN"
+      >
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div
+    class="flex flex-col items-center w-full mt-10 text-xs font-medium text-foregrounds-tertiary"
+  >
+    <div class="mb-3" i18n>Once your listing is complete, you will get a confirmation message.</div>
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      [disabled]="form.invalid"
+      (click)="submit()"
+      i18n
+    >
+      Confirm listing
+    </button>
+  </div>
+</div>

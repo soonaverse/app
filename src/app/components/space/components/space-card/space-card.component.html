@@ -1,0 +1,48 @@
+<article
+  class="w-full h-full bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark h-76 rounded-2xl wen-card"
+  *ngIf="space"
+>
+  <a class="text-current hover:text-current" [routerLink]="['/', this.path, space.uid]">
+    <div class="relative w-full h-32 overflow-hidden rounded-2xl">
+      <img
+        loading="lazy"
+        alt=""
+        [src]="bannerUrl || '/assets/mocks/no_banner.jpg'"
+        class="object-cover w-full h-full"
+      />
+
+      <div
+        *ngIf="(auth.member$ | async)?.spaces?.[space.uid]?.isMember"
+        class="absolute top-3 right-3 bg-tags-regular dark:bg-tags-regular-dark px-3 py-1.5 font-medium z-10 rounded-lg"
+        i18n
+      >
+        Joined
+      </div>
+    </div>
+
+    <div class="relative flex flex-col w-full p-5 lg:p-4 lg:h-44">
+      <nz-avatar
+        class="absolute top-0 -translate-y-1/2 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark left-4"
+        [nzSrc]="avatarUrl"
+        nzShape="circle"
+      ></nz-avatar>
+
+      <h3
+        class="mt-4 mb-0 text-lg font-bold truncate lg:mt-2 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      >
+        {{ space.name }}
+      </h3>
+
+      <p class="grow shrink min-h-0 py-3 overflow-hidden text-sm font-medium lg:py-2">
+        {{ space.about | stripMarkdown | truncate : [110] }}
+      </p>
+
+      <div
+        class="inline-flex gap-2 text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+        <wen-icon-members></wen-icon-members>
+        {{ space.totalMembers }} <span i18n>members</span>
+      </div>
+    </div>
+  </a>
+</article>

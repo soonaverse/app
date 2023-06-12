@@ -1,0 +1,30 @@
+<div
+  class="flex items-start justify-between w-full px-6 py-5 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:items-center rounded-2xl"
+>
+  <div>
+    <div class="flex items-center justify-between">
+      <nz-avatar
+        [nzSrc]="previewImageService.getAvatarSize(space?.avatarUrl)"
+        [nzSize]="32"
+        class="mr-3 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+        nzShape="circle"
+      >
+      </nz-avatar>
+      <div class="ml-4 text-lg font-bold">{{ space?.name }}</div>
+    </div>
+
+    <nz-tag *ngIf="deviceService.isMobile$ | async" class="flex items-center mt-4 wen-xp-tag w-max">
+      {{ member?.spaces?.[space!.uid]?.awardsCompleted || 0 }} <span i18n>awards</span>
+    </nz-tag>
+  </div>
+  <div class="flex items-center mt-1 lg:mt-0">
+    <nz-tag *ngIf="deviceService.isDesktop$ | async" class="flex items-center wen-xp-tag w-max">
+      {{ member?.spaces?.[space!.uid]?.awardsCompleted || 0 }} &nbsp;<span i18n>awards</span>
+    </nz-tag>
+
+    <wen-icon-angle-right
+      class="ml-4 cursor-pointer"
+      [routerLink]="getSpaceRoute()"
+    ></wen-icon-angle-right>
+  </div>
+</div>

@@ -1,0 +1,344 @@
+<ng-container *ngIf="deviceService.isMobile$ | async">
+  <div class="flex items-center mt-5 ml-6">
+    <nz-avatar
+      [nzSrc]="avatarUrl"
+      [nzSize]="40"
+      class="border-2 wen-avatar-background min-w-10"
+      nzShape="circle"
+    >
+    </nz-avatar>
+    <h1 class="w-2/3 mb-0 ml-4 text-2xl">{{ (data.space$ | async)?.name }}</h1>
+  </div>
+
+  <a
+    nz-button
+    class="flex items-center mt-5 mb-5 ml-6 wen-space-links"
+    nzType="link"
+    [routerLink]="['members']"
+  >
+    <wen-icon-members
+      class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    ></wen-icon-members>
+    <div class="ml-3">
+      {{ (data.space$ | async)?.totalMembers }} <span i18n>members</span>
+      <span *ngIf="(data.space$ | async)?.totalPendingMembers">
+        {{ '(' + (data.space$ | async)?.totalPendingMembers + ' pending)' }}
+      </span>
+    </div>
+  </a>
+</ng-container>
+
+<wen-share
+  class="block p-6 mb-4 lg:p-0"
+  i18n-shareText
+  shareText="Check out space"
+  [shareUrl]="getShareUrl(data.space$ | async)"
+>
+</wen-share>
+
+<nz-card
+  i18n-nzTitle
+  [nzTitle]="tokenTitle"
+  class="lg:mt-4"
+  *ngIf="
+    (data.token$ | async) &&
+    ((data.isGuardianWithinSpace$ | async) || (data.token$ | async)?.approved)
+  "
+>
+  <div class="absolute top-6 right-6">
+    <a
+      nz-button
+      nzType="default"
+      [routerLink]="['/token', (data.token$ | async)?.uid, 'metrics']"
+      nzSize="small"
+    >
+      <div class="text-xs mr-0.5" i18n>Detail</div>
+      <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+    </a>
+  </div>
+
+  <ng-template #tokenTitle>
+    <nz-avatar
+      [nzSrc]="previewImageService.getTokenSize((data.token$ | async)?.icon)"
+      class="mr-2 border-2 border-tags-border dark:border-tags-border-dark min-w-8"
+      nzShape="circle"
+      [nzSize]="32"
+    >
+    </nz-avatar>
+
+    <span>Token Info</span>
+  </ng-template>
+
+  <wen-token-info-description
+    [token]="(data.token$ | async) || undefined"
+  ></wen-token-info-description>
+
+  <button
+    nz-button
+    nzSize="default"
+    nzType="primary"
+    class="self-center mx-auto mt-6"
+    nzBlock
+    [routerLink]="['/token', (data.token$ | async)?.uid, 'trade']"
+  >
+    Buy {{ (data.token$ | async)?.name }}
+  </button>
+</nz-card>
+
+<nz-card
+  i18n-nzTitle
+  [nzTitle]="'Staking Info'"
+  class="lg:mt-4"
+  *ngIf="(data.token$ | async)?.approved"
+>
+  <div class="absolute top-6 right-6" *ngIf="isSoonSpace() | async">
+    <a nz-button nzType="default" nzSize="small" [routerLink]="['/soon-staking']">
+      <div class="text-xs mr-0.5" i18n>Detail</div>
+      <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+    </a>
+  </div>
+
+  <wen-description
+    [items]="[
+      (auth.isLoggedIn$ | async)
+        ? {
+            title: 'Your stake amount',
+            value:
+              (loggedInUserStake()
+                | async
+                | formatToken : (data.token$ | async)?.uid : false : false
+                | async) +
+              ' ' +
+              (data.token$ | async)?.symbol
+          }
+        : null,
+      {
+        title: 'Total supply staked',
+        value: (stakePrc() | async | percent : '1.2-6')
+      },
+      { title: 'Total Participants', value: (stakeTotal() | async | number : '1.0-2') }
+    ]"
+  >
+  </wen-description>
+
+  <button
+    nz-button
+    nzSize="default"
+    nzType="primary"
+    class="self-center mx-auto mt-6"
+    nzBlock
+    (click)="this.openStakeModal()"
+  >
+    Stake {{ (data.token$ | async)?.name }}
+  </button>
+</nz-card>
+
+<nz-card *ngIf="deviceService.isDesktop$ | async" class="lg:mt-4">
+  <div class="flex flex-col items-baseline space-y-3">
+    <div class="flex items-center justify-between w-full">
+      <a
+        nz-button
+        nzType="link"
+        class="wen-space-links"
+        style="border-radius: 0px"
+        [routerLink]="['members']"
+      >
+        <div>
+          <div class="flex items-center">
+            <wen-icon-members
+              class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            ></wen-icon-members>
+            <div class="ml-2">{{ (data.space$ | async)?.totalMembers || 0 }}</div>
+            <div class="ml-1" i18n>members</div>
+          </div>
+          <div *ngIf="(data.space$ | async)?.totalPendingMembers" class="flex items-center ml-6">
+            <div>({{ (data.space$ | async)?.totalPendingMembers }}</div>
+            <div class="ml-1" i18n>pending</div>
+            )
+          </div>
+        </div>
+      </a>
+
+      <button
+        nz-button
+        nzType="default"
+        nzSize="small"
+        *ngIf="data.isGuardianWithinSpace$ | async"
+        (click)="exportMembers()"
+      >
+        <ng-container *ngIf="!exportingMembers">
+          <wen-icon-file-export [size]="16"></wen-icon-file-export>
+          <div class="ml-2" i18n>Export members</div>
+        </ng-container>
+        <ng-container *ngIf="exportingMembers">
+          <wen-icon-refresh [size]="16" class="animate-spin"></wen-icon-refresh>
+          <div class="ml-2" i18n>Exporting members</div>
+        </ng-container>
+      </button>
+    </div>
+    <nz-tag
+      class="px-2 py-1 text-xs border-none rounded-md bg-tags-commencing dark:bg-tags-commencing-dark border-tags-member dark:border-tags-member-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    >
+      <ng-container *ngIf="(data.space$ | async)?.open && !(data.space$ | async)?.tokenBased" i18n
+        >Open to join instantly</ng-container
+      >
+      <ng-container *ngIf="!(data.space$ | async)?.open && !(data.space$ | async)?.tokenBased" i18n
+        >Requires approval to join</ng-container
+      >
+
+      <ng-container *ngIf="(data.space$ | async)?.tokenBased">
+        <span i18n>Requires </span>
+        {{
+          ((data.space$ | async)?.minStakedValue
+            | formatToken : (data.space$ | async)?.uid : true : false : 2
+            | async) +
+            ' ' +
+            (data.token$ | async)?.symbol
+        }}
+        <span i18n> staked value to join</span>
+      </ng-container>
+    </nz-tag>
+  </div>
+</nz-card>
+
+<nz-card
+  i18n-nzTitle
+  nzTitle="Related Links"
+  class="lg:mt-4"
+  *ngIf="
+    (data.space$ | async)?.github ||
+    (data.space$ | async)?.twitter ||
+    (data.space$ | async)?.discord
+  "
+>
+  <div *ngIf="(data.space$ | async)?.github">
+    <a
+      nz-button
+      class="wen-space-links"
+      nzType="link"
+      target="new"
+      [href]="'https://github.com/' + (data.space$ | async)?.github"
+    >
+      <wen-icon-github></wen-icon-github>
+      <span>{{ (data.space$ | async)?.github }}</span>
+    </a>
+  </div>
+  <div *ngIf="(data.space$ | async)?.twitter">
+    <a
+      nz-button
+      class="wen-space-links"
+      nzType="link"
+      target="new"
+      [href]="'https://twitter.com/' + (data.space$ | async)?.twitter"
+    >
+      <wen-icon-twitter></wen-icon-twitter>
+      <span>{{ (data.space$ | async)?.twitter }}</span>
+    </a>
+  </div>
+  <div *ngIf="(data.space$ | async)?.discord">
+    <a
+      nz-button
+      class="wen-space-links"
+      nzType="link"
+      target="new"
+      [href]="'https://discord.gg/' + (data.space$ | async)?.discord"
+    >
+      <wen-icon-discord></wen-icon-discord>
+      <span>{{ 'discord.gg/' + (data.space$ | async)?.discord }}</span>
+    </a>
+  </div>
+</nz-card>
+
+<nz-card [nzTitle]="((data.space$ | async)?.totalGuardians || 0) + ' Guardians'" class="lg:mt-4">
+  <div class="space-y-2" *ngIf="data.guardians$">
+    <button
+      *ngIf="!(data.space$ | async)?.totalGuardians"
+      (click)="openSpaceClaim = true"
+      nz-button
+      nzSize="default"
+      nzType="primary"
+      class="self-center mx-auto"
+      nzBlock
+      i18n
+    >
+      Claim ownership
+    </button>
+
+    <div
+      *ngFor="let g of data.guardians$ | async; trackBy: trackByUid"
+      class="text-base font-medium cursor-pointer text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      [routerLink]="['/', 'member', g.uid]"
+    >
+      <nz-avatar
+        nzIcon="user"
+        [nzSrc]="g.avatar | resizeAvatar : filesizes.small"
+        class="mr-2"
+        [nzSize]="(deviceService.isDesktop$ | async) ? 'default' : 32"
+      >
+      </nz-avatar>
+      <span [routerLink]="data.getMemberUrl ? data.getMemberUrl(g.uid) : ''"
+        >@{{ g.name || g.uid | truncate : [16] }}</span
+      >
+    </div>
+  </div>
+</nz-card>
+
+<wen-audit-one-widget
+  [canManage]="!!(data.isGuardianWithinSpace$ | async)"
+  [dataset]="data.auditOneStatus$ | async"
+  [entity]="(data.space$ | async)?.uid"
+></wen-audit-one-widget>
+
+<nz-card class="lg:mt-4">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center">
+      <div class="text-lg font-bold" i18n>Space's Wallet Addresses</div>
+    </div>
+    <a
+      *ngIf="data.isGuardianWithinSpace$ | async"
+      class="flex items-center ml-6 text-xs font-semibold cursor-pointer wen-btn-link whitespace-nowrap"
+      (click)="isManageAddressesOpen = true"
+    >
+      <span i18n>Manage</span>
+      <wen-icon-angle-right></wen-icon-angle-right>
+    </a>
+  </div>
+  <wen-wallet-address
+    [entityType]="walletAddressEntities.SPACE"
+    [entity]="data.space$ | async"
+    [enableVerification]="!!(data.isGuardianWithinSpace$ | async)"
+    [isManageAddressesOpen]="isManageAddressesOpen"
+    (wenOnManageAddressClose)="isManageAddressesOpen = false"
+  >
+  </wen-wallet-address>
+</nz-card>
+
+<div class="pt-6 lg:mt-4 lg:pt-0">
+  <button
+    class="flex justify-center wen-secondary"
+    nz-button
+    nzBlock
+    nzDanger
+    (click)="wenOnLeave.emit()"
+    *ngIf="!!(data.isMemberWithinSpace$ | async)"
+  >
+    <wen-icon-log-out class="mr-2"></wen-icon-log-out>
+    <span i18n>Leave Space</span>
+  </button>
+</div>
+
+<wen-token-stake
+  [staticStakeEnabled]="!!(data.isGuardianWithinSpace$ | async)"
+  *ngIf="!!openTokenStake && (data.token$ | async)"
+  [isOpen]="!!openTokenStake"
+  [amount]="amount"
+  [token]="(data.token$ | async)!"
+  (wenOnClose)="openTokenStake = false"
+></wen-token-stake>
+
+<wen-space-claim
+  *ngIf="!!openSpaceClaim && (data.space$ | async)"
+  [isOpen]="!!openSpaceClaim"
+  [space]="(data.space$ | async)!"
+  (wenOnClose)="openSpaceClaim = false"
+></wen-space-claim>

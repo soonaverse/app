@@ -1,0 +1,32 @@
+<nz-form-item class="mb-0 floating-title" [ngClass]="amountControl.value ? 'value' : ''">
+  <nz-form-label>
+    <span i18n>Price</span
+    >{{ ' (' + unitsService.label(collection?.mintingData?.network) + ')' }}</nz-form-label
+  >
+  <nz-form-control>
+    <nz-input-group nzSize="large" class="relative">
+      <nz-input-number
+        i18n-nzPlaceHolder
+        [nzPlaceHolder]="'Price (' + unitsService.label(collection?.mintingData?.network) + ')'"
+        nzSize="large"
+        class="w-full"
+        [nzMin]="0"
+        [formControl]="amountControl"
+        [nzDisabled]="disabled"
+      ></nz-input-number>
+      <i
+        nz-icon
+        nzType="info-circle"
+        class="absolute -translate-y-1/2 cursor-pointer right-6 top-1/2 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        nz-tooltip
+        i18n-nzTooltipTitle
+        [nzTooltipTitle]="
+          'Minimum price is ' +
+          (min | formatToken : collection?.mintingData?.network | async) +
+          ' and Maximum price is ' +
+          (max | formatToken : collection?.mintingData?.network | async)
+        "
+      ></i>
+    </nz-input-group>
+  </nz-form-control>
+</nz-form-item>

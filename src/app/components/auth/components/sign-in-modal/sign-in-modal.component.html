@@ -1,0 +1,92 @@
+<nz-modal [nzVisible]="((auth.showWalletPopup$ | async) || 0) > 0" nzClosable="false">
+  <ng-container *nzModalContent>
+    <div class="flex flex-col">
+      <button
+        nz-button
+        nzType="default"
+        (click)="onClickSignInMetamask()"
+        *ngIf="(auth.showWalletPopup$ | async) === 1"
+        class="flex w-full h-auto gap-6 p-6 mt-10 border just-start border-inputs-border dark:border-inputs-border-dark hover:border-foregrounds-secondary dark:border-foregrounds-secondary-dark focus:border-foregrounds-secondary rounded-large"
+      >
+        <nz-avatar
+          nzSrc="assets/metamask.svg"
+          [nzSize]="48"
+          class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+        ></nz-avatar>
+        <div
+          class="flex flex-col items-start text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        >
+          <span i18n>Metamask</span>
+          <small
+            class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+            >Connect to your Metamask wallet</small
+          >
+        </div>
+      </button>
+
+      <button
+        nz-button
+        nzType="default"
+        (click)="onClickSignInTanglePay()"
+        *ngIf="(auth.showWalletPopup$ | async) === 1"
+        class="flex w-full h-auto gap-6 p-6 mt-6 border just-start border-inputs-border dark:border-inputs-border-dark hover:border-foregrounds-secondary dark:border-foregrounds-secondary-dark focus:border-foregrounds-secondary rounded-large"
+      >
+        <nz-avatar
+          nzSrc="assets/tanglepay_logo.png"
+          [nzSize]="48"
+          class="border-2 padding-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+        ></nz-avatar>
+        <div
+          class="flex flex-col items-start text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        >
+          <span i18n>TanglePay</span>
+          <small
+            class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+            >Connect via TanglePay</small
+          >
+        </div>
+      </button>
+
+      <div
+        nz-typography
+        class="h-40 mx-auto mt-4 font-semibold center"
+        *ngIf="(auth.showWalletPopup$ | async) === 2"
+      >
+        <div class="ellipse">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div
+        nz-typography
+        class="mx-auto mt-4 font-semibold"
+        *ngIf="(auth.showWalletPopup$ | async) === 3"
+      >
+        <p i18n>Make sure you select public IOTA EVM Chain in MetaMask.</p>
+        <br /><br />
+        <p i18n>Network Name: IOTA EVM</p>
+        <p i18n>RPC URL: https://evm.wasp.sc.iota.org/</p>
+        <p i18n>Chain ID: 1074</p>
+      </div>
+    </div>
+  </ng-container>
+
+  <div
+    class="text-center"
+    [ngClass]="(auth.showWalletPopup$ | async) === 2 ? 'pt-24' : ''"
+    *nzModalFooter
+  >
+    <button
+      nz-button
+      nzType="text"
+      nzType="default"
+      class="wen-btn-link"
+      (click)="handleCancel()"
+      i18n
+    >
+      Cancel
+    </button>
+  </div>
+</nz-modal>

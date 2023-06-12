@@ -1,0 +1,126 @@
+<wen-modal-drawer [isOpen]="isOpen" [showHeader]="false" [content]="content" (wenOnClose)="close()">
+</wen-modal-drawer>
+
+<ng-template #content>
+  <form class="mt-6 space-y-4" [formGroup]="form" nzLayout="vertical" nz-form>
+    <div class="mb-6 text-lg font-bold" i18n>Token description</div>
+
+    <nz-form-item class="floating-title" [ngClass]="titleControl.value ? 'value' : ''">
+      <nz-form-label i18n>Title</nz-form-label>
+      <nz-form-control nzSpan="null" i18n-nzErrorTip nzErrorTip="Title is invalid.">
+        <input
+          nz-input
+          nzSize="large"
+          i18n-placeholder
+          placeholder="Title"
+          [formControl]="titleControl"
+        />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item class="floating-title" [ngClass]="descriptionControl.value ? 'value' : ''">
+      <nz-form-label i18n>Description</nz-form-label>
+      <nz-form-control i18n-nzErrorTip nzErrorTip="Description is invalid.">
+        <textarea
+          nz-input
+          nzSize="large"
+          i18n-placeholder
+          placeholder="Token description"
+          rows="4"
+          [formControl]="descriptionControl"
+        ></textarea>
+      </nz-form-control>
+    </nz-form-item>
+
+    <div class="mt-10 mb-6 text-lg font-bold" i18n>Price per token</div>
+
+    <nz-form-item class="floating-title" [ngClass]="priceControl.value ? 'value' : ''">
+      <nz-form-label i18n>Price</nz-form-label>
+      <nz-form-control i18n-nzErrorTip nzErrorTip="Price is invalid.">
+        <input
+          nz-input
+          i18n-placeholder
+          placeholder="Price per token"
+          nzSize="large"
+          [formControl]="priceControl"
+        />
+      </nz-form-control>
+    </nz-form-item>
+
+    <div class="mt-10 mb-6 text-lg font-bold" i18n>Short description</div>
+
+    <nz-form-item
+      class="floating-title"
+      [ngClass]="shortDescriptionTitleControl.value ? 'value' : ''"
+    >
+      <nz-form-label i18n>Title</nz-form-label>
+      <nz-form-control i18n-nzErrorTip nzErrorTip="Short description title is invalid.">
+        <input
+          nz-input
+          nzSize="large"
+          i18n-placeholder
+          placeholder="Short description title"
+          [formControl]="shortDescriptionTitleControl"
+        />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item class="floating-title" [ngClass]="shortDescriptionControl.value ? 'value' : ''">
+      <nz-form-label i18n>Description</nz-form-label>
+      <nz-form-control i18n-nzErrorTip nzErrorTip="Short description is invalid.">
+        <textarea
+          nz-input
+          nzSize="large"
+          i18n-placeholder
+          placeholder="Short token description"
+          rows="4"
+          [formControl]="shortDescriptionControl"
+        ></textarea>
+      </nz-form-control>
+    </nz-form-item>
+    <div class="mt-10 mb-6 text-lg font-bold" i18n>Links</div>
+
+    <nz-form-item
+      *ngFor="let link of links?.controls; let i = index; let first = first; let last = last"
+    >
+      <nz-form-control i18n-nzErrorTip nzErrorTip="Invalid URL. (Start with http:// or https://)">
+        <nz-input-group nzSize="large" [nzPrefix]="prefixURL">
+          <input
+            type="text"
+            nz-input
+            i18n-placeholder
+            placeholder="URL"
+            [formControl]="gForm(link, 'url')"
+          />
+          <ng-template #prefixURL>
+            <wen-icon-link></wen-icon-link>
+          </ng-template>
+        </nz-input-group>
+      </nz-form-control>
+      <div class="flex items-center justify-between">
+        <button
+          nz-button
+          *ngIf="(links?.controls?.length || 0) < maxLinksCount && last"
+          nzType="link"
+          class="flex items-center mt-3 wen-secondary w-max"
+          (click)="addLink()"
+        >
+          <wen-icon-plus class="mr-0.5"></wen-icon-plus>
+          <span i18n>Add link</span>
+        </button>
+
+        <wen-icon-trash
+          *ngIf="!first && last"
+          class="cursor-pointer text-icons-destructive dark:text-icons-destructive-dark"
+          (click)="removeLink(i)"
+        ></wen-icon-trash>
+      </div>
+    </nz-form-item>
+  </form>
+  <div class="flex items-center justify-center mt-10">
+    <button nz-button nzSize="large" class="mr-10 wen-secondary" (click)="close()" i18n>
+      Cancel
+    </button>
+    <button nz-button nzType="primary" nzSize="large" (click)="saveChanges()" i18n>
+      Save changes
+    </button>
+  </div>
+</ng-template>

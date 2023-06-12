@@ -1,0 +1,47 @@
+<wen-description
+  [items]="[
+    { title: tokenInfoLabels[1], value: token?.name },
+    { title: tokenInfoLabels[2], value: token?.symbol },
+    { title: tokenInfoLabels[3], value: token?.decimals?.toString() },
+    !helper.isMinted(token)
+      ? {
+          title: tokenInfoLabels[4],
+          type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+          value:
+            '1 ' +
+            ((token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol) +
+            ' = ' +
+            token?.pricePerToken +
+            ' ' +
+            unitsService.label()
+        }
+      : null,
+    !helper.isMinted(token)
+      ? {
+          title: tokenInfoLabels[6],
+          type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+          value:
+            (token?.totalSupply | formatToken : token?.uid : false : false | async) +
+            ' ' +
+            token?.symbol
+        }
+      : null,
+    !helper.isMinted(token)
+      ? {
+          title: tokenInfoLabels[7],
+          value: 'Export CSV',
+          action: downloadCurrentDistribution.bind(this),
+          type: descriptionItemTypes.LINK
+        }
+      : null
+  ]"
+></wen-description>
+<ng-template #networkTooltipIcon>
+  <wen-icon-question-circle
+    class="cursor-help"
+    [size]="20"
+    nz-tooltip
+    i18n-nzTooltipTitle
+    nzTooltipTitle="Guardian's of the space will be able to decide where this token will be minted."
+  ></wen-icon-question-circle>
+</ng-template>

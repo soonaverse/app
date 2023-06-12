@@ -1,0 +1,105 @@
+<div class="space-y-12">
+  <div
+    class="space-y-4"
+    infiniteScroll
+    [infiniteScrollDistance]="5"
+    [infiniteScrollThrottle]="50"
+    (scrolled)="onScroll()"
+  >
+    <div class="inline-flex justify-between w-full">
+      <div class="flex items-center">
+        <ng-container *ngIf="deviceService.isDesktop$ | async; else hotTagsMobileBlock">
+          <nz-tag
+            *ngFor="let tag of hotTags"
+            nzMode="checkable"
+            [nzChecked]="selectedListControl.value === tag.value"
+            (nzCheckedChange)="handleFilterChange(tag.value)"
+          >
+            {{ tag.label }}
+          </nz-tag>
+        </ng-container>
+
+        <ng-template #hotTagsMobileBlock>
+          <nz-select
+            class="w-fit wen-sort-button min-w-32"
+            [ngModel]="selectedListControl.value"
+            (ngModelChange)="handleFilterChange($event)"
+          >
+            <nz-option
+              *ngFor="let tag of hotTags"
+              i18n-nzLabel
+              [nzLabel]="tag.label"
+              [nzValue]="tag.value"
+            ></nz-option>
+          </nz-select>
+        </ng-template>
+      </div>
+
+      <nz-input-group
+        *ngIf="deviceService.isDesktop$ | async"
+        nzSize="large"
+        [nzPrefix]="prefixIconSearch"
+        class="ml-8 border-none shadow-none outline-0 w-72"
+        nzSearch
+      >
+        <input
+          type="text"
+          nz-input
+          i18n-placeholder
+          placeholder="Find Participant"
+          class="text-base bg-inputs-background dark:bg-inputs-background-dark"
+          [formControl]="filterControl"
+        />
+      </nz-input-group>
+      <ng-template #prefixIconSearch>
+        <span nz-icon nzType="search" class="text-xl"></span>
+      </ng-template>
+
+      <wen-mobile-search
+        *ngIf="deviceService.isMobile$ | async"
+        [formControl]="filterControl"
+        class="mt-1 ml-auto w-full"
+        i18n-placeholder
+        placeholder="Find Participant"
+      >
+      </wen-mobile-search>
+    </div>
+
+    <!-- TODO Do we need dress this baby up? -->
+    <nz-alert
+      nzType="warning"
+      i18n-nzMessage
+      nzMessage="Showing only few top records..."
+      *ngIf="overTenRecords && data.isEmpty((getList() | async)) === false"
+    ></nz-alert>
+
+    <nz-skeleton
+      *ngIf="data.isLoading(getList() | async)"
+      class="p-4 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl"
+      [nzActive]="true"
+      [nzAvatar]="{ size: 'default' }"
+      [nzParagraph]="{ rows: 1, width: 100 }"
+    ></nz-skeleton>
+
+    <nz-card class="w-full" *ngIf="data.isEmpty(getList()  | async)">
+      <div class="flex flex-col justify-center text-center h-36">
+        <span
+          class="leading-7 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          No Participants
+        </span>
+      </div>
+    </nz-card>
+    <wen-member-card
+      class="block"
+      [fullWidth]="true"
+      *ngFor="let member of getList() | async; trackBy: trackByUid"
+      [createdOnLabel]="getMemberCreatedOnLabel()"
+      [fullWidth]="true"
+      [member]="member"
+    >
+      <p class="font-bold"><span i18n>Weight</span>: {{member.weight}}</p>
+    </wen-member-card>
+  </div>
+</div>

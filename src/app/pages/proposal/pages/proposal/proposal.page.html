@@ -1,0 +1,166 @@
+<wen-content [showBackButton]="true">
+  <ng-container *ngIf="deviceService.isMobile$ | async">
+    <wen-drawer-toggle i18n-label label="Proposal info" (click)="isProposaslInfoVisible = true">
+    </wen-drawer-toggle>
+  </ng-container>
+
+  <div class="relative py-12" nz-row [nzGutter]="40">
+    <div
+      nz-col
+      nzFlex="auto"
+      [ngStyle]="{
+        'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+      }"
+    >
+      <div class="mb-8 space-x-3">
+        <a [routerLink]="['/space', (data.space$ | async)?.uid]">
+          <nz-avatar
+            [nzSrc]="previewImageService.getAvatarSize((data.space$ | async)?.avatarUrl)"
+            class="mr-3 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark border-2 border-tags-border dark:border-tags-border-dark"
+            nzShape="circle"
+          >
+          </nz-avatar>
+          <span>{{((data.space$ | async)?.name || (data.space$ | async)?.uid) }}</span>
+        </a>
+
+        <nz-tag
+          class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+          i18n
+          >Proposal</nz-tag
+        >
+        <wen-proposal-status [proposal]="data.proposal$ | async"></wen-proposal-status>
+      </div>
+
+      <h1 class="mb-6">{{(data.proposal$ | async)?.name}}</h1>
+
+      <div class="flex items-center space-x-10">
+        <div class="flex items-center">
+          <span
+            nz-icon
+            nzType="calendar"
+            class="pr-2 text-lg text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            nzTheme="outline"
+          ></span>
+          <span>{{(data.proposal$ | async)?.createdOn?.toDate() | date:'short'}}</span>
+        </div>
+        <div [routerLink]="['member', (data.creator$ | async)?.uid]">
+          <nz-avatar
+            nzIcon="user"
+            [nzSrc]="(data.creator$ | async)?.avatar | resizeAvatar:filesizes.small"
+            class="mr-2"
+          >
+          </nz-avatar>
+          <span class="cursor-pointer" [routerLink]="['/', 'member', (data.creator$ | async)?.uid]"
+            >@{{((data.creator$ | async)?.name || (data.creator$ | async)?.uid) |
+            truncate:[16]}}</span
+          >
+        </div>
+      </div>
+      <wen-tabs class="block w-screen mt-12 -ml-5 lg:w-max lg:ml-0" [tabs]="sections"></wen-tabs>
+
+      <div
+        *ngIf="deviceService.isMobile$ | async"
+        class="w-screen h-px mt-6 -ml-5 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark"
+      ></div>
+      <div class="w-full py-12">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+
+    <div
+      class="mt-4 space-y-4 lg:mt-0 lg:max-w-450"
+      nz-col
+      [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+    >
+      <wen-share
+        *ngIf="deviceService.isDesktop$ | async"
+        class="block mb-4 p-6 lg:p-0"
+        i18n-shareText
+        shareText="Check out proposal"
+        [shareUrl]="helper.getShareUrl(data.proposal$ | async)"
+      >
+      </wen-share>
+
+      <nz-card
+        *ngIf="!(data.proposal$ | async)?.rejected && !helper.isComplete(data.proposal$ | async) && (data.proposal$ | async)?.approved"
+        i18n-nzTitle
+        nzTitle="Current Results"
+      >
+        <div class="-mt-3" *ngFor="let q of (data.proposal$ | async)?.questions">
+          <p class="text-lg text-foregrounds-primary dark:text-foregrounds-primary-dark">
+            {{q.text}}
+          </p>
+
+          <ng-container *ngFor="let a of q.answers">
+            <p
+              nz-typography
+              class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            >
+              {{a.text}}
+              <span class="text-xxs" i18n
+                >(weight: {{(data.proposal$ | async)?.results?.answers?.[a.value] || 0 | number :
+                '1.0-2'}})</span
+              >
+            </p>
+            <nz-progress
+              [nzPercent]="data.getProgress(data.proposal$ | async, a) | number : '1.2-2'"
+              nzStatus="active"
+            >
+            </nz-progress>
+          </ng-container>
+        </div>
+      </nz-card>
+
+      <wen-proposal-info
+        class="block mt-4 space-y-4"
+        *ngIf="deviceService.isDesktop$ | async"
+        [isGuardianWithinSpace$]="isGuardianWithinSpace$"
+        (wenOnApprove)="approve()"
+        (wenOnReject)="reject()"
+      >
+        (wenOnExportClick)="exportNativeEvent()">
+      </wen-proposal-info>
+
+      <nz-card i18n-nzTitle nzTitle="Selected Badges" *ngIf="(data.badges$ | async)?.length">
+        <div class="flex flex-wrap gap-2">
+          <article
+            *ngFor="let a of (data.badges$ | async); trackBy: trackByUid"
+            class="flex flex-col items-center justify-center p-3 w-28 h-28 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl"
+          >
+            <wen-badge-tile [image]="a.badge.image" [name]="a.badge.name"></wen-badge-tile>
+          </article>
+        </div>
+      </nz-card>
+    </div>
+  </div>
+
+  <nz-drawer
+    [nzBodyStyle]="{ overflow: 'auto', padding: '8px' }"
+    [nzWidth]="'100vw'"
+    [nzClosable]="false"
+    [nzVisible]="isProposaslInfoVisible"
+  >
+    <div *nzDrawerContent class="relative h-full">
+      <button class="absolute z-10 -top-8 right-5" (click)="isProposaslInfoVisible = false">
+        <wen-icon-close></wen-icon-close>
+      </button>
+
+      <wen-share
+        *ngIf="deviceService.isMobile$ | async"
+        class="block mt-10 mb-4 p-6 lg:p-0"
+        i18n-shareText
+        shareText="Check out proposal"
+        [shareUrl]="helper.getShareUrl(data.proposal$ | async)"
+      >
+      </wen-share>
+
+      <wen-proposal-info
+        [isGuardianWithinSpace$]="isGuardianWithinSpace$"
+        (wenOnApprove)="approve()"
+        (wenOnReject)="reject()"
+      >
+        (wenOnExportClick)="exportNativeEvent()">
+      </wen-proposal-info>
+    </div>
+  </nz-drawer>
+</wen-content>

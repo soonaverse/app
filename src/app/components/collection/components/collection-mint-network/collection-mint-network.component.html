@@ -1,0 +1,329 @@
+<wen-modal-drawer
+  i18n-title
+  title="Mint collection on network"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="w-full pb-4 overflow-x-auto lg:pb-0">
+    <wen-transaction-steps
+      class="mx-6 mt-10"
+      [steps]="steps"
+      [currentNum]="getCurrentSequenceNum()"
+    ></wen-transaction-steps>
+  </div>
+
+  <div [ngSwitch]="true" class="wen-modal-tabs">
+    <ng-container *ngSwitchCase="currentStep === stepType.SELECT">
+      <ng-container *ngTemplateOutlet="selectTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="currentStep === stepType.TRANSACTION">
+      <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="currentStep === stepType.WAIT">
+      <ng-container *ngTemplateOutlet="waitTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="currentStep === stepType.CONFIRMED">
+      <ng-container *ngTemplateOutlet="confirmTemplate"></ng-container>
+    </ng-container>
+  </div>
+
+  <ng-template #selectTemplate>
+    <div class="wen-transaction-select-container">
+      <div
+        class="w-4/5 mt-8 font-medium text-center lg:mt-16 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Once minted all NFT’s from this collection will be available to migrate to the selected
+        network by their owners.
+      </div>
+
+      <wen-select-network
+        class="block w-full"
+        [selectedNetwork]="selectedNetwork"
+        (selectNetwork)="selectedNetwork = $event"
+      >
+      </wen-select-network>
+
+      <div class="w-full mt-10" *ngIf="(collection?.total || 0) - (collection?.sold || 0) > 0">
+        <div class="flex items-end">
+          <div
+            class="text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+          >
+            Unsold NFT's
+          </div>
+          <wen-icon-question-circle
+            [size]="24"
+            class="ml-4 text-icons-secondary dark:text-icons-secondary-dark"
+            nz-tooltip
+            i18n-nzTooltipTitle
+            nzTooltipTitle="Decide what should happen with all NFTs that were not sold yet."
+          ></wen-icon-question-circle>
+        </div>
+
+        <nz-radio-group class="block w-full mt-4 wen-radio-group" [formControl]="unsoldControl">
+          <wen-radio [value]="unsoldNftOptions.KEEP_PRICE">
+            <span
+              class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+              i18n
+              >Keep the same price</span
+            >
+          </wen-radio>
+          <wen-radio
+            [value]="unsoldNftOptions.TAKE_OWNERSHIP"
+            *ngIf="collection?.type === collectionTypes.CLASSIC"
+          >
+            <span
+              class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+              i18n
+              >Take Ownership</span
+            >
+          </wen-radio>
+          <wen-radio
+            [value]="unsoldNftOptions.SET_NEW_PRICE"
+            *ngIf="collection?.type !== collectionTypes.CLASSIC"
+          >
+            <span
+              class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+              i18n
+              >Set new price</span
+            >
+          </wen-radio>
+          <wen-radio [value]="unsoldNftOptions.BURN_UNSOLD">
+            <span
+              class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+              i18n
+              >Burn all unsold</span
+            >
+          </wen-radio>
+        </nz-radio-group>
+
+        <div
+          class="w-full flex justify-end mt-3.5 lg:pl-5"
+          *ngIf="unsoldControl.value === unsoldNftOptions.SET_NEW_PRICE"
+        >
+          <nz-input-number
+            i18n-nzPlaceHolder
+            [nzPlaceHolder]="'Nft price (' + unitsService.label(selectedNetwork) + ')'"
+            nzSize="large"
+            class="w-full"
+            [nzMin]="0"
+            [formControl]="newPrice"
+          ></nz-input-number>
+        </div>
+      </div>
+
+      <div
+        class="flex items-center w-full p-4 mt-16 font-medium bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl"
+      >
+        <wen-icon-info-circle
+          class="text-icons-primary dark:text-icons-primary-dark"
+        ></wen-icon-info-circle>
+        <div class="ml-2.5" i18n>
+          Note that the collection ownership will be granted only to your profile.
+        </div>
+      </div>
+
+      <div
+        class="flex items-center w-full p-4 mt-4 font-medium bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl"
+      >
+        <wen-icon-info-circle
+          class="text-icons-primary dark:text-icons-primary-dark"
+        ></wen-icon-info-circle>
+        <div class="ml-2.5" i18n>
+          Once minted, a collection cannot be edited and a new NFT cannot be added to that
+          collection
+        </div>
+      </div>
+
+      <wen-terms-and-conditions
+        class="w-full mt-16"
+        [isChecked]="cancelActiveSales"
+        i18n-label
+        label="By checking this box, you acknowledge that all active sales of this collection’s NFTs will be cancelled."
+        i18n-linkLabel
+        [showLink]="false"
+        (wenOnCheckChange)="cancelActiveSales = $event"
+      >
+      </wen-terms-and-conditions>
+
+      <wen-terms-and-conditions
+        class="w-full mt-4"
+        [isChecked]="agreeTermsConditions"
+        documentLink="https://docs.google.com/document/d/1ng67fXTdINhmgkLpnbS_SkiDlZSsDAqrd13cbwXQCcQ"
+        (wenOnCheckChange)="agreeTermsConditions = $event"
+      >
+      </wen-terms-and-conditions>
+
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="large"
+        class="w-full mt-6 lg:w-auto"
+        [disabled]="!agreeTermsConditions || !cancelActiveSales || selectedNetwork === undefined"
+        (click)="proceedWithMint()"
+        i18n
+      >
+        Confirm & Start minting
+      </button>
+
+      <div
+        class="w-3/5 mt-6 text-sm font-medium text-center text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Once you agree with the terms, the generated address will remain active during the whole
+        process.
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #transactionTemplate>
+    <div class="wen-transaction-active-container">
+      <div
+        class="flex w-full p-4 my-10 font-medium bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl"
+      >
+        <wen-icon-alert-octagon
+          class="text-icons-primary dark:text-icons-primary-dark"
+        ></wen-icon-alert-octagon>
+        <div class="ml-2.5" i18n>
+          Once the transaction is registered, we will cancel all ongoing sales of collection's NFTs
+          and we will burn all unsold NFT's (if selected).
+        </div>
+      </div>
+
+      <ng-container *ngTemplateOutlet="mintDetails"></ng-container>
+
+      <div class="px-4 py-2.5 rounded-2xl border border-alerts-error flex">
+        <wen-icon-stopwatch class="mr-2 lg:mr-3"></wen-icon-stopwatch>
+        <div class="text-base font-medium">
+          <span *ngIf="!helper.isExpired(transaction$ | async)">{{
+            expiryTicker$ | async | countdownTime
+          }}</span>
+          <span class="text-alerts-error" *ngIf="!helper.isExpired(transaction$ | async)" i18n>
+            remaining to make the transfer.</span
+          >
+          <span class="text-alerts-error" *ngIf="helper.isExpired(transaction$ | async)" i18n
+            >Expired</span
+          >
+        </div>
+      </div>
+
+      <nz-alert
+        class="mt-2"
+        nzType="warning"
+        nzShowIcon
+        *ngIf="!isExpired(transaction$ | async) && invalidPayment"
+        nzMessage="We received invalid amount. Try again."
+      ></nz-alert>
+
+      <wen-send-funds
+        class="block w-full"
+        *ngIf="!isExpired(transaction$ | async)"
+        [targetAddress]="targetAddress"
+        [formattedAmount]="targetAmount | formatToken : selectedNetwork | async"
+      >
+      </wen-send-funds>
+
+      <wen-wallet-deeplink
+        *ngIf="!isExpired(transaction$ | async)"
+        class="w-full mt-6 lg:w-auto"
+        [targetAddress]="targetAddress"
+        [network]="selectedNetwork"
+        [targetAmount]="(targetAmount || 0).toString()"
+      >
+      </wen-wallet-deeplink>
+    </div>
+  </ng-template>
+
+  <ng-template #waitTemplate>
+    <div class="wen-transaction-wait-container">
+      <ng-container *ngTemplateOutlet="mintDetails"></ng-container>
+
+      <div
+        class="w-full mt-10 border border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+      >
+        <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+        <div class="wen-modal-history-log">
+          <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+            <div class="mr-2 text-sm font-medium text-foregrounds-secondary">
+              {{ t.date | Time }}
+            </div>
+            <a
+              class="absolute text-sm font-medium underline left-16 wen-btn-link"
+              target="_blank"
+              *ngIf="t.link"
+              [href]="transactionService.getExplorerLink(t.transaction)"
+              >{{ t.label }}</a
+            >
+            <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #confirmTemplate>
+    <div class="wen-transaction-wait-container">
+      <div class="flex items-center mt-10 lg:w-3/5">
+        <div
+          class="flex items-center justify-center w-10 h-10 rounded-full min-w-10 min-h-10 bg-alerts-success dark:bg-alerts-success-dark"
+        >
+          <wen-icon-check
+            class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+          ></wen-icon-check>
+        </div>
+        <div class="ml-3.5 text-lg font-medium" i18n>
+          NFT's from this collection are now being migrated.
+        </div>
+      </div>
+
+      <button nz-button nzType="primary" nzSize="large" class="mt-10" (click)="close()" i18n>
+        Finish Mint
+      </button>
+    </div>
+  </ng-template>
+</ng-template>
+
+<ng-template #mintDetails>
+  <wen-selected-network
+    class="block w-full"
+    [selectedNetwork]="selectedNetwork"
+  ></wen-selected-network>
+
+  <div
+    class="flex items-center justify-between w-full p-4 mt-6 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-xl"
+  >
+    <div
+      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      i18n
+    >
+      NFT's in collection
+    </div>
+
+    <div class="text-sm font-bold">{{ collection?.total || 0 | number : '1.0' }}</div>
+  </div>
+
+  <div
+    class="flex items-center justify-between w-full p-4 mt-6 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-xl"
+  >
+    <div class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+      <div class="text-xs" i18n>Total Storage Fee</div>
+      <div class="text-xxs" i18n>(NFTs Storage Fee + Collection Storage Fee)</div>
+    </div>
+
+    <div>
+      <div class="font-bold text-right">
+        {{ targetAmount | formatToken : selectedNetwork : true | async }}
+      </div>
+    </div>
+  </div>
+  `
+</ng-template>

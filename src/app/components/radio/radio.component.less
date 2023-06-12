@@ -1,0 +1,19 @@
+[nz-radio] ::ng-deep {
+  @apply font-medium text-base;
+
+  .ant-radio:hover .ant-radio-inner {
+    @apply border-accent-primary;
+  }
+
+  .ant-radio-checked .ant-radio-inner {
+    @apply bg-accent-primary border-accent-primary;
+  }
+
+  .ant-radio-disabled {
+    opacity: 0.4;
+
+    .ant-radio-inner {
+      @apply bg-backgrounds-primary;
+    }
+  }
+}

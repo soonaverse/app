@@ -1,0 +1,133 @@
+<wen-content [showBackButton]="true" *ngIf="(data.token$ | async)">
+  <ng-container *ngIf="deviceService.isMobile$ | async">
+    <wen-drawer-toggle i18n-label label="Token info" (click)="isTokenInfoVisible = true">
+    </wen-drawer-toggle>
+  </ng-container>
+  <div class="relative py-12" nz-row [nzGutter]="40">
+    <div
+      nz-col
+      nzFlex="auto"
+      [ngStyle]="{
+          'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+        }"
+    >
+      <div class="flex items-center mb-8 space-x-3">
+        <a [routerLink]="['/space', (data.space$ | async)?.uid]" class="flex items-center">
+          <nz-avatar
+            [nzSrc]="previewImageService.getAvatarSize((data.space$ | async)?.avatarUrl)"
+            [nzSize]="32"
+            class="mr-3 wen-avatar-background min-w-8"
+            nzShape="circle"
+          >
+          </nz-avatar>
+          <div class="font-medium">{{ (data.space$ | async)?.name }}</div>
+        </a>
+
+        <nz-tag
+          class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+          i18n
+          >Token</nz-tag
+        >
+        <nz-tag
+          class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+          *ngIf="!(data.token$ | async)?.approved && !(data.token$ | async)?.rejected"
+          i18n
+          >Pending
+        </nz-tag>
+        <nz-tag
+          class="wen-status-tag bg-tags-closed dark:bg-tags-closed-dark border-tags-closed dark:border-tags-closed-dark"
+          *ngIf="(data.token$ | async)?.rejected"
+          i18n
+          >Rejected
+        </nz-tag>
+        <nz-tag
+          class="wen-status-tag bg-tags-available dark:bg-tags-available-dark border-tags-available dark:border-tags-available-dark"
+          *ngIf="(data.token$ | async)?.approved && !(data.token$ | async)?.rejected"
+          i18n
+          >{{getLatestStatus((data.token$ | async) || undefined)}}
+        </nz-tag>
+        <div class="flex items-center mt-4 space-x-1 cursor-default lg:mt-0">
+          <a class="px-2 dark:bg-transparent">
+            <wen-icon-thumb-up (click)="vote(1)"></wen-icon-thumb-up
+          ></a>
+          <div class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark">
+            {{(data.tokenStats$ | async)?.votes?.upvotes || 0 | number: '1.0-2'}}
+          </div>
+          <a class="px-2 dark:bg-transparent">
+            <wen-icon-thumb-down (click)="vote(-1)"></wen-icon-thumb-down
+          ></a>
+          <ng-container
+            *ngIf="(data.isGuardianInRankModeratorSpace$ | async) || (data.isGuardianWithinSpace$| async)"
+          >
+            <div class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark">
+              {{(data.tokenStats$ | async)?.votes?.downvotes || 0 | number: '1.0-2'}}
+            </div>
+          </ng-container>
+          <ng-container *ngIf="(data.isGuardianInRankModeratorSpace$ | async)">
+            <a class="flex px-2 dark:bg-transparent" (click)="rank()">
+              <wen-icon-crown></wen-icon-crown>
+              <div
+                class="ml-2 font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                i18n
+              >
+                Rank
+              </div></a
+            >
+            <div class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark">
+              {{(data.tokenStats$ | async)?.ranks?.avg || 0 | number: '1.0-2'}} ({{(data.tokenStats$
+              | async)?.ranks?.count || 0 | number: '1.0-2'}})
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <h1 class="mb-6">{{ (data.token$ | async)?.name }}</h1>
+
+      <wen-tabs class="block w-screen mt-10 -ml-5 lg:w-max lg:ml-0" [tabs]="sections"></wen-tabs>
+
+      <div
+        *ngIf="deviceService.isMobile$ | async"
+        class="w-screen h-px mt-6 -ml-5 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark"
+      ></div>
+
+      <div class="w-full py-6">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+    <div
+      class="mt-4 space-y-4 lg:space-y-6 lg:max-w-450"
+      nz-col
+      [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+      [ngStyle]="{
+          'max-width': (deviceService.isDesktop$ | async) ? '450px' : '100%'
+        }"
+    >
+      <wen-token-buy *ngIf="deviceService.isDesktop$ | async"></wen-token-buy>
+      <wen-token-progress
+        [token]="(data.token$ | async) || undefined"
+        [memberDistribution]="(data.memberDistribution$ | async) || undefined"
+        *ngIf="deviceService.isDesktop$ | async"
+      ></wen-token-progress>
+
+      <wen-token-info class="block space-y-4 lg:space-y-6" *ngIf="deviceService.isDesktop$ | async">
+      </wen-token-info>
+    </div>
+  </div>
+
+  <nz-drawer
+    [nzBodyStyle]="{ overflow: 'auto', padding: '8px' }"
+    [nzWidth]="'100vw'"
+    [nzClosable]="false"
+    [nzVisible]="isTokenInfoVisible"
+  >
+    <div *nzDrawerContent class="relative h-full">
+      <button class="absolute z-10 -top-4 right-5" (click)="isTokenInfoVisible = false">
+        <wen-icon-close></wen-icon-close>
+      </button>
+
+      <h1 class="w-3/4 mt-10 mb-12 ml-5">{{ (data.token$ | async)?.name }}</h1>
+
+      <wen-token-info></wen-token-info>
+    </div>
+  </nz-drawer>
+</wen-content>

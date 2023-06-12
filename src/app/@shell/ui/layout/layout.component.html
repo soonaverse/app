@@ -1,0 +1,33 @@
+<nz-layout class="bg-backgrounds-primary dark:bg-backgrounds-primary-dark">
+  <nz-sider style="min-height: 60rem" nzWidth="auto" *ngIf="showSideBar$ | async">
+    <wen-sider></wen-sider>
+  </nz-sider>
+
+  <nz-layout
+    class="bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+    [ngClass]="(showSideBar$ | async) ? 'rounded-l-large' : ''"
+  >
+    <wen-header></wen-header>
+
+    <div
+      class="relative w-full bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark h-28 lg:hidden"
+      [ngClass]="{
+        hidden: routerService.isHomeRoute$ | async,
+        'h-28': (routerService.isNewRoute$ | async) === false,
+        'h-16': routerService.isNewRoute$ | async
+      }"
+    >
+      <div
+        class="absolute bottom-0 w-full h-10 bg-backgrounds-secondary dark:bg-backgrounds-tertiary-dark rounded-t-40"
+        [ngClass]="{
+          'h-4 rounded-t-none z-50': routerService.isNewRoute$ | async
+        }"
+      ></div>
+    </div>
+    <div class="flex-1">
+      <ng-content></ng-content>
+    </div>
+
+    <wen-footer></wen-footer>
+  </nz-layout>
+</nz-layout>

@@ -1,0 +1,263 @@
+<div class="space-y-12">
+  <div class="space-y-4">
+    <div
+      class="flex flex-col space-y-4 xl:space-y-0 xl:space-x-4 xl:flex-row"
+      *ngIf="((data.member$ | async)?.uid === (loggedInMember$ | async)?.uid)"
+    >
+      <nz-card class="xl:w-1/2 grow" i18n-nzTitle [nzTitle]="title">
+        <div class="mb-8 space-y-4">
+          <article
+            class="flex items-center justify-between p-3 lg:h-18 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl"
+          >
+            <div>
+              <div
+                class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                i18n
+              >
+                Total staked
+              </div>
+              <p>
+                <b
+                  >{{ ( getTotalStaked() | async | formatToken: (token$ | async)?.uid: false: false:
+                  2 | async) }} {{(token$ | async)?.symbol | uppercase}}</b
+                >
+              </p>
+              <p
+                class="flex text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                i18n
+              >
+                Staking Value: {{ ( (getTotalStakedValue() | async) | formatToken: (token$ |
+                async)?.uid: false: false: 2 | async) }}
+                <wen-icon-question-circle
+                  [size]="16"
+                  class="ml-1 text-icons-secondary dark:text-icons-secondary-dark"
+                  nz-tooltip
+                  i18n-nzTooltipTitle
+                  nzTooltipTitle="Staked amount * Rewards Multiplier"
+                ></wen-icon-question-circle>
+              </p>
+            </div>
+            <a
+              class="px-4 py-2 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl"
+            >
+              <div
+                class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                i18n
+              >
+                Claimable Reward
+              </div>
+              <a [routerLink]="['../tokens']">
+                <b
+                  >{{ ( getTotalUnclaimed() | async | formatToken:(token$ | async)?.uid:false:false:
+                  2 | async) }} {{(token$ | async)?.symbol | uppercase}}</b
+                >
+              </a>
+            </a>
+          </article>
+
+          <div class="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-4">
+            <article
+              class="flex items-center px-3 lg:w-1/2 justify-between-full h-9 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl"
+            >
+              <a
+                class="flex items-center justify-between w-full"
+                [routerLink]="['/member', (data.member$ | async)?.uid, 'tokens', { 'tab': 'staking' }]"
+              >
+                <wen-icon-staking class="flex"></wen-icon-staking>
+                <span
+                  class="pl-2 grow"
+                  [ngClass]="{
+                  truncate: deviceService.isDesktop$ | async
+                }"
+                  >View All</span
+                >
+                <wen-icon-angle-left class="flex rotate-180"></wen-icon-angle-left>
+              </a>
+            </article>
+            <article
+              class="flex items-center px-3 lg:w-1/2 justify-between-full h-9 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl"
+            >
+              <a class="flex items-center justify-between w-full" [routerLink]="['/soon-staking']">
+                <wen-icon-crown class="flex"></wen-icon-crown>
+                <span
+                  class="pl-2 grow"
+                  [ngClass]="{
+                  truncate: deviceService.isDesktop$ | async
+                }"
+                  >My Features</span
+                >
+                <wen-icon-angle-left class="flex rotate-180"></wen-icon-angle-left>
+              </a>
+            </article>
+          </div>
+        </div>
+
+        <button
+          nz-button
+          nzType="primary"
+          class="self-center mx-auto mt-6"
+          (click)="openTokenStake = true"
+          nzBlock
+          nzSize="large"
+        >
+          <span *ngIf="userHasStake$() | async" i18n
+            >Stake more {{(token$ | async)?.symbol | uppercase}}</span
+          >
+          <span *ngIf="(userHasStake$() | async) === false" i18n
+            >Stake {{(token$ | async)?.symbol | uppercase}}</span
+          >
+        </button>
+
+        <button
+          nz-button
+          nzType="default"
+          [routerLink]="['/token', soonTokenId, 'trade']"
+          class="self-center mx-auto mt-4"
+          nzBlock
+          nzSize="large"
+        >
+          Buy more {{(token$ | async)?.symbol | uppercase}}
+        </button>
+
+        <ng-template #title>
+          <div class="flex flex-col justify-between space-y-4 lg:space-y-0 lg:flex-row">
+            <div class="flex space-x-4">
+              <nz-avatar
+                [nzSrc]="previewImageService.getTokenSize((token$ | async)?.icon)"
+                [nzSize]="56"
+                class="wen-avatar-background min-w-6 min-h-6"
+                nzShape="circle"
+              >
+              </nz-avatar>
+              <div>
+                <p i18n>My Staking</p>
+                <p
+                  *ngIf="(getLevelExpiry() | async)"
+                  class="text-base font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                >
+                  <span i18n>until </span> {{(getLevelExpiry() | async)?.toDate() | date:
+                  'shortDate'}}
+                </p>
+              </div>
+            </div>
+            <nz-tag
+              class="wen-status-tag bg-tags-available dark:bg-tags-available-dark border-tags-available dark:border-tags-available-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+              i18n
+              >VIP LEVEL {{auth.memberLevel$ | async}}
+            </nz-tag>
+          </div>
+        </ng-template>
+      </nz-card>
+
+      <nz-card class="xl:w-1/2 grow" i18n-nzTitle nzTitle="My Favourites">
+        <div class="absolute top-6 right-6">
+          <a nz-button nzType="default" [routerLink]="['/tokens', 'favourites']" nzSize="small">
+            <div class="text-xs mr-0.5" i18n>View All</div>
+            <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+          </a>
+        </div>
+
+        <wen-token-trading-pairs-table
+          *ngIf="tokenFavourites?.length"
+          class="max-h-[320px] overflow-y-auto"
+          [favouritesOnly]="true"
+          [limittedView]="true"
+        ></wen-token-trading-pairs-table>
+        <p *ngIf="!tokenFavourites?.length">No Favourites yet.</p>
+      </nz-card>
+    </div>
+
+    <nz-card
+      i18n-nzTitle
+      nzTitle="Profile Options"
+      class="overflow-hidden"
+      *ngIf="((data.member$ | async)?.uid === (loggedInMember$ | async)?.uid)"
+    >
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </nz-card>
+
+    <ng-template #content>
+      <nz-list>
+        <div nz-row class="px-8">
+          <div nz-col [nzLg]="12" [nzXs]="24" class="flex flex-col space-y-2">
+            <nz-list-item>
+              <a nz-button nzType="default" nzSize="small" (click)="editProfile()">
+                <div class="text-xs mr-0.5" i18n>Edit Profile</div>
+                <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+              </a>
+            </nz-list-item>
+            <nz-list-item>
+              <a nz-button nzType="default" nzSize="small" (click)="manageAddresses()">
+                <div class="text-xs mr-0.5" i18n>Manage Addresses</div>
+                <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+              </a>
+            </nz-list-item>
+            <nz-list-item>
+              <a
+                nz-button
+                nzType="default"
+                nzSize="small"
+                [routerLink]="['/member', (data.member$ | async)?.uid, 'transactions', { export: true }]"
+              >
+                <div class="text-xs mr-0.5" i18n>Export All Transactions</div>
+                <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+              </a>
+            </nz-list-item>
+          </div>
+          <div nz-col [nzLg]="12" [nzXs]="24" class="flex flex-col space-y-2">
+            <nz-list-item>
+              <a
+                nz-button
+                nzType="default"
+                nzSize="small"
+                [routerLink]="['/member', (data.member$ | async)?.uid, 'nfts', { depositNft: true }]"
+              >
+                <div class="text-xs mr-0.5" i18n>Deposit NFT</div>
+                <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+              </a>
+            </nz-list-item>
+            <nz-list-item>
+              <a nz-button nzType="default" nzSize="small" (click)="openStakeNft = true">
+                <div class="text-xs mr-0.5" i18n>Stake NFT</div>
+                <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+              </a>
+            </nz-list-item>
+            <nz-list-item>
+              <a nz-button nzType="default" nzSize="small" (click)="openAuditOneModal()">
+                <div class="text-xs mr-0.5" i18n>Request Verification</div>
+                <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+              </a>
+            </nz-list-item>
+          </div>
+        </div>
+      </nz-list>
+    </ng-template>
+
+    <wen-timeline
+      [items]="getTimelineItems(data.badges$ | async)"
+      [isCollapsable]="false"
+    ></wen-timeline>
+  </div>
+</div>
+
+<wen-token-stake
+  *ngIf="!!openTokenStake && (token$ | async)"
+  [isOpen]="!!openTokenStake"
+  [token]="(token$ | async)!"
+  [weeks]="1"
+  (wenOnClose)="openTokenStake = false"
+></wen-token-stake>
+
+<wen-audit-one-modal
+  [dataset]="data.auditOneStatus$ | async"
+  *ngIf="isAuditOneModalOpen"
+  [canManage]="((data.member$ | async)?.uid === (loggedInMember$ | async)?.uid)"
+  [entity]="(data.member$ | async)?.uid"
+  (wenOnClose)="closeAuditOneModal()"
+></wen-audit-one-modal>
+
+<wen-nft-stake
+  *ngIf="openStakeNft"
+  [isOpen]="openStakeNft"
+  (wenOnClose)="openStakeNft = false"
+></wen-nft-stake>

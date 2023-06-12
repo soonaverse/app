@@ -1,0 +1,98 @@
+<div *ngIf="verifiedAddresses().length === 0">
+  <div class="flex items-center text-alerts-error dark:text-alerts-error-dark">
+    <wen-icon-wallet class="mr-3.5"></wen-icon-wallet>
+    <span class="text-sm font-medium" i18n>Address is not verified</span>
+  </div>
+</div>
+<div class="space-y-3">
+  <div *ngFor="let network of verifiedAddresses()">
+    <ng-container *ngIf="isNetworkEnabled(network)">
+      <div
+        class="flex items-center justify-between bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl pl-5 pr-4 py-2.5"
+      >
+        <div class="flex items-center">
+          <wen-icon-shimmer
+            *ngIf="network === networks.SMR || network === networks.RMS"
+            class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            [size]="20"
+          ></wen-icon-shimmer>
+          <wen-icon-iota-no-border
+            *ngIf="network === networks.IOTA || network === networks.ATOI"
+            class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            [size]="20"
+          ></wen-icon-iota-no-border>
+          <div class="font-bold ml-3">
+            {{ networkName(network) }} <ng-container i18n>wallet</ng-container>
+          </div>
+        </div>
+        <button nz-button nzType="default" nzSize="small" (click)="copyAddress(network)">
+          <ng-container *ngIf="isCopied[network]; else isNotCopied" i18n>Copied</ng-container>
+          <ng-template #isNotCopied i18n>Copy address</ng-template>
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<wen-manage-addresses
+  [isOpen]="isManageAddressesOpen"
+  [entity]="entity"
+  (wenOnChange)="openVerification($event)"
+  (wenOnClose)="manageAddressClose()"
+>
+</wen-manage-addresses>
+
+<nz-modal
+  *ngIf="deviceService.isDesktop$ | async"
+  [nzVisible]="!!verifyAddressOpen"
+  nzCentered
+  [nzClosable]="false"
+  [nzMaskClosable]="true"
+  [nzMask]="true"
+  (nzOnCancel)="verifyAddressOpen = null"
+  [nzContent]="verifyAddressModalContent"
+  [nzFooter]="null"
+  [nzWidth]="modalWidth"
+  [nzBodyStyle]="{ padding: '28px 24px 24px 24px' }"
+>
+  <ng-template #verifyAddressModalContent>
+    <div class="flex items-start justify-between">
+      <div class="text-2xl font-bold">
+        <span i18n>Verify your</span> {{ networkName(verifyAddressOpen) }} <span i18n>address</span>
+      </div>
+      <wen-icon-close class="cursor-pointer" (click)="verifyAddressOpen = null"></wen-icon-close>
+    </div>
+
+    <wen-verify-address
+      [network]="verifyAddressOpen"
+      [entity]="entity"
+      [entityType]="entityType"
+      (wenOnClose)="close()"
+    ></wen-verify-address>
+  </ng-template>
+</nz-modal>
+
+<nz-drawer
+  *ngIf="deviceService.isMobile$ | async"
+  [nzBodyStyle]="{ overflow: 'auto', padding: '20px' }"
+  [nzWidth]="'100vw'"
+  #drawer
+  [nzClosable]="false"
+  [nzVisible]="!!verifyAddressOpen"
+>
+  <div *nzDrawerContent class="relative h-full">
+    <div class="pb-4 text-3xl font-bold max-w-2/3">
+      <span i18n>Verify your</span> {{ networkName(verifyAddressOpen) }} <span i18n>address</span>
+    </div>
+    <button class="absolute z-10 top-4 right-5" (click)="verifyAddressOpen = null">
+      <wen-icon-close></wen-icon-close>
+    </button>
+
+    <wen-verify-address
+      [network]="verifyAddressOpen"
+      [entity]="entity"
+      [entityType]="entityType"
+      (wenOnClose)="close()"
+    ></wen-verify-address>
+  </div>
+</nz-drawer>

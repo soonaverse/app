@@ -1,0 +1,62 @@
+<nz-card>
+  <div class="wen-card-highlight-title">{{ title }}</div>
+
+  <nz-table class="block mt-2" [nzData]="[{}]" [nzShowPagination]="false" nzSize="small">
+    <tbody>
+      <tr
+        *ngFor="let token of tokens; let i = index"
+        class="relative cursor-pointer"
+        [routerLink]="toDetail ? ['/token', token?.uid] : ['/token', token?.uid, 'trade']"
+      >
+        <td class="border-0">
+          <div class="flex items-center">
+            <nz-avatar
+              [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+              class="border-2 border-tags-border dark:border-tags-border-dark min-w-6"
+              nzShape="circle"
+              [nzSize]="24"
+            >
+            </nz-avatar>
+            <div class="ml-2 text-sm font-bold">
+              {{ (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol }}
+            </div>
+            <div
+              class="ml-2 text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            >
+              {{ token?.name }}
+            </div>
+          </div>
+        </td>
+        <td class="border-0">
+          <div class="text-sm font-medium">
+            {{
+              { value: (listenAvgPrice[i] | async) || 0, exponents: token?.decimals }
+                | formatToken : token?.uid : false : false
+                | async
+                | unknownIfZero
+            }}
+            {{
+              unitsService.label(token?.mintingData?.networkFormat || token?.mintingData?.network)
+            }}
+          </div>
+        </td>
+        <td class="border-0 right">
+          <div
+            [ngClass]="
+              (((listenChangePrice24h[i] | async) || 0) > 0 &&
+              (listenChangePrice24h[i] | async)?.toString() !== 'Infinity'
+                ? 'text-alerts-success class.dark:text-alerts-success-dark'
+                : '') +
+              (((listenChangePrice24h[i] | async) || 0) < 0
+                ? 'text-alerts-error class.dark:text-alerts-error-dark'
+                : '')
+            "
+            class="font-medium text-sm"
+          >
+            {{ (listenChangePrice24h[i] | async)?.toString() | percent : '1.0-2' }}
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

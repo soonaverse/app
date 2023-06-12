@@ -1,0 +1,345 @@
+<wen-content [showBackButton]="(deviceService.isDesktop$ | async) || false">
+  <h1 class="mt-7" i18n>New Proposal</h1>
+
+  <form nz-form nzLayout="vertical" [formGroup]="proposalForm">
+    <div class="py-4" nz-row [nzGutter]="24">
+      <div
+        class="space-y-4"
+        nz-col
+        nzFlex="auto"
+        [ngStyle]="{
+          'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+        }"
+      >
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Proposal info"
+            i18n-nzDescription
+            nzDescription="Title and description will be included on the Proposal. Start and end dates determine the duration of the Proposal."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-4 floating-title" [ngClass]="nameControl.value ? 'value' : ''">
+            <nz-form-label i18n>Title</nz-form-label>
+            <nz-form-control i18n-nzErrorTip nzErrorTip="Title is required.">
+              <input
+                nz-input
+                i18n-placeholder
+                placeholder="Title"
+                nzSize="large"
+                [formControl]="nameControl"
+              />
+            </nz-form-control>
+          </nz-form-item>
+          <div class="flex space-x-4 grow">
+            <nz-form-item
+              class="w-full floating-title"
+              [ngClass]="startControl.value ? 'value' : ''"
+            >
+              <nz-form-label i18n>Start</nz-form-label>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Start Date is required.">
+                <nz-date-picker
+                  class="flex grow"
+                  nzSize="large"
+                  [nzDisabledDate]="disabledStartDate.bind(this)"
+                  [nzShowTime]="{ nzFormat: 'HH:mm', nzMinuteStep: 5, nzHideDisabledOptions: true }"
+                  nzFormat="yyyy-MM-dd HH:mm"
+                  [formControl]="startControl"
+                  i18n-nzPlaceHolder
+                  nzPlaceHolder="Start"
+                  (nzOnOpenChange)="handleStartOpenChange($event)"
+                >
+                </nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item class="w-full floating-title" [ngClass]="endControl.value ? 'value' : ''">
+              <nz-form-label i18n>End</nz-form-label>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="End Date is required.">
+                <nz-date-picker
+                  class="flex grow"
+                  nzSize="large"
+                  #endDatePicker
+                  [nzDisabledDate]="disabledEndDate.bind(this)"
+                  [nzShowTime]="{ nzFormat: 'HH:mm', nzMinuteStep: 5, nzHideDisabledOptions: true }"
+                  nzFormat="yyyy-MM-dd HH:mm"
+                  [formControl]="endControl"
+                  i18n-nzPlaceHolder
+                  nzPlaceHolder="End"
+                ></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <nz-form-item
+            class="w-full floating-title"
+            [ngClass]="additionalInfoControl.value ? 'value' : ''"
+          >
+            <nz-form-label i18n>Description</nz-form-label>
+            <nz-form-control i18n-nzErrorTip nzErrorTip="Description is required.">
+              <textarea
+                nz-input
+                nzSize="large"
+                i18n-placeholder
+                placeholder="Description"
+                rows="4"
+                [formControl]="additionalInfoControl"
+              ></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-card>
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            class="mb-4"
+            i18n-nzTitle
+            nzTitle="Question Info"
+            i18n-nzDescription
+            nzDescription="Title and description will only be displayed for this question."
+          >
+          </nz-card-meta>
+          <ng-container *ngFor="let question of questions.controls; let i = index">
+            <nz-form-item
+              class="w-full floating-title"
+              [ngClass]="gForm(question, 'text').value ? 'value' : ''"
+            >
+              <nz-form-label i18n>Title</nz-form-label>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Question Title is required.">
+                <input
+                  nz-input
+                  i18n-placeholder
+                  placeholder="Title"
+                  nzSize="large"
+                  [formControl]="gForm(question, 'text')"
+                />
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item
+              class="w-full floating-title"
+              [ngClass]="gForm(question, 'additionalInfo').value ? 'value' : ''"
+            >
+              <nz-form-label i18n>Description</nz-form-label>
+              <nz-form-control>
+                <textarea
+                  nz-input
+                  i18n-placeholder
+                  placeholder="Description"
+                  nzSize="large"
+                  rows="4"
+                  [formControl]="gForm(question, 'additionalInfo')"
+                ></textarea>
+              </nz-form-control>
+            </nz-form-item>
+          </ng-container>
+        </nz-card>
+
+        <ng-container *ngFor="let question of questions.controls; let i = index">
+          <nz-card
+            *ngFor="let answer of getAnswers(question); let ii = index"
+            [nzBordered]="false"
+            class="relative"
+          >
+            <nz-card-meta
+              [nzTitle]="getAnswerTitle(ii+1)"
+              i18n-nzDescription
+              nzDescription="Text and description for each individual answer."
+            >
+            </nz-card-meta>
+            <wen-icon-trash
+              *ngIf="ii > 1"
+              class="absolute cursor-pointer top-6 right-8 text-icons-destructive dark:text-icons-destructive-dark"
+              (click)="removeAnswer(question, ii)"
+            ></wen-icon-trash>
+            <div class="mt-4 space-y-4">
+              <nz-form-item
+                class="w-full floating-title"
+                [ngClass]="gForm(answer, 'text').value ? 'value' : ''"
+              >
+                <nz-form-label i18n>Title</nz-form-label>
+                <nz-form-control i18n-nzErrorTip nzErrorTip="Answer Text is required.">
+                  <input
+                    nz-input
+                    i18n-placeholder
+                    placeholder="Title"
+                    nzSize="large"
+                    [formControl]="gForm(answer, 'text')"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item
+                class="w-full floating-title"
+                [ngClass]="gForm(answer, 'additionalInfo').value ? 'value' : ''"
+              >
+                <nz-form-label i18n>Description</nz-form-label>
+                <nz-form-control>
+                  <textarea
+                    nz-input
+                    i18n-placeholder
+                    placeholder="Description"
+                    nzSize="large"
+                    rows="4"
+                    [formControl]="gForm(answer, 'additionalInfo')"
+                  ></textarea>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </nz-card>
+          <button
+            nz-button
+            type="button"
+            class="wen-secondary"
+            (click)="addAnswer(question)"
+            *ngIf="getAnswers(question).length < 4"
+          >
+            <span nz-icon nzType="plus" nzTheme="outline"></span><span i18n>Add Choice</span>
+          </button>
+        </ng-container>
+      </div>
+
+      <div
+        class="mt-4 space-y-4 lg:mt-0 lg:max-w-450"
+        nz-col
+        [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+      >
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Space Info"
+            i18n-nzDescription
+            nzDescription="This is the space that will list the proposal."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-4">
+            <nz-form-control i18n-nzErrorTip nzErrorTip="Space is required.">
+              <nz-select
+                class="w-full"
+                nzSize="large"
+                nzShowSearch
+                [nzCustomTemplate]="selectTpl"
+                nzAllowClear
+                [nzPlaceHolder]="placeholderTpl"
+                [formControl]="spaceControl"
+              >
+                <nz-option
+                  *ngFor="let s of spaces$ | async; trackBy: trackByUid"
+                  nzCustomContent
+                  [nzLabel]="s.name || s.uid"
+                  [nzValue]="s.uid"
+                >
+                  <nz-avatar
+                    [nzSrc]="previewImageService.getAvatarSize(s.avatarUrl)"
+                    [nzSize]="32"
+                    class="mr-3 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+                    nzShape="circle"
+                  >
+                  </nz-avatar>
+                  {{s.name || s.uid}}
+                </nz-option>
+              </nz-select>
+              <ng-template #placeholderTpl>
+                <div class="flex items-center space-x-4">
+                  <wen-icon-globe
+                    class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                  ></wen-icon-globe>
+                  <span i18n>Select a space</span>
+                </div>
+              </ng-template>
+              <ng-template #selectTpl let-s>
+                <div class="flex items-center space-x-4">
+                  <wen-icon-globe
+                    class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                  ></wen-icon-globe>
+                  <span>{{ s.nzLabel }}</span>
+                </div>
+              </ng-template>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-card>
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Proposal Setup"
+            i18n-nzDescription
+            nzDescription="Defines who has access to the proposal and what is the voting method."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-4">
+            <nz-form-control>
+              <nz-form-label
+                class="text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                i18n
+                >Target Participants</nz-form-label
+              >
+              <br />
+              <nz-radio-group class="wen-radio-group" [formControl]="selectedGroupControl">
+                <wen-radio [value]="targetGroups.GUARDIANS"
+                  ><span class="flex items-center"
+                    ><span class="text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n
+                      >All Guardians</span
+                    >
+                    <wen-icon-question-circle
+                      class="inline-block"
+                      nz-tooltip
+                      nzTooltipPlacement="right"
+                      i18n-nzTooltipTitle
+                      nzTooltipTitle="Only guardians can vote on this proposal"
+                    ></wen-icon-question-circle> </span
+                ></wen-radio>
+                <wen-radio [value]="targetGroups.MEMBERS"
+                  ><span class="flex items-center"
+                    ><span class="text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n
+                      >All Members</span
+                    >
+                    <wen-icon-question-circle
+                      class="inline-block"
+                      nz-tooltip
+                      nzTooltipPlacement="right"
+                      i18n-nzTooltipTitle
+                      nzTooltipTitle="All members can vote on this proposal"
+                    ></wen-icon-question-circle> </span
+                ></wen-radio>
+                <wen-radio [value]="targetGroups.NATIVE" [disabled]="(token$ | async) === undefined"
+                  ><span class="flex items-center"
+                    ><span class="text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n
+                      >Space's Native Token</span
+                    >
+                    &nbsp;<ng-container *ngIf="(token$ | async)"
+                      >({{(token$ | async)?.symbol | uppercase}})</ng-container
+                    >
+                    <wen-icon-question-circle
+                      *ngIf="(token$ | async) === undefined"
+                      class="inline-block"
+                      nz-tooltip
+                      nzTooltipPlacement="right"
+                      i18n-nzTooltipTitle
+                      nzTooltipTitle="You must have minted token linked to your space first!"
+                    ></wen-icon-question-circle>
+                    <wen-icon-question-circle
+                      *ngIf="(token$ | async)"
+                      class="inline-block"
+                      nz-tooltip
+                      nzTooltipPlacement="right"
+                      i18n-nzTooltipTitle
+                      nzTooltipTitle="All token holders can vote."
+                    ></wen-icon-question-circle> </span
+                ></wen-radio>
+              </nz-radio-group>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-card>
+      </div>
+    </div>
+  </form>
+
+  <nz-divider class="mb-8"></nz-divider>
+
+  <button
+    nz-button
+    nzType="primary"
+    nzSize="large"
+    type="button"
+    (click)="create()"
+    class="w-full mt-8 lg:w-auto mb-18 lg:mb-6 lg:mt-0"
+    i18n
+  >
+    Create Proposal
+  </button>
+</wen-content>

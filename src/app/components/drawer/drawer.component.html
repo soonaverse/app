@@ -1,0 +1,8 @@
+<div
+  class="w-screen h-screen transition-all fixed top-0 left-0 overflow-y-scroll bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+  [ngClass]="{ 'translate-x-full': !isVisible }"
+>
+  <div [ngClass]="bodyClasses">
+    <ng-content></ng-content>
+  </div>
+</div>

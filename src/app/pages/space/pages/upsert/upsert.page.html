@@ -1,0 +1,258 @@
+<wen-content [showBackButton]="(deviceService.isDesktop$ | async) || false">
+  <h1 class="mt-7" *ngIf="!editMode" i18n>Add new space</h1>
+  <h1 class="mt-7" *ngIf="editMode" i18n>Edit space</h1>
+  <form nz-form nzLayout="vertical" [formGroup]="spaceForm">
+    <div class="py-4" nz-row [nzGutter]="24">
+      <div
+        class="space-y-4"
+        nz-col
+        nzFlex="auto"
+        [ngStyle]="{
+          'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+        }"
+      >
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Space info"
+            i18n-nzDescription
+            nzDescription="Title and description will be included on the Space."
+          >
+          </nz-card-meta>
+          <div class="mt-4 space-y-4">
+            <nz-form-item class="floating-title" [ngClass]="nameControl.value ? 'value' : ''">
+              <nz-form-label i18n>Title</nz-form-label>
+              <nz-form-control>
+                <input
+                  nz-input
+                  i18n-placeholder
+                  placeholder="Title"
+                  nzSize="large"
+                  [formControl]="nameControl"
+                />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item class="floating-title" [ngClass]="aboutControl.value ? 'value' : ''">
+              <nz-form-label i18n>Description</nz-form-label>
+              <nz-form-control>
+                <textarea
+                  nz-input
+                  i18n-placeholder
+                  placeholder="Description"
+                  nzSize="large"
+                  [nzAutosize]="{ minRows: 4 }"
+                  [formControl]="aboutControl"
+                ></textarea>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Networking"
+            i18n-nzDescription
+            nzDescription="Links will be included on the Space detail. Use account usernames for Github, Twitter and Discord (name#id)."
+          >
+          </nz-card-meta>
+          <div class="mt-4 space-y-4">
+            <nz-form-item>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Invalid Github username.">
+                <nz-input-group nzSize="large" [nzPrefix]="prefixGithub">
+                  <input
+                    type="text"
+                    nz-input
+                    i18n-placeholder
+                    placeholder="Type your Github account username"
+                    [formControl]="githubControl"
+                  />
+                  <ng-template #prefixGithub>
+                    <wen-icon-github></wen-icon-github>
+                  </ng-template>
+                </nz-input-group>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-control i18n-nzErrorTip nzErrorTip="Invalid Twitter username.">
+                <nz-input-group nzSize="large" [nzPrefix]="prefixTwitter">
+                  <input
+                    type="text"
+                    nz-input
+                    i18n-placeholder
+                    placeholder="Type your Twitter account username"
+                    [formControl]="twitterControl"
+                  />
+                  <ng-template #prefixTwitter>
+                    <wen-icon-twitter></wen-icon-twitter>
+                  </ng-template>
+                </nz-input-group>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-control
+                i18n-nzErrorTip
+                nzErrorTip="Only discord invite code supported (i.e. RBHqpkKC)"
+              >
+                <nz-input-group nzSize="large" [nzPrefix]="prefixDiscord">
+                  <input
+                    type="text"
+                    nz-input
+                    i18n-placeholder
+                    placeholder="Type your Discord invite code"
+                    [formControl]="discordControl"
+                  />
+                  <ng-template #prefixDiscord>
+                    <wen-icon-discord></wen-icon-discord>
+                  </ng-template>
+                </nz-input-group>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+      </div>
+
+      <div
+        class="mt-4 space-y-4 lg:mt-0 lg:max-w-450"
+        nz-col
+        [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+      >
+        <nz-card [nzBordered]="false">
+          <nz-card-meta
+            i18n-nzTitle
+            nzTitle="Space Type"
+            i18n-nzDescription
+            nzDescription="Each type has different characteristics."
+          >
+          </nz-card-meta>
+          <nz-form-item class="mt-4">
+            <nz-form-control>
+              <nz-radio-group class="wen-radio-group" [formControl]="openControl">
+                <wen-radio [value]="0" [disabled]="disableAccessChange">
+                  <span
+                    class="inline-flex text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                    i18n
+                    >Open for anyone to join instantly
+                  </span>
+                </wen-radio>
+
+                <wen-radio [value]="1" [disabled]="disableAccessChange">
+                  <span class="inline-flex" i18n>Requires a member approval </span></wen-radio
+                >
+                <wen-radio [value]="2" *ngIf="editMode">
+                  <span class="inline-flex" i18n
+                    >Requires stake value (in space's token)</span
+                  ></wen-radio
+                >
+              </nz-radio-group>
+
+              <nz-form-item class="my-2" *ngIf="openControl.value === 2">
+                <nz-form-control>
+                  <nz-input-number
+                    class="block w-full"
+                    i18n-placeholder
+                    [nzPlaceHolder]="'Amount of staked tokens'"
+                    nzSize="large"
+                    [formControl]="minStakedValue"
+                  ></nz-input-number>
+                </nz-form-control>
+              </nz-form-item>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-card>
+        <nz-card [nzBordered]="false">
+          <nz-card-meta i18n-nzTitle nzTitle="Avatar" [nzDescription]="getAvatarCardDescription()">
+          </nz-card-meta>
+
+          <div class="mt-4">
+            <nz-form-item>
+              <nz-form-control
+                [nzValidateStatus]="avatarControl"
+                i18n-nzErrorTip
+                nzErrorTip="Avatar is mandatory"
+              >
+                <nz-upload
+                  class="wen-avatar-uploader"
+                  nzName="avatar"
+                  nzListType="picture-card"
+                  [nzDirectory]="false"
+                  nzType="drag"
+                  [nzLimit]="1"
+                  [nzCustomRequest]="uploadFile.bind(this, 'space_avatar')"
+                  (nzChange)="uploadChangeAvatar($event)"
+                  nzFileType="image/png,image/jpg,image/jpeg,image/webp"
+                  [nzShowUploadList]="true"
+                  [nzShowUploadList]="{ showPreviewIcon: false, showRemoveIcon: true, showDownloadIcon: false }"
+                >
+                  <ng-container>
+                    <i class="upload-icon" nz-icon nzType="upload"></i
+                    ><span class="pl-2 text-xs">jpeg/png/webp</span>
+                  </ng-container>
+                </nz-upload>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+
+        <nz-card [nzBordered]="false">
+          <nz-card-meta i18n-nzTitle nzTitle="Banner" [nzDescription]="getBannerCardDescription()">
+          </nz-card-meta>
+
+          <div class="mt-6">
+            <nz-form-item>
+              <nz-form-control>
+                <nz-upload
+                  class="wen-banner"
+                  nzName="banner"
+                  nzType="drag"
+                  nzListType="picture-card"
+                  [nzDirectory]="false"
+                  [nzLimit]="1"
+                  [nzCustomRequest]="uploadFile.bind(this, 'space_banner')"
+                  (nzChange)="uploadChangeBanner($event)"
+                  nzFileType="image/png,image/jpg,image/jpeg,image/webp"
+                  [nzPreviewFile]="previewFile"
+                  [nzShowUploadList]="true"
+                  [nzShowUploadList]="{ showPreviewIcon: false, showRemoveIcon: true, showDownloadIcon: false }"
+                >
+                  <ng-container>
+                    <i class="upload-icon" nz-icon nzType="upload"></i>
+                    <span class="pl-2 text-xs">jpeg/png/webp</span>
+                  </ng-container>
+                </nz-upload>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+      </div>
+    </div>
+  </form>
+
+  <button
+    nz-button
+    nzType="primary"
+    class="w-full mt-8 lg:w-auto mb-18 lg:mb-6 lg:mt-0"
+    nzSize="large"
+    type="button"
+    (click)="create()"
+    *ngIf="!editMode"
+    i18n
+  >
+    Create space
+  </button>
+
+  <button
+    nz-button
+    nzType="primary"
+    class="w-full mt-8 lg:w-auto mb-18 lg:mb-6 lg:mt-0"
+    nzSize="large"
+    type="button"
+    (click)="save()"
+    *ngIf="editMode"
+    i18n
+  >
+    Save space
+  </button>
+</wen-content>

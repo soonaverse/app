@@ -1,0 +1,186 @@
+<wen-modal-drawer
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+  [modalWidth]="1000"
+  [hasPadding]="false"
+  [showHeader]="false"
+  [primaryColor]="false"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div
+    class="flex items-center justify-between px-6 pt-6 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-t-3xl"
+  >
+    <div class="text-2xl font-bold" i18n>Token Reward Schedule</div>
+    <wen-icon-close class="cursor-pointer" (click)="close()"></wen-icon-close>
+  </div>
+
+  <div
+    class="flex items-center px-6 pt-6 pb-4 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-b-3xl"
+  >
+    <nz-tag
+      nzMode="checkable"
+      class="mt-2 w-max"
+      [nzChecked]="uploadStage === 0"
+      (nzCheckedChange)="uploadStage = 0"
+    >
+      <span i18n>Existing Schedule</span>
+    </nz-tag>
+    <nz-tag
+      nzMode="checkable"
+      class="mt-2 w-max"
+      [nzChecked]="uploadStage !== 0"
+      (nzCheckedChange)="uploadStage = 1"
+    >
+      <span i18n>Upload New</span>
+    </nz-tag>
+  </div>
+
+  <div
+    class="flex flex-col px-6 pt-6 lg:flex-row bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+  ></div>
+
+  <ng-container *ngIf="uploadStage === 0">
+    <div class="relative px-6 mt-6">
+      <div
+        class="flex items-center w-full p-4 font-medium bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl"
+        *ngIf="space?.vaultAddress"
+      >
+        <wen-icon-info-circle
+          class="text-icons-primary dark:text-icons-primary-dark"
+        ></wen-icon-info-circle>
+        <div class="ml-2.5" i18n>
+          Vault address:
+          <a
+            class="text-sm font-medium underline left-16 wen-btn-link"
+            target="_blank"
+            [href]="
+              transactionService.generateLink(space!.vaultAddress!, token?.mintingData?.network)
+            "
+            >{{ space?.vaultAddress }}</a
+          >
+        </div>
+      </div>
+      <p class="relative px-6 pb-6 mt-6" *ngIf="(stakeRewards$ | async) === undefined">
+        Loading...
+      </p>
+      <p class="relative px-6 pb-6 mt-6" *ngIf="(stakeRewards$ | async)?.length === 0">
+        No records.
+      </p>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="uploadStage === 1">
+    <div class="relative px-6 pb-6 mt-6">
+      <div class="flex items-center justify-between w-full font-medium">
+        <div
+          class="text-lg font-bold text-foregrouds-primary dark:text-foregrounds-primary-dark"
+          i18n
+        >
+          Schedule a new Reward
+        </div>
+        <a class="underline wen-btn-link" (click)="generateTemplate()" i18n
+          >Download CSV template</a
+        >
+      </div>
+
+      <div
+        class="mt-6 font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        You can schedule new staking rewards here. To do this, upload a .csv file containing user
+        addresses and allocation details.
+      </div>
+
+      <div
+        class="mt-3 font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        If you don’t know how to prepare CSV file, you can download our template made for you.
+      </div>
+
+      <div class="mt-6">
+        <nz-form-item>
+          <nz-form-control>
+            <nz-upload
+              class="wen-banner"
+              nzName="banner"
+              nzType="drag"
+              nzListType="picture-card"
+              [nzDirectory]="false"
+              [nzBeforeUpload]="beforeCSVUpload.bind(this)"
+              nzFileType="text/csv,application/vnd.ms-excel"
+            >
+              <ng-container>
+                <i class="upload-icon" nz-icon nzType="upload"></i>
+              </ng-container>
+            </nz-upload>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="uploadStage === 2">
+    <div class="flex items-center justify-between w-full px-6 my-6 font-medium">
+      <div class="text-lg font-bold" i18n>Confirm schedule</div>
+      <wen-icon-trash
+        class="cursor-pointer text-icons-destructive dark:text-icons-destructive-dark"
+        (click)="uploadStage = 1"
+      ></wen-icon-trash>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="uploadStage === 0 || uploadStage === 2">
+    <nz-table
+      class="px-6"
+      [nzPageSize]="50"
+      #headerTable
+      [nzScroll]="{ y: '600px' }"
+      *ngIf="((stakeRewards$ | async) || []).length > 0 || rewardsToUpload.length > 0"
+      [nzData]="uploadStage === 2 ? rewardsToUpload : (stakeRewards$ | async)!"
+      [nzShowPagination]="false"
+    >
+      <thead>
+        <tr>
+          <th i18n>Start Date</th>
+          <th i18n>End Date</th>
+          <th i18n>Vesting Date</th>
+          <th i18n>Tokens to Distribute</th>
+          <th i18n>Status</th>
+          <th i18n *ngIf="isGuardian">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of uploadStage === 2 ? rewardsToUpload : (stakeRewards$ | async)!">
+          <td>{{ t.startDate.toDate() | date : 'short' }}</td>
+          <td>{{ t.endDate.toDate() | date : 'short' }}</td>
+          <td>{{ t.tokenVestingDate.toDate() | date : 'short' }}</td>
+          <td>
+            {{ t.tokensToDistribute | formatToken : token?.uid : false : false | async }}
+            {{ token?.symbol }}
+          </td>
+          <td>{{ t.status }}</td>
+          <td *ngIf="isGuardian">
+            <a
+              *ngIf="t.status === rewardScheduleStatuses.UNPROCESSED"
+              class="font-medium wen-btn-link"
+              (click)="remove(t.uid)"
+              >Remove</a
+            >
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+
+  <ng-container *ngIf="uploadStage === 2">
+    <div class="relative px-6 pb-6 mt-6">
+      <button nz-button nzType="primary" nzSize="large" class="w-full mt-10" (click)="submit()">
+        Submit Schedule
+      </button>
+    </div>
+  </ng-container>
+</ng-template>

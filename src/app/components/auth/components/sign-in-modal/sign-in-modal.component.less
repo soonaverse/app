@@ -1,0 +1,53 @@
+nz-avatar {
+  padding: 0.375rem;
+}
+
+.just-start {
+  justify-content: start;
+}
+
+.padding-2 {
+  padding: 0.5rem;
+}
+
+.ellipse {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  position: absolute;
+  border: 6px solid #e9e6d8;
+  transform-style: preserve-3d;
+}
+.ellipse .circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  position: absolute;
+  background: #f39200;
+  animation: move linear infinite;
+}
+.ellipse:nth-child(1) {
+  transform: rotateZ(60deg) rotateY(70deg);
+}
+.ellipse:nth-child(1) .circle {
+  animation-duration: 1s;
+}
+
+@keyframes move {
+  from {
+    transform: rotateZ(0) translateX(80px) rotateZ(0) rotateY(-70deg);
+  }
+  to {
+    transform: rotateZ(360deg) translateX(80px) rotateZ(-360deg) rotateY(-70deg);
+  }
+}

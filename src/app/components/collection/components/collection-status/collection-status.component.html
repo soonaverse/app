@@ -1,0 +1,18 @@
+<nz-tag
+  class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+  *ngIf="!collection?.approved && !collection?.rejected"
+  i18n
+  >Pending
+</nz-tag>
+<nz-tag
+  class="wen-status-tag bg-tags-closed dark:bg-tags-closed-dark border-tags-closed dark:border-tags-closed-dark"
+  *ngIf="collection?.rejected"
+  i18n
+  >Rejected
+</nz-tag>
+<nz-tag
+  class="wen-status-tag bg-tags-available dark:bg-tags-available-dark border-tags-available dark:border-tags-available-dark"
+  *ngIf="collection?.approved && !collection?.rejected"
+  i18n
+  >Available</nz-tag
+>

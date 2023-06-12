@@ -1,0 +1,43 @@
+<nz-card
+  *ngIf="type === collapseTypes.CARD"
+  [nzTitle]="titleTpl"
+  class="relative"
+  [nzBodyStyle]="{ padding: '10px' }"
+>
+  <ng-template #titleTpl>
+    <span class="cursor-pointer" (click)="isCollapsed = !isCollapsed">{{ title }}</span>
+  </ng-template>
+  <wen-icon-angle-down
+    class="absolute transition cursor-pointer top-7 right-7"
+    [ngClass]="{ 'rotate-180': !isCollapsed }"
+    (click)="change()"
+  >
+  </wen-icon-angle-down>
+  <div class="overflow-hidden transition-all" [ngClass]="isCollapsed ? 'max-h-0' : 'max-h-[999vh]'">
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+  </div>
+</nz-card>
+
+<div *ngIf="type === collapseTypes.UNDERLINE">
+  <div class="flex items-center justify-between w-full cursor-pointer" (click)="change()">
+    <div class="text-xs font-bold">{{ title }}</div>
+    <wen-icon-angle-down
+      [size]="24"
+      class="text-icons-primary dark:text-icons-primary-dark transition-all"
+      [ngClass]="isCollapsed ? '' : 'rotate-180'"
+    ></wen-icon-angle-down>
+  </div>
+
+  <div class="h-px w-full bg-foregrounds-tertiary dark:bg-foregrounds-tertiary mt-1"></div>
+
+  <div
+    class="overflow-hidden transition-all mt-3"
+    [ngClass]="isCollapsed ? 'max-h-0' : 'max-h-[999vh]'"
+  >
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+  </div>
+</div>
+
+<ng-template #content>
+  <ng-content></ng-content>
+</ng-template>

@@ -1,0 +1,14 @@
+<nz-select
+  class="select border border-inputs-border dark:border-inputs-border-dark rounded-3xl text-xs"
+  nzSize="small"
+  [formControl]="languageControl"
+  [nzSuffixIcon]="suffixIcon"
+  [nzDropdownStyle]="{ 'min-width': '140px' }"
+>
+  <nz-option *ngFor="let l of languages" [nzLabel]="l.title" [nzValue]="l.remoteHosting">
+  </nz-option>
+</nz-select>
+
+<ng-template #suffixIcon>
+  <wen-icon-angle-right-small></wen-icon-angle-right-small>
+</ng-template>

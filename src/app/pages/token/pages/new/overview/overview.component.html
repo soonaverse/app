@@ -1,0 +1,215 @@
+<div class="py-4" nz-row [nzGutter]="24">
+  <div
+    nz-col
+    nzFlex="auto"
+    [ngStyle]="{
+      'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+    }"
+  >
+    <nz-card class="relative mt-4">
+      <nz-card-meta
+        i18n-nzTitle
+        nzTitle="Token description"
+        i18n-nzDescription
+        nzDescription="This text will be displayed on the main token page."
+      >
+      </nz-card-meta>
+      <div class="pt-4">
+        <nz-form-item
+          class="floating-title"
+          [ngClass]="newService.titleControl.value ? 'value' : ''"
+        >
+          <nz-form-label i18n>Title</nz-form-label>
+          <nz-form-control i18n-nzErrorTip nzErrorTip="Title is invalid.">
+            <input
+              nz-input
+              nzSize="large"
+              i18n-placeholder
+              placeholder="Title"
+              [formControl]="newService.titleControl"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item
+          class="floating-title"
+          [ngClass]="newService.descriptionControl.value ? 'value' : ''"
+        >
+          <nz-form-label i18n>Description</nz-form-label>
+          <nz-form-control i18n-nzErrorTip nzErrorTip="Description is invalid.">
+            <textarea
+              nz-input
+              nzSize="large"
+              i18n-placeholder
+              placeholder="Description"
+              rows="4"
+              [formControl]="newService.descriptionControl"
+            ></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </nz-card>
+
+    <nz-card class="relative mt-4">
+      <nz-card-meta
+        i18n-nzTitle
+        nzTitle="Short description"
+        i18n-nzDescription
+        nzDescription="Short description of the token which will be displayed on the token trading page."
+      >
+      </nz-card-meta>
+      <div class="pt-4">
+        <nz-form-item
+          class="floating-title"
+          [ngClass]="newService.shortTitleControl.value ? 'value' : ''"
+        >
+          <nz-form-label i18n>Title</nz-form-label>
+          <nz-form-control i18n-nzErrorTip nzErrorTip="Short title is invalid.">
+            <input
+              nz-input
+              nzSize="large"
+              i18n-placeholder
+              placeholder="Title"
+              [formControl]="newService.shortTitleControl"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item
+          class="floating-title"
+          [ngClass]="newService.shortDescriptionControl.value ? 'value' : ''"
+        >
+          <nz-form-label i18n>Description</nz-form-label>
+          <nz-form-control i18n-nzErrorTip nzErrorTip="Short description is invalid.">
+            <textarea
+              nz-input
+              nzSize="large"
+              i18n-placeholder
+              placeholder="Description"
+              rows="4"
+              [formControl]="newService.shortDescriptionControl"
+            ></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </nz-card>
+
+    <button
+      *ngIf="deviceService.isDesktop$ | async"
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-12"
+      (click)="wenOnTabChange.emit(stepTypes.SUMMARY)"
+      i18n
+    >
+      Continue
+    </button>
+  </div>
+
+  <div
+    *ngIf="deviceService.isMobile$ | async"
+    class="w-screen h-px my-8 bg-foregrounds-separator dark:bg-foregrounds-separator-dark"
+  ></div>
+
+  <div
+    class="mt-4 space-y-4 lg:mt-0 lg:max-w-450"
+    nz-col
+    [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+  >
+    <nz-card [nzBordered]="false">
+      <nz-card-meta
+        i18n-nzTitle
+        nzTitle="Overview graphics"
+        i18n-nzDescription
+        nzDescription="Token introductory video / image"
+      >
+      </nz-card-meta>
+
+      <div class="mt-6">
+        <nz-form-item>
+          <nz-form-control
+            [nzValidateStatus]="newService.introductionaryControl"
+            i18n-nzErrorTip
+            nzErrorTip="Introductionary media is invalid."
+          >
+            <nz-upload
+              class="wen-banner"
+              nzName="banner"
+              nzType="drag"
+              nzListType="picture-card"
+              [nzLimit]="1"
+              [nzCustomRequest]="newService.uploadFile.bind(newService, 'token_introductionary')"
+              (nzChange)="newService.uploadChangeIntroductionary($event)"
+              nzFileType="image/png,image/jpg,image/jpeg,image/webp,video/mp4"
+              [nzShowUploadList]="{
+                showPreviewIcon: false,
+                showDownloadIcon: false,
+                showRemoveIcon: true
+              }"
+            >
+              <ng-container>
+                <i class="upload-icon" nz-icon nzType="upload"></i>
+                <span class="pl-2 text-xs">jpg/jpeg/png/webp/mp4</span>
+              </ng-container>
+            </nz-upload>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </nz-card>
+
+    <nz-card i18n-nzTitle nzTitle="Links">
+      <nz-form-item
+        *ngFor="
+          let link of newService.links?.controls;
+          let i = index;
+          let first = first;
+          let last = last
+        "
+      >
+        <nz-form-control i18n-nzErrorTip nzErrorTip="Invalid URL. (Start with http:// or https://)">
+          <nz-input-group nzSize="large" [nzPrefix]="prefixURL">
+            <input
+              type="text"
+              nz-input
+              i18n-placeholder
+              placeholder="URL"
+              [formControl]="newService.gForm(link, 'url')"
+            />
+            <ng-template #prefixURL>
+              <wen-icon-link></wen-icon-link>
+            </ng-template>
+          </nz-input-group>
+        </nz-form-control>
+        <div class="flex items-center justify-between">
+          <button
+            nz-button
+            *ngIf="(newService.links?.controls?.length || 0) < newService.maxLinksCount && last"
+            nzType="link"
+            class="flex items-center mt-3 wen-secondary w-max"
+            (click)="newService.addLink()"
+          >
+            <wen-icon-plus class="mr-0.5"></wen-icon-plus>
+            <span i18n>Add link</span>
+          </button>
+
+          <wen-icon-trash
+            *ngIf="!first && last"
+            class="cursor-pointer text-icons-destructive dark:text-icons-destructive-dark"
+            (click)="newService.removeLink(i)"
+          ></wen-icon-trash>
+        </div>
+      </nz-form-item>
+    </nz-card>
+  </div>
+</div>
+
+<button
+  *ngIf="deviceService.isMobile$ | async"
+  nz-button
+  nzType="primary"
+  nzSize="large"
+  class="w-full mt-12"
+  (click)="wenOnTabChange.emit(stepTypes.SUMMARY)"
+  i18n
+>
+  Continue
+</button>

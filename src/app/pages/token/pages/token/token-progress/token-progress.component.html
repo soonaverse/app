@@ -1,0 +1,167 @@
+<div class="space-y-4 lg:space-y-6">
+  <nz-card
+    i18n-nzTitle
+    nzTitle="My purchased tokens"
+    *ngIf="
+      helper.isAfterSaleStarted(token) && !helper.isProcessing(token) && !helper.isMinted(token)
+    "
+  >
+    <wen-description
+      *ngIf="!isPreMinted()"
+      [items]="[
+        {
+          title: descriptionLabels[0],
+          type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+          value:
+            (memberDistribution?.totalDeposit || 0
+            | formatToken : undefined : true : false
+            | async),
+          backgroundClass: 'dark:bg-tags-available-dark'
+        },
+        {
+          title: descriptionLabels[1],
+          type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+          value:
+            (getPotentialTokens() | formatToken : undefined : true : false | async) +
+            ' ' +
+            token?.symbol,
+          backgroundClass: 'bg-tags-available dark:bg-tags-available-dark'
+        }
+      ]"
+    ></wen-description>
+
+    <wen-description
+      *ngIf="isPreMinted()"
+      [items]="[
+        {
+          title: descriptionLabels[2],
+          type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+          value:
+            (memberDistribution?.tokenOwned | formatToken : token?.uid : false : false | async) +
+            ' ' +
+            token?.symbol,
+          backgroundClass: 'bg-tags-available dark:bg-tags-available-dark'
+        }
+      ]"
+    ></wen-description>
+
+    <div
+      class="flex justify-end w-full"
+      *ngIf="helper.isInCooldown(token) && (memberDistribution?.totalDeposit || 0) > 0"
+    >
+      <button class="ml-auto wen-secondary" nz-button nzType="link" nzSize="default">
+        <wen-icon-revert [size]="20"></wen-icon-revert>
+        <div class="ml-2 text-sm font-semibold" (click)="openTokenRefund = memberDistribution">
+          {{ tokenActionTypeLabel }}
+        </div>
+      </button>
+    </div>
+  </nz-card>
+
+  <nz-card [nzTitle]="getInProgressTitle()" *ngIf="helper.isSalesInProgress(token)">
+    <div class="w-full">
+      <nz-progress
+        nz-tooltip
+        [nzShowInfo]="false"
+        nzStatus="active"
+        [nzPercent]="getPrc() | number : '1.2-2'"
+        nzStrokeLinecap="square"
+      ></nz-progress>
+      <div
+        class="flex justify-between space-x-10 text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+        <div class="w-1/3 text-left break-words line-clamp-2 grow">
+          {{ getPrc() | number : '1.2-2' }}%
+        </div>
+        <div class="w-2/3 text-right break-words line-clamp-2 grow">
+          <span class="text-foregrounds-primary dark:text-foregroundss-primary-dark">
+            {{ getTotalPotentialTokens() | formatToken : token?.uid : false : false | async }}
+            {{ token?.symbol }}
+          </span>
+          <span> / </span>
+          <span class="text-foregrounds-primary dark:text-foregroundss-primary-dark" i18n>
+            {{ getPublicSaleSupply() | formatToken : token?.uid : false : false | async }}
+            {{ token?.symbol }}
+          </span>
+        </div>
+      </div>
+
+      <div
+        *ngIf="getTotalPotentialTokens() > getPublicSaleSupply()"
+        class="flex items-start px-4 py-4 mt-6 rounded-xl bg-tags-pending dark:bg-tags-pending-dark text-foregrounds-primary dark:text-foregrounds-primary"
+      >
+        <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+        <div class="text-base font-bold" i18n>
+          Token sale goal reached! Token distribution will be fairly calculated and overages will be
+          refunded.
+        </div>
+      </div>
+
+      <wen-description
+        class="block mt-6"
+        *ngIf="!isPreMinted()"
+        [items]="[
+          {
+            title: descriptionLabels[3],
+            type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+            value: token?.totalDeposit | formatToken : token?.uid | async
+          },
+          {
+            title: descriptionLabels[4],
+            type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
+            value: (data.distributionsBought$ | async)?.length || '0'
+          }
+        ]"
+      ></wen-description>
+    </div>
+  </nz-card>
+
+  <wen-countdown
+    *ngIf="helper.isAvailableForSale(token)"
+    class="block"
+    wrapperClassName="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+    tabClassName="bg-tags-closed dark:bg-tags-closed-dark"
+    [title]="getCountdownTitle()"
+    [finalDate]="getCountdownDate()"
+    [showDate]="false"
+    size="default"
+  >
+  </wen-countdown>
+
+  <wen-countdown
+    *ngIf="
+      helper.isScheduledForSale(token) &&
+      !helper.isAvailableForSale(token) &&
+      !helper.isInCooldown(token) &&
+      !helper.isInProcessing(token)
+    "
+    class="block"
+    wrapperClassName="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+    tabClassName="bg-tags-closed dark:bg-tags-closed-dark"
+    [title]="getCountdownTitleStart()"
+    [finalDate]="getCountdownStartDate()"
+    [showDate]="false"
+    size="default"
+  >
+  </wen-countdown>
+
+  <wen-countdown
+    *ngIf="helper.isInCooldown(token)"
+    class="block"
+    wrapperClassName="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+    tabClassName="bg-tags-closed dark:bg-tags-closed-dark"
+    [title]="getCountdownCoolDownTitleStart()"
+    [finalDate]="getCountdownCooldownDate()"
+    [showDate]="false"
+    size="default"
+  >
+  </wen-countdown>
+</div>
+
+<wen-token-refund
+  *ngIf="!!openTokenRefund"
+  [isOpen]="!!openTokenRefund"
+  [token]="token"
+  [memberDistribution]="openTokenRefund"
+  (wenOnClose)="openTokenRefund = null"
+></wen-token-refund>

@@ -1,0 +1,424 @@
+<wen-content [showBackButton]="true">
+  <ng-container *ngIf="deviceService.isMobile$ | async">
+    <wen-drawer-toggle
+      i18n-label
+      label="About collection"
+      (click)="isAboutCollectionVisible = true"
+    >
+    </wen-drawer-toggle>
+  </ng-container>
+
+  <div class="relative w-auto h-48 mt-8 overflow-hidden lg:h-96 lg:mt-16 rounded-2xl">
+    <img
+      [src]="this.previewImageService.getUrl((data.collection$ | async)?.bannerUrl) || '/assets/mocks/no_banner.jpg'"
+      class="object-cover w-full h-full rounded-3xl"
+    />
+
+    <div
+      *ngIf="(data.collection$ | async)?.limitedEdition"
+      class="absolute z-10 py-2.5 px-4 bg-alerts-warning dark:bg-alerts-warning-dark rounded-br-2xl top-0 left-0 font-medium text-sm text-accent-secondary dark:text-accent-secondary-dark"
+      i18n
+    >
+      Limited edition
+    </div>
+  </div>
+
+  <div class="relative w-full mt-6" nz-row [nzGutter]="40">
+    <div
+      class="flex-auto p-0 my-0 ml-5 -mr-5 lg:mx-0 lg:px-5"
+      [ngStyle]="{
+            'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+            }"
+    >
+      <div class="flex items-end">
+        <nz-tag
+          class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+          i18n
+          >Collection</nz-tag
+        >
+        <wen-collection-status [collection]="data.collection$ | async"></wen-collection-status>
+
+        <a
+          class="ant-tag wen-status-tag bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+          *ngIf="helper.isMinted(data.collection$ | async)"
+          [href]="helper.getExplorerUrl(data.collection$ | async)"
+          target="_blank"
+        >
+          <span i18n class="float-left mr-1">Minted on:</span>
+          <ng-container [ngSwitch]="(data.collection$ | async)?.mintingData?.network">
+            <ng-container *ngSwitchCase="networkTypes.SMR">
+              <wen-icon-shimmer class="float-left" [size]="14"></wen-icon-shimmer>
+              <div class="float-right ml-1" i18n>Shimmer</div>
+            </ng-container>
+            <ng-container *ngSwitchCase="networkTypes.RMS">
+              <wen-icon-shimmer class="float-left" [size]="14"></wen-icon-shimmer>
+              <div class="float-right ml-1" i18n>Shimmer Testnet</div>
+            </ng-container>
+            <ng-container *ngSwitchCase="networkTypes.IOTA">
+              <wen-icon-iota class="float-left" [size]="14"></wen-icon-iota>
+              <div class="float-right ml-1" i18n>IOTA</div>
+            </ng-container>
+            <ng-container *ngSwitchCase="networkTypes.ATOI">
+              <wen-icon-iota class="float-left" [size]="14"></wen-icon-iota>
+              <div class="float-right ml-1" i18n>IOTA Devnet</div>
+            </ng-container>
+          </ng-container>
+        </a>
+      </div>
+
+      <h1 class="mt-3 mb-0 lg:mt-2">{{ (data.collection$ | async)?.name }}</h1>
+
+      <div class="w-full mt-10 mb-4 space-y-4" *ngIf="(deviceService.isMobile$ | async)">
+        <button
+          nz-button
+          nzType="primary"
+          (click)="approve()"
+          *ngIf="data.isPending(data.collection$ | async) && (data.isGuardianWithinSpace$ | async)"
+          nzBlock
+          nzSize="large"
+          i18n
+        >
+          Publish Collection
+        </button>
+
+        <button
+          nz-button
+          class="wen-secondary"
+          (click)="edit()"
+          *ngIf="(data.creator$ | async)?.uid === (auth.member$ | async)?.uid && !(data.collection$ | async)?.mintingData"
+          nzBlock
+          nzSize="large"
+          i18n
+        >
+          Edit Collection
+        </button>
+      </div>
+
+      <div class="flex flex-col flex-wrap mt-8 lg:items-center lg:flex-row w-max lg:space-x-10">
+        <a
+          [routerLink]="['/space', (data.space$ | async)?.uid]"
+          class="flex items-center justify-between"
+        >
+          <nz-avatar
+            [nzSrc]="previewImageService.getAvatarSize((data.space$ | async)?.avatarUrl)"
+            [nzSize]="32"
+            class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark min-w-8"
+            nzShape="circle"
+          >
+          </nz-avatar>
+          <div class="ml-3 text-right lg:text-left">
+            <div class="text-xs font-medium text-foregrounds-secondary" i18n>Space</div>
+            <div class="font-medium">{{ (data.space$ | async)?.name | truncate:[12] }}</div>
+          </div>
+        </a>
+
+        <a
+          *ngIf="(data.royaltySpace$ | async) && (data.collection$ | async)?.royaltiesSpace !== (data.collection$ | async)?.space"
+          [routerLink]="['/space', (data.royaltySpace$ | async)?.uid]"
+          class="flex items-center justify-between mt-4 lg:mt-0"
+        >
+          <nz-avatar
+            [nzSrc]="previewImageService.getAvatarSize((data.royaltySpace$ | async)?.avatarUrl)"
+            [nzSize]="32"
+            class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark min-w-8"
+            nzShape="circle"
+          >
+          </nz-avatar>
+          <div class="ml-3 text-right lg:text-left">
+            <div class="text-xs font-medium text-foregrounds-secondary" i18n>Royalties goes to</div>
+            <div class="font-medium" i18n>
+              {{ (data.royaltySpace$ | async)?.name | truncate:[12] }}
+            </div>
+          </div>
+        </a>
+
+        <div class="flex items-center mt-4 cursor-default lg:mt-0">
+          <wen-icon-tag
+            class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          ></wen-icon-tag>
+          <div
+            class="ml-2.5 font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          >
+            {{ helper.getCategory((data.collection$ | async)?.category) }}
+          </div>
+        </div>
+
+        <div class="flex items-center mt-4 space-x-1 cursor-default lg:mt-0">
+          <a class="px-2 dark:bg-transparent" (click)="vote(1)">
+            <wen-icon-thumb-up></wen-icon-thumb-up>
+          </a>
+          <div class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark">
+            {{(data.collectionStats$ | async)?.votes?.upvotes || 0 | number: '1.0-2'}}
+          </div>
+          <a class="px-2 dark:bg-transparent" (click)="vote(-1)">
+            <wen-icon-thumb-down></wen-icon-thumb-down>
+          </a>
+          <ng-container
+            *ngIf="(data.isGuardianInRankModeratorSpace$ | async) || (data.isGuardianWithinSpace$| async)"
+          >
+            <div class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark">
+              {{(data.collectionStats$ | async)?.votes?.downvotes || 0 | number: '1.0-2'}}
+            </div>
+          </ng-container>
+          <ng-container *ngIf="(data.isGuardianInRankModeratorSpace$ | async)">
+            <a class="flex px-2 dark:bg-transparent" (click)="rank()">
+              <wen-icon-crown></wen-icon-crown>
+              <div
+                class="ml-2 font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                i18n
+              >
+                Rank
+              </div>
+            </a>
+            <div class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark">
+              {{(data.collectionStats$ | async)?.ranks?.avg || 0 | number: '1.0-2'}}
+              ({{(data.collectionStats$ | async)?.ranks?.count || 0 | number: '1.0-2'}})
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <div
+        class="flex items-center justify-center w-full py-3 mt-6 lg:mt-3 bg-tags-commencing dark:bg-tags-commencing-dark rounded-2xl"
+        *ngIf="helper.isDateInFuture((data.collection$ | async)?.availableFrom)"
+      >
+        <wen-icon-time
+          class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        ></wen-icon-time>
+        <div class="ml-2.5">
+          <span class="font-bold" i18n>Starts at</span>
+          <span class="font-medium">
+            {{ (data.collection$ | async)?.availableFrom?.toDate() | date:'medium' }}</span
+          >
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center w-full mt-4 lg:mt-3">
+        <div
+          class="h-16 px-4 py-3 mr-3 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark grow lg:w-32 rounded-xl lg:mt-2"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary" i18n>Deposited</div>
+          <div class="text-lg font-bold truncate">{{ (data.collection$ | async)?.total || 0}}</div>
+        </div>
+
+        <div
+          class="w-full h-16 px-4 py-3 mt-5 mr-3 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:grow lg:w-32 rounded-xl lg:mt-2"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary" i18n>Floor Price</div>
+          <div class="text-lg font-bold truncate">
+            {{ (data.collection$ | async)?.floorPrice ? ((data.collection$ | async)?.floorPrice |
+            formatToken: (data.collection$ | async)?.mintingData?.network: false: true: 2 | async) :
+            '-'}}
+          </div>
+        </div>
+
+        <div
+          class="w-full h-16 px-4 py-3 mt-5 mr-3 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:grow lg:w-32 rounded-xl lg:mt-2"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary" i18n>Staked</div>
+          <div class="text-lg font-bold truncate">
+            {{ (data.collection$ | async)?.stakedNft || 0 }}
+          </div>
+        </div>
+
+        <div
+          class="w-full h-16 px-4 py-3 mt-5 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:grow lg:w-32 rounded-xl lg:mt-2"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary" i18n>Links</div>
+          <div class="flex">
+            <a
+              target="_new"
+              [href]="helper.getShareUrl(data.collection$ | async)"
+              class="flex items-center"
+            >
+              <wen-icon-share class="mr-3"> </wen-icon-share>
+            </a>
+
+            <a
+              *ngIf="(data.collection$ | async)?.url"
+              target="_new"
+              [href]="(data.collection$ | async)?.url"
+              class="flex items-center"
+            >
+              <wen-icon-link class="mr-3"></wen-icon-link>
+            </a>
+
+            <a
+              *ngIf="(data.collection$ | async)?.twitter"
+              target="_new"
+              [href]="'https://twitter.com/' + (data.collection$ | async)?.twitter"
+              class="flex items-center"
+            >
+              <wen-icon-twitter class="mr-3"></wen-icon-twitter>
+            </a>
+
+            <a
+              *ngIf="(data.collection$ | async)?.discord"
+              target="_new"
+              [href]="'https://discord.gg/' + (data.collection$ | async)?.discord"
+              class="flex items-center"
+            >
+              <wen-icon-discord class="mr-3"></wen-icon-discord>
+            </a>
+          </div>
+        </div>
+      </div>
+      <ng-container *ngIf="deviceService.isDesktop$ | async">
+        <div
+          class="relative mt-10 text ellipsis lg:mt-6 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          *ngIf="!seeMore"
+        >
+          <span class="text-concat"> {{ (data.collection$ | async)?.description }} </span>
+        </div>
+        <a *ngIf="!seeMore" (click)="collapseInfo()">See more</a>
+
+        <div *ngIf="seeMore" class="text-foregrounds-primary dark:text-foregrounds-primary-dark">
+          <div
+            class="mt-10 overflow-hidden font-medium whitespace-pre-line lg:mt-6"
+            [innerHtml]="(data.collection$ | async)?.description | markdown"
+          ></div>
+          <a (click)="collapseInfo()">See less</a>
+        </div>
+      </ng-container>
+    </div>
+
+    <div
+      class="space-y-4"
+      nz-col
+      nzFlex="450px"
+      style="max-width: 450px"
+      *ngIf="(deviceService.isDesktop$ | async)"
+    >
+      <button
+        nz-button
+        nzType="primary"
+        (click)="approve()"
+        *ngIf="data.isPending(data.collection$ | async) && (data.isGuardianWithinSpace$ | async)"
+        nzBlock
+        nzSize="large"
+        i18n
+      >
+        Publish Collection
+      </button>
+
+      <button
+        nz-button
+        class="wen-secondary"
+        (click)="edit()"
+        *ngIf="(data.creator$ | async)?.uid === (auth.member$ | async)?.uid"
+        nzBlock
+        nzSize="large"
+        i18n
+      >
+        Edit Collection
+      </button>
+
+      <wen-collection-about></wen-collection-about>
+
+      <div
+        class="pt-6 lg:mt-4 lg:pt-0"
+        *ngIf="data.isPending(data.collection$ | async)  && !(data.collection$ | async)?.mintingData && (data.isGuardianWithinSpace$ | async)"
+      >
+        <button
+          class="flex justify-center wen-secondary"
+          nz-button
+          nzBlock
+          nzDanger
+          (click)="reject()"
+        >
+          <wen-icon-close class="mr-2"></wen-icon-close>
+          <span i18n>Reject Collection</span>
+        </button>
+      </div>
+      <div
+        class="pt-6 lg:mt-4 lg:pt-0"
+        *ngIf="!data.isPending(data.collection$ | async) && (data.isGuardianWithinSpace$ | async) && !(data.collection$ | async)?.mintingData &&
+        !helper.isAvailable(data.collection$ | async) && !(data.collection$ | async)?.rejected"
+      >
+        <button
+          class="flex justify-center wen-secondary"
+          nz-button
+          nzBlock
+          nzDanger
+          (click)="reject()"
+        >
+          <wen-icon-close class="mr-2"></wen-icon-close>
+          <span i18n>Cancel Collection</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <nz-drawer
+    [nzBodyStyle]="{ overflow: 'auto', padding: '8px' }"
+    [nzWidth]="'100vw'"
+    [nzClosable]="false"
+    [nzVisible]="isAboutCollectionVisible"
+  >
+    <div *nzDrawerContent class="relative h-full">
+      <button class="absolute z-10 -top-0 right-5" (click)="isAboutCollectionVisible = false">
+        <wen-icon-close></wen-icon-close>
+      </button>
+
+      <wen-collection-about></wen-collection-about>
+      <div
+        class="py-6 lg:mt-4 lg:pt-0"
+        *ngIf="data.isPending(data.collection$ | async)  && !(data.collection$ | async)?.mintingData && (data.isGuardianWithinSpace$ | async)"
+      >
+        <button
+          class="flex justify-center wen-secondary"
+          nz-button
+          nzBlock
+          nzDanger
+          (click)="reject()"
+        >
+          <wen-icon-close class="mr-2"></wen-icon-close>
+          <span i18n>Reject Collection</span>
+        </button>
+      </div>
+      <div
+        class="py-6 lg:mt-4 lg:pt-0"
+        *ngIf="!data.isPending(data.collection$ | async) && (data.isGuardianWithinSpace$ | async) && !(data.collection$ | async)?.mintingData &&
+        !helper.isAvailable(data.collection$ | async) && !(data.collection$ | async)?.rejected"
+      >
+        <button
+          class="flex justify-center wen-secondary"
+          nz-button
+          nzBlock
+          nzDanger
+          (click)="reject()"
+        >
+          <wen-icon-close class="mr-2"></wen-icon-close>
+          <span i18n>Cancel Collection</span>
+        </button>
+      </div>
+    </div>
+  </nz-drawer>
+
+  <div
+    class="w-screen h-px mt-16 mb-8 -ml-4 lg:-ml-20 xl:w-full xl:ml-0 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark lg:mt-12"
+  ></div>
+
+  <div class="flex items-center justify-between">
+    <span class="w-full border-none shadow-none outline-0 lg:w-96"></span>
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="default"
+      *ngIf="!helper.isLocked(data.collection$ | async) && (data.creator$ | async)?.uid === (auth.member$ | async)?.uid && !(data.collection$ | async)?.mintingData"
+      class="flex items-center justify-center w-10 ml-8 rounded-full lg:justify-start lg:w-auto"
+      (click)="createNft()"
+    >
+      <wen-icon-plus class="lg:mr-2"></wen-icon-plus>
+      <div *ngIf="(deviceService.isDesktop$ | async)" i18n>Create NFT</div>
+    </button>
+  </div>
+
+  <div
+    class="w-full h-px mt-8 mb-6 bg-foregrounds-secondary dark:bg-foregrounds-secondary-dark"
+    *ngIf="!(data.collection$ | async)?.rejected && (data.creator$ | async)?.uid === (auth.member$ | async)?.uid"
+  ></div>
+
+  <wen-collection-nfts *ngIf="(showNfts$ | async)" [collectionId]="(data.collection$ | async)?.uid">
+  </wen-collection-nfts>
+</wen-content>

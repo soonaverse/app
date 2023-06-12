@@ -1,0 +1,220 @@
+<div class="space-y-4 lg:space-y-6">
+  <button
+    nz-button
+    nzType="primary"
+    nzBlock
+    nzSize="large"
+    *ngIf="
+      (data.token$ | async)?.approved === true &&
+      !(data.token$ | async)?.tradingDisabled &&
+      !helper.isAvailableForSale((data.token$ | async) || undefined)
+    "
+    [routerLink]="['trade']"
+    i18n
+  >
+    Trade token
+  </button>
+
+  <button
+    nz-button
+    nzType="primary"
+    nzBlock
+    nzSize="large"
+    *ngIf="helper.isAvailableForSale((data.token$ | async) || undefined)"
+    (click)="isBuyTokensVisible = true"
+    [disabled]="false"
+    i18n
+  >
+    Buy Tokens
+  </button>
+
+  <button
+    *ngIf="
+      helper.canSchedulePublicSale((data.token$ | async) || undefined) &&
+      (data.isGuardianWithinSpace$ | async)
+    "
+    nz-button
+    nzSize="large"
+    class="w-full wen-secondary"
+    (click)="isScheduleSaleVisible = true"
+    i18n
+  >
+    Schedule public sale
+  </button>
+
+  <button
+    *ngIf="
+      !helper.isAvailableForSale((data.token$ | async) || undefined) &&
+      (data.token$ | async)?.tradingDisabled &&
+      (data.isGuardianWithinSpace$ | async)
+    "
+    nz-button
+    (click)="enableTrading()"
+    nzSize="large"
+    class="w-full wen-secondary"
+    i18n
+  >
+    Allow Trading
+  </button>
+
+  <button
+    *ngIf="
+      (helper.isSalesInProgress((data.token$ | async) || undefined) ||
+        helper.isScheduledForSale((data.token$ | async) || undefined)) &&
+      (data.token$ | async)?.approved &&
+      (data.isGuardianWithinSpace$ | async) &&
+      helper.hasPublicSale((data.token$ | async) || undefined)
+    "
+    nz-button
+    nzSize="large"
+    class="w-full wen-secondary red-button"
+    (click)="isCancelSaleVisible = true"
+    i18n
+  >
+    Cancel sale
+  </button>
+
+  <button
+    nz-button
+    nzType="default"
+    nzSize="default"
+    *ngIf="data.isGuardianWithinSpace$ | async"
+    (click)="isEditTokenVisible = true"
+    class="w-full text-foregrounds-primary dark:text-foregrounds-primary-dark"
+  >
+    <wen-icon-edit-underline></wen-icon-edit-underline>
+    <div class="ml-2.5 text-sm font-medium" i18n>Edit token info</div>
+  </button>
+
+  <div
+    *ngIf="
+      helper.isAvailableForSale((data.token$ | async) || undefined) ||
+      (data.isGuardianWithinSpace$ | async)
+    "
+    class="w-1/5 h-px mx-auto bg-foregrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+  ></div>
+
+  <wen-share
+    class="block mb-4"
+    i18n-shareText
+    shareText="Check out token"
+    [shareUrl]="helper.getShareUrl(data.token$ | async)"
+    [size]="shareSizes.LARGE"
+  >
+  </wen-share>
+
+  <nz-card
+    class="mt-8"
+    *ngIf="
+      !helper.isSalesInProgress((data.token$ | async) || undefined) &&
+      !helper.isBase((data.token$ | async) || undefined)
+    "
+  >
+    <ng-container *ngIf="!helper.isMinted(data.token$ | async)">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <wen-icon-alert-octagon
+            class="mr-2.5 lg:mr-3.5 text-alerts-error dark:text-alerts-error-dark"
+          ></wen-icon-alert-octagon>
+          <div class="text-lg font-bold" i18n>Network</div>
+        </div>
+        <button
+          nz-button
+          nzType="primary"
+          nzSize="small"
+          *ngIf="
+            (data.isGuardianWithinSpace$ | async) &&
+            !helper.isMintingInProgress(data.token$ | async)
+          "
+          (click)="isMintOnNetorkVisible = true"
+          i18n
+        >
+          Mint & Approve Token
+        </button>
+        <button
+          nz-button
+          nzType="primary"
+          nzSize="small"
+          *ngIf="
+            (data.isGuardianWithinSpace$ | async) && helper.isMintingInProgress(data.token$ | async)
+          "
+          [disabled]="true"
+          i18n
+        >
+          Minting in progress
+        </button>
+      </div>
+
+      <div class="mt-3 font-medium">
+        <ng-container *ngIf="data.isGuardianWithinSpace$ | async" i18n>
+          Token was not made available on decentralised network yet.</ng-container
+        >
+        <ng-container *ngIf="(data.isGuardianWithinSpace$ | async) === false" i18n>
+          Token is not yet migrated to the decentralized network. Make sure you know what you are
+          buying.</ng-container
+        >
+      </div>
+    </ng-container>
+
+    <div *ngIf="helper.isMinted(data.token$ | async)" class="flex items-center justify-between">
+      <div class="text-lg font-bold" i18n>Network</div>
+      <a
+        class="flex items-center px-4 py-3 ml-4 font-medium cursor-pointer rounded-xl bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+        [href]="helper.getExplorerUrl(data.token$ | async)"
+        target="_blank"
+      >
+        <ng-container [ngSwitch]="(data.token$ | async)?.mintingData?.network">
+          <ng-container *ngSwitchCase="networkTypes.SMR">
+            <wen-icon-shimmer [size]="20"></wen-icon-shimmer>
+            <div class="ml-2 w-max" i18n>Shimmer</div>
+          </ng-container>
+          <ng-container *ngSwitchCase="networkTypes.RMS">
+            <wen-icon-shimmer [size]="20"></wen-icon-shimmer>
+            <div class="ml-2 w-max" i18n>Shimmer Testnet</div>
+          </ng-container>
+          <ng-container *ngSwitchCase="networkTypes.IOTA">
+            <wen-icon-iota [size]="20"></wen-icon-iota>
+            <div class="ml-2 w-max" i18n>IOTA</div>
+          </ng-container>
+          <ng-container *ngSwitchCase="networkTypes.ATOI">
+            <wen-icon-iota [size]="20"></wen-icon-iota>
+            <div class="ml-2 w-max" i18n>IOTA Devnet</div>
+          </ng-container>
+        </ng-container>
+      </a>
+    </div>
+  </nz-card>
+</div>
+
+<wen-token-purchase
+  *ngIf="isBuyTokensVisible"
+  [isOpen]="isBuyTokensVisible"
+  [token]="(data.token$ | async) || undefined"
+  [space]="(data.space$ | async) || undefined"
+  (wenOnClose)="isBuyTokensVisible = false"
+></wen-token-purchase>
+<wen-token-public-sale
+  *ngIf="isScheduleSaleVisible"
+  [isOpen]="isScheduleSaleVisible"
+  [token]="(data.token$ | async) || undefined"
+  (wenOnClose)="isScheduleSaleVisible = false"
+></wen-token-public-sale>
+<wen-token-cancel-sale
+  *ngIf="isCancelSaleVisible"
+  [isOpen]="isCancelSaleVisible"
+  [token]="(data.token$ | async) || undefined"
+  (wenOnClose)="isCancelSaleVisible = false"
+></wen-token-cancel-sale>
+<wen-token-edit
+  *ngIf="isEditTokenVisible"
+  [isOpen]="isEditTokenVisible"
+  [token]="(data.token$ | async) || undefined"
+  (wenOnClose)="isEditTokenVisible = false"
+></wen-token-edit>
+<wen-token-mint-network
+  *ngIf="isMintOnNetorkVisible"
+  [isOpen]="isMintOnNetorkVisible"
+  [token]="(data.token$ | async) || undefined"
+  [distributions]="(data.distributions$ | async) || undefined"
+  (wenOnClose)="isMintOnNetorkVisible = false"
+></wen-token-mint-network>

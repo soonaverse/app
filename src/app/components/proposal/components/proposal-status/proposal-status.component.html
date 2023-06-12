@@ -1,0 +1,45 @@
+<div class="flex flex-wrap items-baseline mt-4 lg:inline-flex lg:flex-nowrap">
+  <nz-tag
+    class="wen-status-tag bg-tags-available dark:bg-tags-available-dark border-tags-available dark:border-tags-available-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    *ngIf="isPending()"
+    i18n
+    >Pending
+  </nz-tag>
+  <nz-tag
+    class="wen-status-tag bg-tags-closed dark:bg-tags-closed-dark border-tags-closed dark:border-tags-closed-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    *ngIf="proposal?.rejected"
+    i18n
+    >Rejected
+  </nz-tag>
+  <nz-tag
+    class="wen-status-tag bg-inputs-border-focus dark:bg-inputs-border-focus-dark border-inputs-border-focus dark:border-inputs-border-focus-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    *ngIf="isCommencing()"
+    i18n
+    >Commencing
+  </nz-tag>
+  <nz-tag
+    class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    *ngIf="isInProgress()"
+    i18n
+  >
+    In-Progress</nz-tag
+  >
+  <nz-tag
+    class="wen-status-tag bg-tags-available dark:bg-tags-available-dark border-tags-closed dark:border-tags-closed-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+    *ngIf="isComplete()"
+    i18n
+    >Completed
+  </nz-tag>
+  <wen-date-tag
+    class="block mt-1"
+    *ngIf="proposal?.settings?.endDate && (isInProgress() || isCommencing())"
+    [date]="proposal?.settings?.endDate"
+  ></wen-date-tag>
+  <wen-date-tag
+    title-i18n
+    title="Starts"
+    *ngIf="proposal?.settings?.endDate && isPending()"
+    class="block mt-1"
+    [date]="proposal?.settings?.startDate"
+  ></wen-date-tag>
+</div>

@@ -1,0 +1,108 @@
+<nz-drawer
+  [nzBodyStyle]="{ overflow: 'auto', padding: '20px' }"
+  [nzWidth]="'100vw'"
+  [nzClosable]="false"
+  [nzVisible]="isVisible"
+>
+  <div *nzDrawerContent class="relative">
+    <wen-mobile-header
+      class="fixed top-0 left-0 z-10 w-full p-5 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+      [enableCreateAwardProposal]="enableCreateAwardProposal"
+      [isMobileMenuVisible]="isVisible"
+      (wenOnVisibleChange)="wenOnVisibleChange($event)"
+      [isMemberProfile]="isMemberProfile"
+      [isLandingPage]="isLandingPage"
+    >
+    </wen-mobile-header>
+
+    <div class="flex items-center justify-between w-full mt-20">
+      <div class="w-full ml-2 font-semibold">
+        <ng-container *ngIf="isLoggedIn$ | async; else notLoggedInBlock">
+          <div class="flex rounded-full bg-tags-regular dark:bg-tags-regular-dark">
+            <nz-avatar
+              nzIcon="user"
+              [nzSrc]="(member$ | async)?.avatar | resizeAvatar : filesizes.small"
+              [nzSize]="48"
+              class="mr-4"
+            ></nz-avatar>
+            <div class="flex flex-col items-baseline">
+              <span>
+                {{
+                  '@' + ((member$ | async)?.name || (member$ | async)?.uid || '') | truncate : [12]
+                }}</span
+              >
+              <nz-tag
+                class="wen-status-tag bg-tags-available dark:bg-tags-available-dark border-tags-available dark:border-tags-available-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                i18n
+                >VIP LEVEL {{ auth.memberLevel$ | async }}
+              </nz-tag>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #notLoggedInBlock>
+          <div class="flex flex-col items-center justify-between w-full">
+            <div
+              (click)="onClickProfileMetamask()"
+              class="flex items-center w-full mt-4 rounded-full bg-tags-regular dark:bg-tags-regular-dark"
+            >
+              <nz-avatar
+                nzSrc="assets/metamask.svg"
+                [nzSize]="48"
+                class="mr-1 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+              ></nz-avatar>
+              <div class="ml-3">
+                <div class="font-semibold">Metamask</div>
+                <div class="text-xs text-foregrounds-secondary" i18n>
+                  Connect to your MetaMask wallet
+                </div>
+              </div>
+            </div>
+
+            <div
+              (click)="onClickProfileTanglePay()"
+              class="flex items-center w-full mt-4 rounded-full bg-tags-regular dark:bg-tags-regular-dark"
+            >
+              <nz-avatar
+                nzSrc="assets/tanglepay_logo.png"
+                [nzSize]="48"
+                class="mr-1 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+              ></nz-avatar>
+              <div class="ml-3">
+                <div class="font-semibold">TanglePay</div>
+                <div class="text-xs text-foregrounds-secondary" i18n>Connect via TanglePay</div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="w-full px-6 mt-7" (click)="wenOnVisibleChange(false)">
+      <wen-navigation [items]="(auth.mobileMenuItems$ | async) || []"></wen-navigation>
+    </div>
+
+    <div class="flex items-center mt-4 ml-9">
+      <wen-theme-switch class="block"></wen-theme-switch>
+      <wen-network-status class="ml-6"></wen-network-status>
+    </div>
+
+    <div class="flex flex-col items-center justify-between w-full mt-8 mb-12">
+      <div
+        *ngIf="isLoggedIn$ | async"
+        class="flex items-center text-lg font-bold"
+        (click)="auth.signOut()"
+      >
+        <wen-icon-log-out class="mr-5"></wen-icon-log-out>
+        <span i18n>Log out</span>
+      </div>
+
+      <div
+        class="flex items-center mt-6 text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+        <span i18n>Powered by</span>
+        <wen-icon-soonlabs class="ml-2"></wen-icon-soonlabs>
+      </div>
+    </div>
+  </div>
+</nz-drawer>

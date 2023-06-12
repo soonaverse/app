@@ -1,0 +1,13 @@
+<div class="space-y-6">
+  <nz-card i18n-nzTitle nzTitle="Award Description">
+    <p class="whitespace-pre-line" [innerHtml]="(data.award$ | async)?.description | markdown"></p>
+  </nz-card>
+
+  <nz-card
+    *ngIf="(data.award$ | async)?.badge"
+    i18n-nzTitle
+    [nzTitle]="(data.award$ | async)?.badge?.name + ' Badge Description'"
+  >
+    <p class="whitespace-pre-line" [innerHtml]="(data.award$ | async)?.badge?.description"></p>
+  </nz-card>
+</div>

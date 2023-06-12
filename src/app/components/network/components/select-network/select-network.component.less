@@ -1,0 +1,15 @@
+.network {
+  @apply px-5 space-x-2 mr-2 my-1 border border-inputs-border dark:border-inputs-border-dark rounded-3xl flex items-center justify-between cursor-pointer;
+
+  &__selected {
+    @apply bg-tabs-selected dark:bg-tabs-selected-dark text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark;
+
+    div {
+      @apply text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark;
+    }
+  }
+
+  &__disabled {
+    @apply opacity-50 pointer-events-none;
+  }
+}

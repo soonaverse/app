@@ -1,0 +1,15 @@
+[nz-menu] > .ant-menu-item::after {
+  @apply border-b-0;
+}
+
+[nz-menu] > .ant-menu-item {
+  @apply lg:text-icons-primary lg:dark:text-icons-primary-dark;
+}
+
+[nz-menu] > .ant-menu-item-selected {
+  @apply text-white bg-tabs-selected;
+}
+
+[nz-menu] > .ant-menu-item:hover:not(.ant-menu-item-selected) {
+  @apply text-tabs-text-on-hover;
+}

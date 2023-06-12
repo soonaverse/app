@@ -1,0 +1,14 @@
+<div class="space-y-12">
+  <div>
+    <p class="mt-5 whitespace-pre-line" [innerHtml]="(data.space$ | async)?.about | markdown"></p>
+  </div>
+
+  <div class="space-y-4" *ngIf="filteredToken">
+    <h3 *ngIf="isBeforeSale(filteredToken || undefined); else liveSaleTitle" i18n>Upcoming Sale</h3>
+    <ng-template #liveSaleTitle>
+      <h3 i18n>Live Token Sale</h3>
+    </ng-template>
+
+    <wen-token-card [token]="filteredToken!" class="block"> </wen-token-card>
+  </div>
+</div>

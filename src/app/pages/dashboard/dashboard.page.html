@@ -1,0 +1,79 @@
+<wen-content>
+  <h1 i18n class="mt-0 lg:mt-12">My Overview</h1>
+  <div class="space-y-14">
+    <div *ngIf="!isEmpty(pendingSpaces$ | async) && !isLoading(pendingSpaces$ | async)">
+      <h3 i18n>Pending Membership Requests</h3>
+      <div class="mb-10 wen-cards-wrapper-light">
+        <wen-space-card
+          class="w-full h-full outline-none"
+          *ngFor="let space of pendingSpaces$ | async; trackBy: trackByUid"
+          [space]="space"
+        ></wen-space-card>
+      </div>
+    </div>
+
+    <div>
+      <h3 i18n>Your spaces</h3>
+      <div class="mb-10 wen-cards-wrapper-light">
+        <nz-skeleton
+          *ngIf="isLoading(spaces$ | async)"
+          class="p-4 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark pt-28 rounded-2xl w-76 h-76"
+          [nzActive]="true"
+          [nzAvatar]="{ size: 'default' }"
+          [nzParagraph]="{ rows: 3, width: 100 }"
+        ></nz-skeleton>
+
+        <nz-card class="w-full" *ngIf="isEmpty((spaces$ | async))">
+          <div class="flex flex-col justify-center text-center h-36">
+            <span
+              class="mb-3 leading-7 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+              i18n
+            >
+              No Spaces yet
+            </span>
+            <button
+              nz-button
+              nzType="primary"
+              class="self-center w-48"
+              [routerLink]="['/discover', 'spaces']"
+              i18n
+            >
+              Discover Spaces
+            </button>
+          </div>
+        </nz-card>
+
+        <wen-space-card
+          class="w-full h-full outline-none"
+          *ngFor="let space of spaces$ | async; trackBy: trackByUid"
+          [space]="space"
+        >
+        </wen-space-card>
+      </div>
+    </div>
+
+    <div *ngIf="!isEmpty(awards$ | async) && !isLoading(awards$ | async)">
+      <h3 i18n>Active awards</h3>
+      <div class="mb-10 wen-cards-wrapper-light">
+        <wen-award-card
+          class="w-full h-full outline-none"
+          *ngFor="let award of awards$ | async; trackBy: trackByUid"
+          [award]="award"
+        >
+        </wen-award-card>
+      </div>
+    </div>
+
+    <div *ngIf="!isEmpty((proposals$ | async)) && !isLoading(awards$ | async)">
+      <h3 i18n>Active proposals</h3>
+      <div class="mb-10 wen-cards-wrapper-light">
+        <wen-proposal-card
+          class="w-full h-full outline-none"
+          *ngFor="let proposal of proposals$ | async; trackBy: trackByUid"
+          [proposal]="proposal"
+        >
+        </wen-proposal-card>
+      </div>
+    </div>
+  </div>
+</wen-content>

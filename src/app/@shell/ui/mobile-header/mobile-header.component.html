@@ -1,0 +1,93 @@
+<div class="flex items-center justify-between">
+  <a href="home" (wenOnVisibleChange)="setMobileMenuVisible(false)" class="m-1">
+    <!-- TODO Create component. -->
+    <svg
+      *ngIf="(routerService.isNewRoute$ | async) === false"
+      width="22"
+      height="32"
+      viewBox="0 0 22 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M13.7018 12.7188C13.4676 12.5524 13.0944 12.2855 12.7028 11.9875C11.4566 11.0314 10.0149 10.3616 8.48015 10.0257L3.62442 8.97627H20.0084V0.01767C12.3516 0.227923 7.22688 -0.768496 3.3756 1.86607C1.01725 3.47313 0.0823338 5.93217 0.0823338 8.7843C0.0823338 15.549 9.77916 19.2476 9.77916 21.3446C9.77916 23.2881 7.6422 22.7634 0 22.8493V31.9907C8.31366 31.8518 11.2428 32.3692 14.6367 31.3271C19.1887 29.9449 21.2891 26.8076 21.2891 23.129C21.2891 21.2679 17.4561 15.4356 13.7018 12.7188Z"
+        fill="#404040"
+      />
+    </svg>
+  </a>
+
+  <div class="flex justify-between space-x-5">
+    <ng-container *ngIf="(routerService.isNewRoute$ | async) === false">
+      <wen-create-dropdown
+        [enableCreateAwardProposal]="enableCreateAwardProposal"
+        [isMemberProfile]="isMemberProfile"
+        [isLandingPage]="isLandingPage"
+        (wenOnCreateClick)="wenOnCreateClick()"
+      ></wen-create-dropdown>
+      <nz-badge [nzDot]="unreadNotificationCount > 0">
+        <button
+          nz-button
+          nz-dropdown
+          nzType="default"
+          nzShape="circle"
+          *ngIf="isLoggedIn$ | async"
+          [nzDropdownMenu]="notificationMenu"
+          nzOverlayClassName="w-[80vw] break-all"
+          [ngClass]="
+            isMemberProfile
+              ? 'bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark hover:bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark'
+              : ''
+          "
+          class="relative inline-flex items-center justify-center border-0 wen-header-button"
+          (nzVisibleChange)="wenOnNotificationVisibleChange.emit()"
+        >
+          <wen-icon-bell
+            class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          ></wen-icon-bell>
+        </button>
+      </nz-badge>
+      <nz-dropdown-menu #notificationMenu="nzDropdownMenu">
+        <wen-menu>
+          <div
+            class="flex justify-between w-full px-5 py-4 cursor-pointer"
+            *ngFor="
+              let nt of notifications;
+              trackBy: trackByUid;
+              let first = first;
+              let index = index
+            "
+            [ngClass]="{
+              'border-t': !first
+            }"
+          >
+            <nz-badge [nzDot]="index < unreadNotificationCount">
+              <a [routerLink]="['/', 'nft', nt.params.nft.uid]">
+                <div class="font-bold leading-normal break-words line-clamp-2 word-break">
+                  {{ getNotificationDetails(nt).title }}
+                </div>
+                <div
+                  class="max-w-sm mt-1 text-sm font-medium leading-normal break-words text-foregrounds-secondary line-clamp-3 word-break"
+                >
+                  {{ getNotificationDetails(nt).content }}
+                </div>
+              </a>
+            </nz-badge>
+          </div>
+
+          <div *ngIf="notifications?.length === 0" i18n>None.</div>
+        </wen-menu>
+      </nz-dropdown-menu>
+      <button
+        (click)="setMobileMenuVisible(!isMobileMenuVisible)"
+        class="text-icons-tertiary dark:text-icons-tertiary-dark"
+      >
+        <wen-icon-close *ngIf="isMobileMenuVisible"></wen-icon-close>
+        <wen-icon-menu *ngIf="!isMobileMenuVisible"></wen-icon-menu>
+      </button>
+    </ng-container>
+
+    <button *ngIf="routerService.isNewRoute$ | async" (click)="location.back()">
+      <wen-icon-close></wen-icon-close>
+    </button>
+  </div>
+</div>

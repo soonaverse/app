@@ -1,0 +1,259 @@
+<div
+  class="relative w-full bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:px-5 py-3.5 rounded-2xl"
+>
+  <a
+    class="block cursor-pointer lg:flex lg:items-center hover:text-current border-box-children"
+    [routerLink]="
+      tradable() ? ['/', this.path, token?.uid, tradePath] : ['/', this.path, token?.uid]
+    "
+  >
+    <div
+      class="flex items-center w-full px-6 lg:px-0 mt-4 lg:mt-0 lg:min-w-[20%] lg:max-w-[20%] overflow-auto"
+    >
+      <nz-avatar
+        [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+        class="border-2 border-tags-border dark:border-tags-border-dark min-w-10"
+        nzShape="circle"
+        [nzSize]="40"
+      >
+      </nz-avatar>
+      <div class="ml-4">
+        <div class="font-bold">
+          {{ helper.getPair(token) }}
+        </div>
+      </div>
+    </div>
+
+    <div
+      *ngIf="deviceService.isMobile$ | async"
+      class="w-full h-px mt-6 bg-foregrounds-separator dark:bg-foregrounds-separator-dark lg:mt-0"
+    ></div>
+
+    <div
+      class="w-full px-6 mt-6 font-medium lg:px-0 lg:mt-0 lg:min-w-[10%] lg:max-w-[10%] overflow-auto"
+    >
+      <div
+        class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        *ngIf="!tradable()"
+      >
+        <ng-container i18n>Initial Price</ng-container> ({{
+          unitsService.label(token?.mintingData?.networkFormat || token?.mintingData?.network)
+        }})
+      </div>
+      <div
+        class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        *ngIf="tradable()"
+      >
+        <ng-container i18n>Avg. Price</ng-container> ({{
+          unitsService.label(token?.mintingData?.networkFormat || token?.mintingData?.network)
+        }})
+      </div>
+      <div class="mt-0.5">
+        {{
+          {
+            value: (listenAvgPrice$ | async) || (!tradable() ? token?.pricePerToken : 0) || 0 || 0,
+            exponents: token?.decimals
+          }
+            | formatToken : token?.uid : false : false
+            | async
+        }}
+      </div>
+    </div>
+    <div
+      class="w-full px-6 mt-6 font-medium lg:px-0 lg:mt-0 lg:min-w-[20%] lg:max-w-[20%] overflow-auto"
+    >
+      <ng-container *ngIf="available() && !saleEnded(); else notSaleBlock">
+        <ng-container *ngIf="saleNotStarted()">
+          <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+            <ng-container i18n>Sale starts</ng-container>
+          </div>
+          <div class="mt-0.5">
+            {{ token?.saleStartDate?.toDate() | date : 'medium' }}
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="!saleNotStarted()">
+          <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+            <ng-container i18n>Sale ends</ng-container>
+          </div>
+          <div class="mt-0.5">
+            {{ getEndDate().toDate() | date : 'medium' }}
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <ng-template #notSaleBlock>
+        <ng-container *ngIf="isInCoolDown()">
+          <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+            Cooldown period ends
+          </div>
+          <div class="mt-0.5">
+            {{ token?.coolDownEnd?.toDate() | date : 'medium' }}
+          </div>
+        </ng-container>
+      </ng-template>
+    </div>
+
+    <div
+      class="w-full px-6 mt-6 font-medium lg:text-right lg:px-0 lg:mt-0 lg:min-w-[12%] lg:max-w-[12%] overflow-auto"
+    >
+      <ng-container *ngIf="tradable(); else notPreMinted">
+        <div
+          class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-full lg:text-right whitespace-nowrap"
+          i18n
+        >
+          Change (24h)
+        </div>
+        <div
+          [ngClass]="
+            (((listenChangePrice24h$ | async) || 0) > 0
+              ? 'text-alerts-success class.dark:text-alerts-success-dark'
+              : '') +
+            (((listenChangePrice24h$ | async) || 0) < 0
+              ? 'text-alerts-error class.dark:text-alerts-error-dark'
+              : '')
+          "
+          class="mt-0.5 lg:w-full lg:text-right whitespace-nowrap"
+        >
+          {{ (listenChangePrice24h$ | async)?.toString() | percent : '1.0-2' }}
+        </div>
+      </ng-container>
+      <ng-template #notPreMinted>
+        <ng-container *ngIf="available()">
+          <div
+            class="flex items-center p-3 rounded-xl bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+          >
+            <div
+              class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            >
+              {{ getPrc() | number : '1.2-2' }}%
+            </div>
+            <nz-progress
+              class="w-full ml-2"
+              [nzShowInfo]="false"
+              nzStatus="active"
+              [nzPercent]="getPrc()"
+              nzStrokeLinecap="square"
+            ></nz-progress>
+          </div>
+        </ng-container>
+      </ng-template>
+    </div>
+
+    <div class="w-full px-6 mt-6 font-medium lg:text-right lg:px-0 lg:mt-0 lg:min-w-[10%]">
+      <ng-container *ngIf="tradable()">
+        <div
+          class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-full lg:text-right whitespace-nowrap"
+        >
+          <ng-container i18n>Volume 24h</ng-container> ({{
+            (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol
+          }})
+        </div>
+        <div class="mt-0.5 lg:w-full lg:text-rights whitespace-nowrap">
+          {{ listenVolume24h$ | async | formatToken : undefined : true : false | async }}
+        </div>
+      </ng-container>
+    </div>
+
+    <div
+      class="w-full px-6 mt-6 font-medium lg:text-right lg:px-0 lg:mt-0 lg:min-w-[10%] lg:max-w-[10%] overflow-auto"
+    >
+      <div
+        class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-full lg:text-right whitespace-nowrap"
+      >
+        <ng-container i18n>Market Cap</ng-container> (USD) }})
+      </div>
+      <div class="mt-0.5 lg:w-full lg:text-right whitespace-nowrap">
+        <ng-container
+          *ngIf="(this.token?.totalSupply || 0) * ((listenAvgPrice$ | async) || 0); else noValue"
+        >
+          {{
+            unitsService.getUsd(
+              ((this.token?.totalSupply || 0) * ((listenAvgPrice$ | async) || 0)) / 1000 / 1000,
+              token?.mintingData?.networkFormat || token?.mintingData?.network
+            )
+              | async
+              | currency : 'USD'
+              | UsdBelowTwoDecimals
+          }}
+        </ng-container>
+        <ng-template #noValue> - </ng-template>
+
+        {{
+          (this.token?.totalSupply || 0) * ((listenAvgPrice$ | async) || 0)
+            | formatToken : token?.uid : false : false : 0
+            | async
+            | unknownIfZero
+        }}
+      </div>
+    </div>
+
+    <ng-container *ngIf="isOwner && (deviceService.isMobile$ | async) && token">
+      <div
+        class="w-full h-px mt-4 bg-foregrounds-separator dark:bg-foregrounds-separator-dark lg:mt-0"
+      ></div>
+      <div
+        (click)="claim($event, castAsTokenWithMemberDistribution(token))"
+        *ngIf="
+          castAsTokenWithMemberDistribution(token).distribution.tokenDrops?.length ||
+          (helper.isMinted(token) &&
+            !castAsTokenWithMemberDistribution(token).distribution.mintedClaimedOn)
+        "
+        class="flex items-center justify-center w-full pt-4 font-semibold text-textlink-enabled dark:text-textlink-enabled-dark"
+        i18n
+      >
+        Claim
+      </div>
+      <div
+        (click)="refund($event, castAsTokenWithMemberDistribution(token))"
+        *ngIf="
+          helper.salesInProgressOrUpcoming(token) &&
+          castAsTokenWithMemberDistribution(token).distribution.totalDeposit &&
+          helper.isInCooldown(token)
+        "
+        class="flex items-center justify-center w-full pt-4 font-semibold text-textlink-enabled dark:text-textlink-enabled-dark"
+        i18n
+      >
+        Refund
+      </div>
+    </ng-container>
+
+    <div
+      [ngClass]="
+        (deviceService.isDesktop$ | async)
+          ? 'min-w-[18%] max-w-[18%] overflow-auto flex items-center justify-end'
+          : 'absolute top-0 right-4 -translate-y-1/2 mt-0'
+      "
+    >
+      <nz-tag
+        class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+        *ngIf="!available() && !tradable() && saleNotStarted() && token?.saleStartDate"
+        i18n
+      >
+        Launching soon
+      </nz-tag>
+      <nz-tag
+        class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+        *ngIf="isInCoolDown()"
+        i18n
+      >
+        In Cooldown
+      </nz-tag>
+      <ng-container *ngIf="deviceService.isDesktop$ | async">
+        <button
+          nz-button
+          nzType="primary"
+          nzSize="small"
+          class="w-24"
+          *ngIf="available() && !tradable() && !isInCoolDown()"
+          i18n
+        >
+          Buy
+        </button>
+        <button nz-button nzType="primary" nzSize="small" class="w-24" *ngIf="tradable()" i18n>
+          Buy / Sell
+        </button>
+      </ng-container>
+    </div>
+  </a>
+</div>

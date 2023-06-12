@@ -1,0 +1,184 @@
+<div class="w-full pb-4 overflow-x-auto lg:pb-0">
+  <wen-transaction-steps
+    class="mx-6 mt-10"
+    [steps]="steps"
+    [currentNum]="getCurrentSequenceNum()"
+  ></wen-transaction-steps>
+</div>
+
+<div [ngSwitch]="currentStep" class="wen-modal-tabs">
+  <ng-container *ngSwitchCase="stepType.GENERATE">
+    <ng-container *ngTemplateOutlet="generateTemplate"></ng-container>
+  </ng-container>
+
+  <ng-container *ngSwitchCase="stepType.TRANSACTION">
+    <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+  </ng-container>
+
+  <ng-container *ngSwitchCase="stepType.WAIT">
+    <ng-container *ngTemplateOutlet="waitTemplate"></ng-container>
+  </ng-container>
+
+  <ng-container *ngSwitchCase="stepType.CONFIRMED">
+    <ng-container *ngTemplateOutlet="confirmedTemplate"></ng-container>
+  </ng-container>
+</div>
+
+<ng-template #generateTemplate>
+  <div class="wen-transaction-wait-container">
+    <div
+      class="mx-4 my-auto text-lg font-medium lg:mt-24 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    >
+      <span>
+        <ng-container i18n>You will be asked to send funds to the new</ng-container>
+        {{ networkName(network) }}
+        <ng-container i18n
+          >address for the verification process. The address you send funds from will be linked to
+          your</ng-container
+        >
+      </span>
+      <ng-container *ngIf="isSpaceVerification(); else isNotSpaceVerification" i18n
+        >space</ng-container
+      >
+      <ng-template #isNotSpaceVerification i18n>profile</ng-template>
+      <span i18n> for future transactions.</span>
+    </div>
+
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="lg:mt-24"
+      i18n
+      (click)="initVerification()"
+    >
+      Generate new address
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #transactionTemplate>
+  <div class="wen-transaction-wait-container">
+    <div
+      class="max-w-md mt-10 text-lg font-medium text-center text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    >
+      <span *ngIf="!isExpired(transaction$ | async)">
+        <span i18n>Send a small </span>{{ targetAmount | formatToken : network | async }}
+        <span i18n>amount to validate your address. This expires in </span
+        >{{ expiryTicker$ | async | countdownTime }}.
+      </span>
+      <span *ngIf="isExpired(transaction$ | async)" i18n>Expired.</span>
+    </div>
+
+    <nz-alert
+      class="mt-2"
+      nzType="warning"
+      nzShowIcon
+      *ngIf="!isExpired(transaction$ | async) && invalidPayment"
+      nzMessage="We received invalid amount. Try again."
+    ></nz-alert>
+
+    <wen-send-funds
+      class="block w-full"
+      *ngIf="!isExpired(transaction$ | async)"
+      [targetAddress]="targetAddress"
+      [formattedAmount]="targetAmount | formatToken : network | async"
+    >
+    </wen-send-funds>
+
+    <wen-wallet-deeplink
+      *ngIf="!isExpired(transaction$ | async)"
+      class="mt-10"
+      [targetAddress]="targetAddress"
+      [network]="network"
+      [targetAmount]="(targetAmount || 0).toString()"
+    >
+    </wen-wallet-deeplink>
+  </div>
+</ng-template>
+
+<ng-template #waitTemplate>
+  <div class="wen-transaction-wait-container">
+    <div
+      class="mt-16 mb-8 text-lg font-medium text-center text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      i18n
+    >
+      Wait for transaction to be validated. We will send back your transaction once completed
+    </div>
+
+    <div class="w-full border border-inputs-border dark:border-inputs-border-dark rounded-2xl">
+      <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+      <div class="wen-modal-history-log">
+        <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+          <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+          <a
+            class="absolute text-sm font-medium underline left-16 wen-btn-link"
+            target="_blank"
+            *ngIf="t.link"
+            [href]="transactionService.getExplorerLink(t.transaction)"
+            >{{ t.label }}</a
+          >
+          <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+        </div>
+      </div>
+    </div>
+
+    <button
+      nz-button
+      nzSize="large"
+      nzType="default"
+      class="flex items-center mt-10 border-inputs-border dark:border-inputs-border-dark"
+    >
+      <wen-icon-refresh
+        class="mr-3 text-foregrounds-secondary dark:text-foregrounds-secondary-dark animate-spin"
+      ></wen-icon-refresh>
+      <div i18n>Validating address...</div>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #confirmedTemplate>
+  <div class="wen-transaction-wait-container">
+    <div
+      class="w-full border lg:mt-8 border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+    >
+      <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+      <div class="h-auto px-5 pt-4 pb-2">
+        <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+          <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+          <a
+            class="absolute text-sm font-medium underline left-16 wen-btn-link"
+            target="_blank"
+            *ngIf="t.link"
+            [href]="transactionService.getExplorerLink(t.transaction)"
+            >{{ t.label }}</a
+          >
+          <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center my-auto lg:mt-16">
+      <div
+        class="flex items-center justify-center w-10 h-10 rounded-full bg-alerts-success dark:bg-alerts-success-dark"
+      >
+        <wen-icon-check
+          class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+        ></wen-icon-check>
+      </div>
+      <div
+        class="ml-4 text-lg font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      >
+        <ng-container *ngIf="!address" i18n
+          >Now you can deal with NFTs and participate in token trading.</ng-container
+        >
+        <ng-container *ngIf="address" i18n>Your new address has been verified!</ng-container>
+      </div>
+    </div>
+
+    <button nz-button nzType="primary" nzSize="large" class="mt-24" i18n (click)="close()">
+      Finish Verification
+    </button>
+  </div>
+</ng-template>

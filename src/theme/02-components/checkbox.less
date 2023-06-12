@@ -1,0 +1,27 @@
+.ant-checkbox {
+  .ant-checkbox-inner {
+    @apply w-6 h-6 rounded-lg border-2 border-inputs-border dark:border-inputs-border-dark;
+
+    &:after {
+      @apply w-2 h-3 left-1/4;
+    }
+  }
+}
+
+.ant-checkbox-checked {
+  .ant-checkbox-inner {
+    @apply bg-accent-primary dark:bg-accent-primary-dark border-accent-primary dark:border-accent-primary-dark;
+  }
+}
+
+.ant-checkbox {
+  @apply text-foregrounds-primary dark:text-foregrounds-primary-dark;
+}
+
+.ant-checkbox-wrapper {
+  @apply text-foregrounds-primary dark:text-foregrounds-primary-dark;
+
+  .ant-checkbox-disabled + span {
+    @apply text-foregrounds-secondary dark:text-foregrounds-secondary-dark;
+  }
+}

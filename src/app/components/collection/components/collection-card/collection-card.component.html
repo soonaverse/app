@@ -1,0 +1,119 @@
+<article
+  class="w-full bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl wen-card"
+  *ngIf="collection"
+>
+  <a class="text-current hover:text-current" [routerLink]="['/', this.path, collection.uid]">
+    <div class="relative w-full overflow-hidden h-44 rounded-2xl">
+      <img
+        alt=""
+        loading="lazy"
+        [src]="
+          (fullWidth
+            ? collection.bannerUrl
+            : previewImageService.getCollectionSize(collection.bannerUrl)) ||
+          '/assets/mocks/no_banner.jpg'
+        "
+        class="object-cover w-full h-full"
+        [ngClass]="{
+          'card-smaller-height': !fullWidth && helper.isDateInFuture(collection.availableFrom)
+        }"
+      />
+
+      <div
+        class="absolute z-10 flex items-center justify-center px-2 py-1 rounded-lg bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark top-4 left-4"
+        *ngIf="helper.isDateInFuture(collection?.availableFrom)"
+      >
+        <div class="py-1 text-xs">
+          <ng-container *ngIf="helper.getDaysLeft(collection?.availableFrom) > 0; else todayBlock">
+            <span class="font-bold" i18n>Starts in</span>
+            <span class="font-medium"> {{ helper.getDaysLeft(collection.availableFrom) }} </span>
+            <span class="font-medium" i18n>days</span>
+          </ng-container>
+          <ng-template #todayBlock>
+            <span class="font-bold" i18n>Starts today</span>
+          </ng-template>
+        </div>
+      </div>
+
+      <div
+        class="absolute top-5 right-5 lg:top-6 lg:right-6 z-10 rounded-lg flex items-center px-2.5 py-1.5 text-sm font-medium"
+        *ngIf="fullWidth"
+        [ngClass]="getStatusProperties().className"
+      >
+        {{ getStatusProperties().label }}
+      </div>
+
+      <div
+        class="absolute z-10 flex top-4 right-4"
+        *ngIf="
+          !fullWidth &&
+          (collection?.access !== targetAccess.OPEN ||
+            collection?.status !== collectionStatuses.MINTED)
+        "
+      >
+        <div
+          *ngIf="collection?.status !== collectionStatuses.MINTED"
+          nz-tooltip
+          nzTooltipPlacement="bottom"
+          i18n-nzTooltipTitle
+          nzTooltipTitle="Collection is not yet migrated to the decentralized network."
+          class="flex items-center justify-center w-8 h-8 rounded-full bg-alerts-warning dark:bg-alerts-warning-dark"
+        >
+          <wen-icon-link-broken
+            class="text-foregrounds-primary dark:text-foregrounds-primary"
+          ></wen-icon-link-broken>
+        </div>
+        <wen-collection-access-badge
+          [class.ml-2]="collection.status !== collectionStatuses.MINTED"
+          [type]="collection.access"
+        ></wen-collection-access-badge>
+      </div>
+
+      <div
+        class="absolute bottom-0 flex items-center justify-center w-full py-0 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+        *ngIf="collection?.limitedEdition"
+      >
+        <div class="text-sm font-medium" i18n>Limited Edition</div>
+      </div>
+    </div>
+
+    <div class="relative flex flex-col w-full h-32 px-5">
+      <h3
+        class="mt-4 mb-2 text-lg font-bold truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      >
+        {{ collection.name }}
+      </h3>
+
+      <div class="text-sm font-medium break-words line-clamp-1">
+        {{ collection.description | stripMarkdown }}
+      </div>
+
+      <div class="absolute flex items-center bottom-3">
+        <nz-avatar
+          class="border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark min-w-6 min-h-6"
+          [nzSrc]="spaceAvatarUrl((space | async) || undefined)"
+          [nzSize]="24"
+          nzShape="circle"
+        ></nz-avatar>
+        <div class="text-sm font-medium ml-2.5 max-w-24 truncate">
+          {{ (space | async)?.name || (space | async)?.uid }}
+        </div>
+      </div>
+
+      <div class="absolute flex flex-col items-end bottom-3 right-5">
+        <div class="font-medium text-xxs text-foregrounds-secondary" i18n>Floor Price</div>
+        <div
+          class="text-sm font-medium truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        >
+          {{
+            collection?.floorPrice
+              ? (collection?.floorPrice
+                | formatToken : collection?.mintingData?.network : false : true : 2
+                | async)
+              : '-'
+          }}
+        </div>
+      </div>
+    </div>
+  </a>
+</article>

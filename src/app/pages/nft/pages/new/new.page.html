@@ -1,0 +1,5 @@
+<wen-content [showBackButton]="(deviceService.isDesktop$ | async) || false">
+  <h1 class="mt-7" i18n>Create NFT</h1>
+  <wen-tabs class="block w-screen mt-12 -ml-5 lg:w-max lg:ml-0" [tabs]="sections"></wen-tabs>
+  <router-outlet></router-outlet>
+</wen-content>

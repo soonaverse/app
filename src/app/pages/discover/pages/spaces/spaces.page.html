@@ -1,0 +1,112 @@
+<ais-instantsearch [config]="config">
+  <header class="header" id="header">
+    <div class="header-searchbox">
+      <wen-search-box [sections]="sections" [reset$]="reset$"></wen-search-box>
+    </div>
+  </header>
+  <div class="relative mt-11 lg:mt-10">
+    <ais-stats data-layout="mobile">
+      <ng-template let-state="state">
+        <span
+          class="font-medium ais-Stats-text text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >
+          {{ state.nbHits | number }} <ng-container i18n>records</ng-container>
+        </span>
+      </ng-template>
+    </ais-stats>
+    <button
+      class="absolute top-0 right-0 z-10 wen-secondary"
+      nz-button
+      nzSize="small"
+      (click)="filterStorageService.discoverSpacesFiltersVisible$.next(!filterStorageService.discoverSpacesFiltersVisible$.value)"
+    >
+      <wen-icon-collapse-arrow
+        *ngIf="deviceService.isDesktop$ | async"
+        [size]="16"
+        class="mr-1 transition-all"
+        [ngClass]="{ 'rotate-180': (filterStorageService.discoverSpacesFiltersVisible$ | async) === false }"
+      >
+      </wen-icon-collapse-arrow>
+      <div i18n>Filters&Sort</div>
+    </button>
+  </div>
+  <main class="flex justify-between mx-auto">
+    <div class="w-full container-wrapper">
+      <div
+        class="container-results"
+        [ngClass]="{ 'mr-5' : (filterStorageService.discoverSpacesFiltersVisible$ | async) }"
+      >
+        <ais-infinite-hits [transformItems]="convertAllToSoonaverseModel">
+          <ng-template let-hits="hits" let-refine="showMore">
+            <div class="mt-6 xl:grid place-items-start">
+              <div class="mb-10 wen-cards-wrapper-light">
+                <wen-space-card
+                  class="w-full h-full outline-none"
+                  *ngFor="let space of hits; trackBy: trackByUid"
+                  [space]="space"
+                >
+                </wen-space-card>
+                <div (wenVisible)="refine()"></div>
+              </div>
+            </div>
+          </ng-template>
+        </ais-infinite-hits>
+      </div>
+    </div>
+    <div
+      class="overflow-hidden transition-all -translate-y-5 container-filters"
+      *ngIf="deviceService.isDesktop$ | async"
+      [ngClass]="(filterStorageService.discoverSpacesFiltersVisible$ | async) ? 'max-w-screen-2xl ml-6' : 'max-w-0'"
+    >
+      <wen-algolia-clear
+        *ngIf="filterStorageService.discoverSpacesResetVisible$ | async"
+        (wenOnClear)="reset$.next()"
+      ></wen-algolia-clear>
+      <!-- This div is for filters positioning -->
+      <div
+        class="mb-12"
+        *ngIf="(filterStorageService.discoverSpacesResetVisible$ | async) === false"
+      ></div>
+
+      <ng-container *ngTemplateOutlet="filters"></ng-container>
+    </div>
+
+    <wen-drawer
+      *ngIf="deviceService.isMobile$ | async"
+      [isVisible]="filterStorageService.discoverSpacesFiltersVisible$ | async"
+      bodyClasses="overflow-auto p-5"
+    >
+      <div class="pb-4 text-3xl font-bold" i18n>Filters&sort</div>
+      <button
+        class="absolute z-10 right-4 top-4"
+        (click)="filterStorageService.discoverSpacesFiltersVisible$.next(false)"
+      >
+        <wen-icon-close></wen-icon-close>
+      </button>
+
+      <ng-container *ngTemplateOutlet="filters"></ng-container>
+    </wen-drawer>
+
+    <ng-template #filters>
+      <div class="mt-8 container-body lg:mt-6">
+        <wen-collapse
+          i18n-title
+          title="Sort by"
+          class="mb-2 transition-all"
+          [isCollapsed]="false"
+          [type]="collapseTypes.UNDERLINE"
+          (wenOnCollapse)="sortOpen = !$event"
+          [ngClass]="{ 'mb-10': sortOpen }"
+        >
+          <wen-sort-by
+            [items]="filterStorageService.discoverSpacesFiltersOptions.sortItems"
+            [value]="(filterStorageService.discoverSpacesFilters$ | async)?.sortBy"
+            (wenChange)="filterStorageService.discoverSpacesFilters$.next({ sortBy: $event })"
+          >
+            ></wen-sort-by
+          >
+        </wen-collapse>
+      </div>
+    </ng-template>
+  </main>
+</ais-instantsearch>

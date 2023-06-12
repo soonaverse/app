@@ -1,0 +1,37 @@
+<wen-modal-drawer
+  [isOpen]="isOpen"
+  [content]="content"
+  [modalWidth]="430"
+  [showHeader]="false"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="flex">
+    <wen-icon-alert-octagon
+      class="text-icons-destructive dark:text-icons-destructive-dark"
+      [size]="20"
+    ></wen-icon-alert-octagon>
+    <div class="ml-3.5">
+      <div class="text-lg font-bold" i18n>Are you sure you want to cancel the sale?</div>
+
+      <div
+        class="font-medium text-sm text-foregrounds-secondary dark:text-foregrounds-secondary-dark mt-2"
+        i18n
+      >
+        Once the sale is cancelled process will trigger automatically and all investors will be
+        refunded immediately.
+      </div>
+
+      <div class="flex items-center justify-center mt-10">
+        <button nz-button nzType="default" nzSize="large" class="mr-3" (click)="close()" i18n>
+          Close
+        </button>
+        <button nz-button nzType="primary" nzSize="large" class="" (click)="cancelSale()" i18n>
+          Cancel sale
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-template>

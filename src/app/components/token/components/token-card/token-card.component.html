@@ -1,0 +1,265 @@
+<article
+  class="relative p-4 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl wen-card"
+  [ngClass]="{
+    'upcoming-wrapper': cardType === tokenCardTypes.UPCOMING,
+    'ongoing-wrapper': cardType === tokenCardTypes.ONGOING,
+    'ending-wrapper': cardType === tokenCardTypes.ENDING || cardType === tokenCardTypes.COOLDOWN
+  }"
+>
+  <div
+    *ngIf="
+      cardType === tokenCardTypes.ONGOING ||
+      cardType === tokenCardTypes.ENDING ||
+      tokenCardTypes.COOLDOWN
+    "
+    class="absolute top-0 left-6 -translate-y-1/2 flex items-center justify-between py-0.5 px-2 text-xs font-medium rounded-md"
+    [ngClass]="{
+      'bg-tags-available dark:bg-tags-available-dark': cardType === tokenCardTypes.ONGOING,
+      'bg-tags-closed dark:bg-tags-closed-dark':
+        cardType === tokenCardTypes.ENDING || cardType === tokenCardTypes.COOLDOWN
+    }"
+  >
+    <ng-container *ngIf="cardType === tokenCardTypes.ONGOING" i18n>Ongoing sale</ng-container>
+    <ng-container *ngIf="cardType === tokenCardTypes.ENDING" i18n>Sale ends soon</ng-container>
+    <ng-container *ngIf="cardType === tokenCardTypes.COOLDOWN" i18n>Cooldown ends</ng-container>
+  </div>
+  <a class="relative block w-full h-full p-2 pb-4" [routerLink]="['/', this.path, token?.uid]">
+    <div class="relative flex items-center justify-between w-full">
+      <div class="flex items-center">
+        <nz-avatar
+          [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+          class="border-2 border-tags-border dark:border-tags-border-dark min-w-12"
+          nzShape="circle"
+          [nzSize]="48"
+        >
+        </nz-avatar>
+        <div
+          class="ml-4 text-lg font-bold text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        >
+          {{ token?.name }}
+        </div>
+      </div>
+      <wen-icon-angle-right></wen-icon-angle-right>
+    </div>
+
+    <ng-container *ngIf="cardType === tokenCardTypes.UPCOMING">
+      <div
+        class="flex flex-col flex-wrap items-center w-full mt-6 space-y-2 xl:flex-row xl:space-y-0 xl:space-x-4"
+      >
+        <div
+          class="flex-1 w-full px-5 pt-4 pb-5 bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl xl:w-auto"
+        >
+          <div
+            class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+          >
+            Sale starts
+          </div>
+          <div
+            class="mt-2 font-medium truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          >
+            {{ token?.saleStartDate?.toDate() | date : 'medium' }}
+          </div>
+        </div>
+
+        <wen-countdown
+          class="flex-1 block w-full xl:w-auto"
+          wrapperClassName="bg-tags-commencing dark:bg-tags-commencing-dark"
+          tabClassName="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+          i18n-title
+          title="Starts in"
+          [finalDate]="getStartDate().toDate()"
+          [showDate]="false"
+          size="small"
+        >
+        </wen-countdown>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="cardType === tokenCardTypes.ONGOING">
+      <div class="w-full mt-6">
+        <nz-progress
+          nz-tooltip
+          [nzShowInfo]="false"
+          nzStatus="active"
+          [nzPercent]="getPrc() | number : '1.2-2'"
+          nzStrokeLinecap="square"
+        ></nz-progress>
+        <div
+          class="flex justify-between space-x-10 text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >
+          <div class="w-1/3 text-left break-words line-clamp-2 grow">
+            {{ getPrc() | number : '1.2-2' }}%
+          </div>
+          <div class="w-2/3 text-right break-words line-clamp-2 grow">
+            <span class="text-foregrounds-primary dark:text-foregroundss-primary-dark">{{
+              token?.totalDeposit || 0 | formatToken : token?.uid : false : false | async
+            }}</span>
+            <span>
+              / {{ getPublicSaleSupply() | formatToken : token?.uid : false : false | async }}
+            </span>
+            <span class="text-foregrounds-primary dark:text-foregroundss-primary-dark">{{
+              (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol
+            }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="flex flex-col flex-wrap items-center w-full mt-8 space-y-4 xl:flex-row xl:space-y-0 xl:space-x-4"
+      >
+        <div
+          class="flex-1 w-full px-5 pt-4 pb-5 bg-tags-available dark:bg-tags-available-dark rounded-xl xl:w-auto"
+        >
+          <div
+            class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+          >
+            Sale ends
+          </div>
+          <div
+            class="mt-2 font-medium truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          >
+            {{ helper.saleEndDate(token).toDate() | date : 'medium' }}
+          </div>
+        </div>
+
+        <wen-countdown
+          class="flex-1 block w-full xl:w-auto"
+          wrapperClassName="bg-tags-available dark:bg-tags-available-dark"
+          tabClassName="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+          i18n-title
+          title="Sale ends"
+          [finalDate]="getEndDate().toDate()"
+          [showDate]="false"
+          size="small"
+        >
+        </wen-countdown>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="cardType === tokenCardTypes.ENDING">
+      <div class="w-full mt-6">
+        <nz-progress
+          nz-tooltip
+          [nzShowInfo]="false"
+          nzStatus="active"
+          [nzPercent]="getPrc() | number : '1.2-2'"
+          nzStrokeLinecap="square"
+        ></nz-progress>
+        <div
+          class="flex justify-between space-x-10 text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >
+          <div class="w-1/3 text-left break-words line-clamp-2 grow">
+            {{ getPrc() | number : '1.2-2' }}%
+          </div>
+          <div class="w-2/3 text-right break-words line-clamp-2 grow">
+            <span class="text-foregrounds-primary dark:text-foregroundss-primary-dark">{{
+              token?.totalDeposit | formatToken : token?.uid : false : false | async
+            }}</span>
+            <span>
+              / {{ getPublicSaleSupply() | formatToken : token?.uid : false : false | async }}
+            </span>
+            <span class="text-foregrounds-primary dark:text-foregroundss-primary-dark">{{
+              (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol
+            }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="flex flex-col flex-wrap items-center w-full mt-8 space-y-4 xl:flex-row xl:space-y-0 xl:space-x-4"
+      >
+        <div
+          class="flex-1 w-full px-5 pt-4 pb-5 bg-tags-closed dark:bg-tags-closed-dark rounded-xl xl:w-auto"
+        >
+          <div
+            class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+          >
+            Sale ends
+          </div>
+          <div
+            class="mt-2 font-medium truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          >
+            {{ helper.saleEndDate(token).toDate() | date : 'medium' }}
+          </div>
+        </div>
+
+        <wen-countdown
+          class="flex-1 block w-full xl:w-auto"
+          wrapperClassName="bg-tags-closed dark:bg-tags-closed-dark"
+          tabClassName="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+          i18n-title
+          title="Sale ends"
+          [finalDate]="getEndDate().toDate()"
+          [showDate]="false"
+          size="small"
+        >
+        </wen-countdown>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="cardType === tokenCardTypes.COOLDOWN">
+      <div class="w-full mt-6">
+        <nz-progress
+          nz-tooltip
+          [nzShowInfo]="false"
+          nzStatus="active"
+          [nzPercent]="getPrc() | number : '1.2-2'"
+          nzStrokeLinecap="square"
+        ></nz-progress>
+        <div
+          class="flex justify-between space-x-10 text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >
+          <div class="w-1/3 text-left break-words line-clamp-2 grow">
+            {{ getPrc() | number : '1.2-2' }}%
+          </div>
+          <div class="w-2/3 text-right break-words line-clamp-2 grow">
+            <span class="text-foregrounds-primary dark:text-foregroundss-primary-dark">{{
+              token?.totalDeposit | formatToken : token?.uid : false : false | async
+            }}</span>
+            <span>
+              / {{ getPublicSaleSupply() | formatToken : token?.uid : false : false | async }}
+            </span>
+            <span class="text-foregrounds-primary dark:text-foregroundss-primary-dark">{{
+              (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol
+            }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="flex flex-col flex-wrap items-center w-full mt-8 space-y-4 xl:flex-row xl:space-y-0 xl:space-x-4"
+      >
+        <div
+          class="flex-1 w-full px-5 pt-4 pb-5 bg-tags-closed dark:bg-tags-closed-dark rounded-xl xl:w-auto"
+        >
+          <div
+            class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+          >
+            Cooldown ends
+          </div>
+          <div
+            class="mt-2 font-medium truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          >
+            {{ getCooldownDate().toDate() | date : 'medium' }}
+          </div>
+        </div>
+
+        <wen-countdown
+          class="flex-1 block w-full xl:w-auto"
+          wrapperClassName="bg-tags-closed dark:bg-tags-closed-dark"
+          tabClassName="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+          i18n-title
+          title="Sale ends"
+          [finalDate]="getCooldownDate().toDate()"
+          [showDate]="false"
+          size="small"
+        >
+        </wen-countdown>
+      </div>
+    </ng-container>
+  </a>
+</article>

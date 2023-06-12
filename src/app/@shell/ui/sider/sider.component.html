@@ -1,0 +1,54 @@
+<div class="flex flex-col items-center justify-between w-16 h-full pt-2">
+  <div class="sticky flex flex-col items-center w-full pb-10 top-8">
+    <a href="home" class="text-current hover:text-current">
+      <svg width="27" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M17.127 15.899c-.293-.208-.759-.542-1.248-.915a13.369 13.369 0 0 0-5.279-2.452L4.53 11.22h20.48V.022C15.44.285 9.034-.96 4.22 2.332 1.272 4.343.103 7.416.103 10.98c0 8.456 12.121 13.08 12.121 15.7 0 2.43-2.671 1.774-12.224 1.882v11.426c10.392-.173 14.053.474 18.296-.83 5.69-1.727 8.315-5.648 8.315-10.247 0-2.326-4.79-9.617-9.484-13.013Z"
+          fill="currentColor"
+        />
+      </svg>
+    </a>
+
+    <div *ngIf="(deviceService.isDesktop$ | async) && (deviceService.isNotBreakHeight$ | async)">
+      <wen-navigation [items]="(auth.desktopMenuItems$ | async) || []"></wen-navigation>
+    </div>
+
+    <ul
+      nz-menu
+      *ngIf="(deviceService.isDesktop$ | async) && (deviceService.isBreakHeight$ | async)"
+      [nzMode]="'vertical'"
+      [nzSelectable]="false"
+      class="mt-12"
+    >
+      <li nz-submenu [nzTitle]="menu">
+        <ul>
+          <wen-navigation [items]="(auth.desktopMenuItems$ | async) || []"></wen-navigation>
+        </ul>
+      </li>
+
+      <ng-template #menu>
+        <wen-icon-menu></wen-icon-menu>
+      </ng-template>
+    </ul>
+  </div>
+
+  <div class="sticky bottom-0 flex flex-col items-center px-3 shrink">
+    <ng-container *ngTemplateOutlet="options"></ng-container>
+  </div>
+
+  <ng-template #options>
+    <wen-network-status class="mb-6"></wen-network-status>
+    <!-- <wen-language-change class="mb-6"></wen-language-change> -->
+    <a class="block mb-5" href="https://docs.soonaverse.com/" target="_blank">
+      <i
+        nz-icon
+        nzType="info-circle"
+        nz-tooltip
+        i18n-nzTooltipTitle
+        nzTooltipTitle="See Docs"
+        class="text-xl cursor-pointer"
+      ></i>
+    </a>
+    <wen-theme-switch class="mb-5"></wen-theme-switch>
+  </ng-template>
+</div>

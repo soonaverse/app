@@ -1,0 +1,41 @@
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+@input-radius: 2.125rem;
+
+// Note: Haven't find better (and working) way of overriding these nested styles than
+// using deprecated ::ng-deep. Change it if you know better approach.
+nz-input-group ::ng-deep {
+  .ant-input-group-addon:last-child {
+    @apply bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark;
+    border-top-right-radius: @input-radius;
+    border-bottom-right-radius: @input-radius;
+  }
+
+  .ant-input-group .ant-input-affix-wrapper {
+    .ant-input-prefix {
+      @apply mr-3;
+    }
+
+    &:not(:last-child) {
+      @apply border-0 h-14 pl-4;
+      border-top-left-radius: @input-radius;
+      border-bottom-left-radius: @input-radius;
+    }
+
+    &:hover {
+      // there is a `border-right-width: 1px !important` style inside ng-zorro,
+      // thus we need important too :/
+      border-right-width: 0 !important;
+    }
+  }
+}
+
+.additional-btn-list {
+  @apply p-3 space-y-1 !important;
+  li {
+    @apply px-3 py-2;
+    @apply text-sm rounded-xl text-center block !important;
+  }
+}

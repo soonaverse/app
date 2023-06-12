@@ -1,0 +1,26 @@
+<div class="flex flex-col items-center justify-center w-full lg:flex-row lg:w-auto">
+  <a
+    nz-button
+    nzSize="large"
+    [href]="fireflyDeepLink"
+    [disabled]="!fireflyDeepLink"
+    class="deep-link"
+  >
+    <div class="flex items-center">
+      <img src="/assets/logos/firefly.svg" alt="Firefly logo" class="mr-2" />
+      <div class="text-foregrounds-primary dark:text-foregrounds-primary-dark">Firefly</div>
+    </div>
+  </a>
+  <a
+    nz-button
+    *ngIf="showTanglePay"
+    nzSize="large"
+    [disabled]="!tanglePayDeepLink"
+    [href]="tanglePayDeepLink"
+    class="deep-link"
+  >
+    <div class="flex items-center">
+      <img src="/assets/logos/tanglepay.png" alt="Tanglepay logo" class="w-32" />
+    </div>
+  </a>
+</div>

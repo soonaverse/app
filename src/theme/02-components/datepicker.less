@@ -1,0 +1,42 @@
+.ant-picker {
+  @apply bg-inputs-background dark:bg-inputs-background-dark;
+
+  .ant-picker-input {
+    input {
+      @apply text-foregrounds-primary dark:text-foregrounds-primary-dark font-medium text-base;
+    }
+  }
+}
+
+.ant-picker-panel-container {
+  @apply bg-inputs-background dark:bg-inputs-background-dark;
+
+  .ant-picker-cell-disabled,
+  .ant-picker-header-view,
+  .ant-picker-content th,
+  .ant-picker-time-panel-cell-inner {
+    @apply text-foregrounds-secondary dark:text-foregrounds-secondary-dark font-medium !important;
+  }
+
+  .ant-picker-time-panel-cell {
+    .ant-picker-time-panel-cell-inner:hover {
+      @apply bg-accent-primary dark:bg-accent-primary-dark !important;
+    }
+  }
+
+  .ant-picker-time-panel-cell-selected {
+    .ant-picker-time-panel-cell-inner {
+      @apply bg-accent-primary dark:bg-accent-primary-dark !important;
+    }
+  }
+
+  .ant-picker-cell-inner {
+    &:hover {
+      @apply bg-accent-primary dark:bg-accent-primary-dark !important;
+    }
+  }
+
+  .ant-picker-cell-in-view {
+    @apply text-foregrounds-primary dark:text-foregrounds-primary-dark font-medium;
+  }
+}

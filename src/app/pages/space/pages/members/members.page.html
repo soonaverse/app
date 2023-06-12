@@ -1,0 +1,196 @@
+<div class="space-y-12">
+  <div
+    class="space-y-4"
+    infiniteScroll
+    [infiniteScrollDistance]="5"
+    [infiniteScrollThrottle]="50"
+    (scrolled)="onScroll()"
+  >
+    <div class="inline-flex justify-between w-full">
+      <div *ngIf="data.isGuardianWithinSpace$ | async">
+        <ng-container *ngIf="deviceService.isDesktop$ | async; else hotTagsMobileBlock">
+          <nz-tag
+            nzMode="checkable"
+            [nzChecked]="selectedListControl.value === filterOptions.ACTIVE"
+            (nzCheckedChange)="handleFilterChange(filterOptions.ACTIVE)"
+            i18n
+          >
+            Active
+          </nz-tag>
+          <nz-tag
+            nzMode="checkable"
+            *ngIf="!(data.space$ | async)?.open"
+            [nzChecked]="selectedListControl.value === filterOptions.PENDING"
+            (nzCheckedChange)="handleFilterChange(filterOptions.PENDING)"
+          >
+            {{'Pending' + (data.getPendingMembersCount(data.pendingMembers$ | async) > 0 ? '*' :
+            '')}}
+          </nz-tag>
+          <nz-tag
+            nzMode="checkable"
+            [nzChecked]="selectedListControl.value === filterOptions.BLOCKED"
+            (nzCheckedChange)="handleFilterChange(filterOptions.BLOCKED)"
+            i18n
+          >
+            Blocked
+          </nz-tag>
+        </ng-container>
+
+        <ng-template #hotTagsMobileBlock>
+          <nz-select
+            class="w-fit wen-sort-button min-w-32"
+            [ngModel]="selectedListControl.value"
+            (ngModelChange)="handleFilterChange($event)"
+          >
+            <nz-option i18n-nzLabel nzLabel="Active" [nzValue]="filterOptions.ACTIVE"></nz-option>
+            <nz-option
+              *ngIf="!(data.space$ | async)?.open"
+              i18n-nzLabel
+              [nzLabel]="'Pending' + (data.getPendingMembersCount(data.pendingMembers$ | async) > 0 ? '*' : '')"
+              [nzValue]="filterOptions.PENDING"
+            ></nz-option>
+            <nz-option i18n-nzLabel nzLabel="Blocked" [nzValue]="filterOptions.BLOCKED"></nz-option>
+          </nz-select>
+        </ng-template>
+      </div>
+      <nz-input-group
+        *ngIf="(data.isGuardianWithinSpace$ | async) === false || (deviceService.isDesktop$ | async); else mobileSearch"
+        [nzSize]="(deviceService.isDesktop$ | async) ? 'large' : 'small'"
+        [nzPrefix]="prefixIconSearch"
+        class="w-full ml-0 border-none shadow-none outline-0 lg:w-72"
+        nzSearch
+      >
+        <input
+          type="text"
+          nz-input
+          i18n-placeholder
+          placeholder="Find Member"
+          class="text-base bg-inputs-background dark:bg-inputs-background-dark"
+          [formControl]="filterControl"
+        />
+      </nz-input-group>
+      <ng-template #prefixIconSearch>
+        <span nz-icon nzType="search" class="text-xl"></span>
+      </ng-template>
+
+      <ng-template #mobileSearch>
+        <wen-mobile-search
+          *ngIf="deviceService.isMobile$ | async"
+          [formControl]="filterControl"
+          class="ml-auto w-full"
+          i18n-placeholder
+          placeholder="Find Member"
+        >
+        </wen-mobile-search>
+      </ng-template>
+    </div>
+
+    <!-- TODO Do we need dress this baby up? -->
+    <nz-alert
+      nzType="warning"
+      i18n-nzMessage
+      nzMessage="Showing only few top records..."
+      *ngIf="overTenRecords && data.isEmpty((getList() | async)) === false"
+    ></nz-alert>
+
+    <nz-skeleton
+      *ngIf="data.isLoading(getList() | async)"
+      class="p-4 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl"
+      [nzActive]="true"
+      [nzAvatar]="{ size: 'default' }"
+      [nzParagraph]="{ rows: 1, width: 100 }"
+    ></nz-skeleton>
+
+    <nz-card class="w-full" *ngIf="data.isEmpty((getList() | async))">
+      <div class="flex flex-col justify-center text-center h-36">
+        <span
+          class="leading-7 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          No Members
+        </span>
+      </div>
+    </nz-card>
+
+    <wen-member-card
+      class="block"
+      i18n-createdOnLabel
+      createdOnLabel="joined space on"
+      [fullWidth]="true"
+      [createdOn]="member?._subColObj?.createdOn"
+      [role]="memberIsGuardian(member.uid) && isActiveList() ? 'Guardian' : 'Member'"
+      *ngFor="let member of getList() | async; trackBy: trackByUid"
+      [member]="member"
+    >
+      <a
+        class="w-full"
+        [routerLink]="['/', this.memberPath, member.uid]"
+        *ngIf="(data.isGuardianWithinSpace$ | async) === false"
+      >
+        <wen-icon-angle-left class="flex rotate-180"></wen-icon-angle-left>
+      </a>
+      <!-- TODO show button only when there is any option available -->
+      <button
+        nz-button
+        *ngIf="data.isGuardianWithinSpace$ | async"
+        class="float-right wen-secondary"
+        nzShape="circle"
+        nz-dropdown
+        nzTrigger="click"
+        [nzDropdownMenu]="menu"
+        nzPlacement="bottomRight"
+      >
+        <wen-icon-more></wen-icon-more>
+      </button>
+
+      <nz-dropdown-menu #menu="nzDropdownMenu">
+        <ul nz-menu class="additional-btn-list">
+          <ng-container *ngIf="isActiveList()">
+            <!-- Had to use themeService because there were some overwrites on light/dark backgrounds -->
+            <li
+              *ngIf="memberIsGuardian(member.uid)"
+              nz-menu-item
+              class="text-buttons-primary-on-hover dark:text-buttons-primary-on-hover-dark"
+              [ngClass]="{
+              'bg-accent-selected': (themeService.theme$ | async) === themes.Light,
+              'bg-accent-selected-dark': (themeService.theme$ | async) === themes.Dark
+            }"
+              (click)="removeGuardian(member.uid)"
+              i18n
+            >
+              Remove Guardian
+            </li>
+            <li
+              *ngIf="!memberIsGuardian(member.uid)"
+              nz-menu-item
+              class="text-buttons-primary-on-hover dark:text-buttons-primary-on-hover-dark"
+              [ngClass]="{
+              'bg-accent-selected': (themeService.theme$ | async) === themes.Light,
+              'bg-accent-selected-dark': (themeService.theme$ | async) === themes.Dark
+            }"
+              (click)="setGuardian(member.uid)"
+              i18n
+            >
+              Make Guardian
+            </li>
+          </ng-container>
+          <li
+            *ngIf="(isActiveList() || isPendingList())"
+            nz-menu-item
+            nzDanger
+            (click)="blockMember(member.uid)"
+            i18n
+          >
+            Block Member
+          </li>
+          <li nz-menu-item (click)="acceptMember(member.uid)" *ngIf="isPendingList()" i18n>
+            Accept Member
+          </li>
+          <li nz-menu-item (click)="unblockMember(member.uid)" *ngIf="isBlockedList()" i18n>
+            Unblock Member
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </wen-member-card>
+  </div>
+</div>

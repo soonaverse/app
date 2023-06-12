@@ -1,0 +1,19 @@
+<div class="px-6 py-5">
+  <div class="text-sm font-bold" i18n>Trade history</div>
+
+  <div
+    class="flex items-center justify-center w-full my-8 text-xs font-medium text-foregrounds-tertiary"
+    *ngIf="!clear"
+    i18n
+  >
+    Item is yours and yours only
+  </div>
+
+  <div
+    class="flex flex-col items-center w-full mt-10 text-xs font-medium text-foregrounds-tertiary"
+    *ngIf="clear"
+  >
+    <div class="mb-3" i18n>This will make your item unavailable for sale.</div>
+    <button nz-button nzType="primary" nzSize="large" (click)="submit()" i18n>Stop sale!</button>
+  </div>
+</div>

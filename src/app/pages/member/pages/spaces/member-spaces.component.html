@@ -1,0 +1,9 @@
+<div>
+  <wen-member-space-row
+    *ngFor="let space of data.space$ | async; trackBy: trackByUid"
+    class="block w-full mt-3 lg:mt-4"
+    [space]="space"
+    [member]="data.member$.value"
+  >
+  </wen-member-space-row>
+</div>

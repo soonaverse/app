@@ -1,0 +1,20 @@
+@import '../light.less';
+@import '../dark.less';
+
+html,
+body {
+  @apply h-full;
+}
+
+body {
+  @apply text-foregrounds-primary bg-backgrounds-secondary;
+
+  &.dark {
+    @apply text-foregrounds-primary-dark bg-backgrounds-secondary-dark;
+  }
+}
+
+html {
+  width: 100vw;
+  overflow-x: hidden;
+}

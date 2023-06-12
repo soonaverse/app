@@ -1,0 +1,175 @@
+<ais-instantsearch [config]="config">
+  <header class="header" id="header">
+    <div class="header-searchbox">
+      <wen-search-box [sections]="sections" [reset$]="reset$"></wen-search-box>
+    </div>
+  </header>
+  <div class="relative mt-11 lg:mt-10">
+    <ais-stats data-layout="mobile">
+      <ng-template let-state="state">
+        <span
+          class="ais-Stats-text font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >
+          {{ state.nbHits | number }} <ng-container i18n>records</ng-container>
+        </span>
+      </ng-template>
+    </ais-stats>
+    <button
+      class="wen-secondary absolute top-0 right-0 z-10"
+      nz-button
+      nzSize="small"
+      (click)="filterStorageService.discoverAwardsFiltersVisible$.next(!filterStorageService.discoverAwardsFiltersVisible$.value)"
+    >
+      <wen-icon-collapse-arrow
+        *ngIf="deviceService.isDesktop$ | async"
+        [size]="16"
+        class="transition-all mr-1"
+        [ngClass]="{ 'rotate-180': (filterStorageService.discoverAwardsFiltersVisible$ | async) === false}"
+      >
+      </wen-icon-collapse-arrow>
+      <div i18n>Filters&Sort</div>
+    </button>
+  </div>
+  <main class="flex mx-auto justify-between">
+    <section
+      class="container-results"
+      [ngClass]="{ 'mr-5': filterStorageService.discoverAwardsFiltersVisible$ | async }"
+    >
+      <ais-infinite-hits [transformItems]="convertAllToSoonaverseModel">
+        <ng-template let-hits="hits" let-refine="showMore">
+          <div class="mt-6 xl:grid place-items-start">
+            <div class="mb-10 wen-cards-wrapper">
+              <wen-award-card
+                class="w-full h-full outline-none"
+                *ngFor="let award of hits; trackBy: trackByUid"
+                [award]="award"
+                [fullWidth]="(deviceService.isMobile$ | async) || false"
+              >
+              </wen-award-card>
+              <div (wenVisible)="refine()"></div>
+            </div>
+          </div>
+        </ng-template>
+      </ais-infinite-hits>
+    </section>
+    <div
+      class="container-filters overflow-hidden -translate-y-5 transition-all"
+      *ngIf="(deviceService.isMobile$ | async) !== true"
+      [ngClass]="(filterStorageService.discoverAwardsFiltersVisible$ | async) ? 'max-w-screen-2xl ml-6' : 'max-w-0'"
+    >
+      <wen-algolia-clear
+        *ngIf="filterStorageService.discoverAwardsResetVisible$ | async"
+        (wenOnClear)="reset$.next()"
+      ></wen-algolia-clear>
+      <!-- This div is for filters positioning -->
+      <div
+        class="mb-12"
+        *ngIf="(filterStorageService.discoverAwardsResetVisible$ | async) === false"
+      ></div>
+
+      <ng-container *ngTemplateOutlet="filters"></ng-container>
+    </div>
+
+    <wen-drawer
+      *ngIf="deviceService.isMobile$ | async"
+      [isVisible]="filterStorageService.discoverAwardsFiltersVisible$ | async"
+      bodyClasses="overflow-auto p-5"
+    >
+      <div class="pb-4 text-3xl font-bold" i18n>Filters&sort</div>
+      <button
+        class="absolute right-4 z-10 top-4"
+        (click)="filterStorageService.discoverAwardsFiltersVisible$.next(false)"
+      >
+        <wen-icon-close></wen-icon-close>
+      </button>
+
+      <ng-container *ngTemplateOutlet="filters"></ng-container>
+    </wen-drawer>
+
+    <ng-template #filters>
+      <div class="container-body mt-8 lg:mt-6">
+        <wen-collapse
+          i18n-title
+          title="Sort by"
+          class="transition-all mb-2"
+          [isCollapsed]="false"
+          [type]="collapseTypes.UNDERLINE"
+          (wenOnCollapse)="sortOpen = !$event"
+          [ngClass]="{ 'mb-10': sortOpen }"
+        >
+          <wen-sort-by
+            [items]="filterStorageService.discoverAwardsFiltersOptions.sortItems"
+            [value]="(filterStorageService.discoverAwardsFilters$ | async)?.sortBy"
+            (wenChange)="filterStorageService.discoverAwardsFilters$.next({
+              sortBy: $event,
+              refinementList: filterStorageService.discoverAwardsFilters$.value.refinementList
+            })"
+          >
+            ></wen-sort-by
+          >
+        </wen-collapse>
+        <wen-collapse
+          class="mb-2 transition-all"
+          i18n-title
+          title="Spaces"
+          [isCollapsed]="false"
+          [type]="collapseTypes.UNDERLINE"
+          (wenOnCollapse)="spaceFilterOpen = !$event"
+          [ngClass]="{ 'mb-10': spaceFilterOpen }"
+        >
+          <wen-algolia-checkbox
+            attribute="space"
+            [limit]="15"
+            [showMoreLimit]="5"
+            showMoreLabel="See more"
+            showLessLabel="See less"
+            [filterType]="algoliaCheckboxFilterTypes.SPACE"
+            [reset$]="reset$"
+            [value]="(filterStorageService.discoverAwardsFilters$ | async)?.refinementList?.space"
+            (wenChange)="filterStorageService.discoverAwardsFilters$.next(
+                {
+                  sortBy: filterStorageService.discoverAwardsFilters$.value.sortBy,
+                  refinementList: {
+                    token: filterStorageService.discoverAwardsFilters$.value.refinementList?.token,
+                    space: $event
+                  }
+                }
+              )"
+          >
+          </wen-algolia-checkbox>
+        </wen-collapse>
+        <wen-collapse
+          class="mb-2 transition-all"
+          i18n-title
+          title="Tokens"
+          [isCollapsed]="false"
+          [type]="collapseTypes.UNDERLINE"
+          (wenOnCollapse)="tokenFilterOpen = !$event"
+          [ngClass]="{ 'mb-10': tokenFilterOpen }"
+        >
+          <wen-algolia-checkbox
+            attribute="badge.tokenUid"
+            [limit]="15"
+            [showMoreLimit]="5"
+            showMoreLabel="See more"
+            showLessLabel="See less"
+            [filterType]="algoliaCheckboxFilterTypes.TOKEN"
+            [reset$]="reset$"
+            [value]="(filterStorageService.discoverAwardsFilters$ | async)?.refinementList?.token"
+            (wenChange)="filterStorageService.discoverAwardsFilters$.next(
+                {
+                  sortBy: filterStorageService.discoverAwardsFilters$.value.sortBy,
+                  refinementList: {
+                    space: filterStorageService.discoverAwardsFilters$.value.refinementList?.space,
+                    token: $event
+                  }
+                }
+              )"
+          >
+          </wen-algolia-checkbox>
+        </wen-collapse>
+        <div></div>
+      </div>
+    </ng-template>
+  </main>
+</ais-instantsearch>

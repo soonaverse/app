@@ -1,0 +1,49 @@
+<div class="space-y-12">
+  <div class="space-y-4">
+    <div>
+      <nz-tag
+        nzMode="checkable"
+        [nzChecked]="selectedListControl.value === filterOptions.PENDING"
+        (nzCheckedChange)="handleFilterChange(filterOptions.PENDING)"
+        i18n
+      >
+        Pending
+      </nz-tag>
+      <nz-tag
+        nzMode="checkable"
+        [nzChecked]="selectedListControl.value === filterOptions.ISSUED"
+        (nzCheckedChange)="handleFilterChange(filterOptions.ISSUED)"
+        i18n
+      >
+        Issued
+      </nz-tag>
+    </div>
+    <wen-award-card
+      class="block"
+      [fullWidth]="true"
+      *ngFor="let award of getList() | async; trackBy: trackByUid"
+      [award]="award"
+    >
+    </wen-award-card>
+    <nz-card *ngIf="!(getList() | async)?.length">
+      <div class="flex flex-col justify-center text-center h-36">
+        <span
+          class="mb-3 leading-7 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          No Awards
+        </span>
+        <button
+          nz-button
+          nzType="primary"
+          class="self-center w-48"
+          *ngIf="isLoggedIn$ | async"
+          [routerLink]="['/', 'discover', 'awards']"
+          i18n
+        >
+          Discover Awards
+        </button>
+      </div>
+    </nz-card>
+  </div>
+</div>

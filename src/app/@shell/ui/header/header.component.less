@@ -1,0 +1,15 @@
+.disabled-box {
+  @apply rounded-2xl;
+
+  .ant-dropdown-menu-item:hover {
+    @apply bg-transparent !important;
+  }
+
+  .ant-dropdown-menu-item:not(.title) {
+    @apply space-x-2 px-2 text-foregrounds-secondary dark:text-foregrounds-secondary-dark !important;
+  }
+
+  .title {
+    @apply px-2;
+  }
+}

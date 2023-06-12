@@ -1,0 +1,18 @@
+<nav
+  nz-menu
+  nzMode="horizontal"
+  class="relative z-10 inline-flex items-center w-auto h-10 min-w-full px-5 border-b-0 lg:rounded-3xl lg:px-0 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+>
+  <a
+    *ngFor="let tab of tabs"
+    nz-menu-item
+    class="inline-flex items-center h-full space-x-2 font-semibold leading-10 text-current rounded-3xl"
+    [routerLink]="tab.route"
+    nzMatchRouter
+  >
+    <ng-container #tabIcon></ng-container>
+    <div>
+      {{ tab.label }}
+    </div>
+  </a>
+</nav>

@@ -1,0 +1,175 @@
+<wen-modal-drawer
+  i18n-title
+  title="Space Claim"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="flex items-center mt-8 lg:mt-6">
+    <nz-avatar
+      [nzSrc]="previewImageService.getAvatarSize(space?.avatarUrl)"
+      class="border-2 border-tags-border dark:border-tags-border-dark min-w-12"
+      nzShape="circle"
+      [nzSize]="48"
+    >
+    </nz-avatar>
+    <div class="ml-4 text-lg font-bold">{{ space?.name }}</div>
+  </div>
+
+  <div [ngSwitch]="currentStep" class="w-full mt-6">
+    <ng-container *ngSwitchCase="stepType.CONFIRM">
+      <ng-container *ngTemplateOutlet="confirmTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.TRANSACTION">
+      <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.COMPLETE">
+      <ng-container *ngTemplateOutlet="completeTemplate"></ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #confirmTemplate>
+  <div class="flex flex-col items-center w-full">
+    <nz-alert
+      class="mt-2"
+      nzType="warning"
+      nzShowIcon
+      nzMessage="Make sure you are sending the confirmation deposit from the same wallet that owns the alias collection was minted with."
+    ></nz-alert>
+
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-10 lg:w-auto"
+      i18n
+      (click)="claimSpace()"
+    >
+      Confirm and generate address
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #transactionTemplate>
+  <div class="relative flex flex-col mt-6 font-medium lg:mt-6">
+    <nz-alert
+      class="mt-2"
+      nzType="warning"
+      nzShowIcon
+      nzMessage="Make sure you are sending the confirmation deposit from the same wallet that owns the alias collection was minted with."
+    ></nz-alert>
+  </div>
+
+  <div
+    class="px-4 py-2.5 rounded-2xl border border-alerts-error flex items-center lg:w-max mx-auto mt-6"
+  >
+    <wen-icon-stopwatch class="mr-2 lg:mr-3 text-alerts-error"></wen-icon-stopwatch>
+    <div class="text-base font-medium">
+      <span *ngIf="!helper.isExpired(transaction$ | async)">{{
+        expiryTicker$ | async | countdownTime
+      }}</span>
+      <span class="text-alerts-error" *ngIf="!helper.isExpired(transaction$ | async)" i18n>
+        remaining to make the transfer.</span
+      >
+      <span class="text-alerts-error" *ngIf="helper.isExpired(transaction$ | async)" i18n
+        >Expired</span
+      >
+    </div>
+  </div>
+
+  <nz-alert
+    class="mt-2"
+    nzType="warning"
+    nzShowIcon
+    *ngIf="!helper.isExpired(transaction$ | async) && invalidPayment"
+    nzMessage="We received invalid amount or payment was sent from an invalid address. Try again."
+  ></nz-alert>
+
+  <wen-send-funds
+    class="block w-full"
+    *ngIf="!helper.isExpired(transaction$ | async)"
+    [targetAddress]="targetAddress"
+    [formattedAmount]="targetAmount | formatToken : network | async"
+  >
+  </wen-send-funds>
+
+  <wen-wallet-deeplink
+    class="mt-6"
+    [targetAddress]="targetAddress"
+    [network]="network"
+    [targetAmount]="(targetAmount || 0).toString()"
+  >
+  </wen-wallet-deeplink>
+
+  <div
+    class="w-full my-8 mt-12 border border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+  >
+    <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+    <div class="wen-modal-history-log">
+      <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+        <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+        <a
+          class="absolute text-sm font-medium underline left-16 wen-btn-link"
+          target="_blank"
+          *ngIf="t.link"
+          [href]="transactionService.getExplorerLink(t.transaction)"
+          >{{ t.label }}</a
+        >
+        <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #completeTemplate>
+  <div
+    class="w-full my-8 mt-10 border border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+  >
+    <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+    <div class="wen-modal-history-log">
+      <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+        <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+        <a
+          class="absolute text-sm font-medium underline left-16 wen-btn-link"
+          target="_blank"
+          *ngIf="t.link"
+          [href]="transactionService.getExplorerLink(t.transaction)"
+          >{{ t.label }}</a
+        >
+        <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex mt-10 lg:items-center lg:justify-center">
+    <div
+      class="flex items-center justify-center w-10 h-10 rounded-full bg-alerts-success dark:bg-alerts-success-dark"
+    >
+      <wen-icon-check
+        class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+      ></wen-icon-check>
+    </div>
+    <div class="ml-3.5 text-lg font-medium" i18n>Claim complete. Congratulations.</div>
+  </div>
+
+  <div class="flex flex-col items-center w-full mt-10 lg:flex-row lg:w-auto lg:justify-center">
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full lg:w-auto lg:mr-2"
+      (click)="close()"
+      i18n
+    >
+      Close
+    </button>
+  </div>
+</ng-template>

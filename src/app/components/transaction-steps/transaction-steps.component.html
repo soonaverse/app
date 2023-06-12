@@ -1,0 +1,27 @@
+<div class="relative flex items-start justify-between min-w-120 min-h-14 mx-16">
+  <ng-container *ngFor="let step of steps; let i = index; let last = last">
+    <div class="flex flex-col items-center relative">
+      <div
+        class="flex items-center justify-center w-6 h-6 text-xs font-bold rounded-full"
+        [ngClass]="getStepClass(step)"
+      >
+        <wen-icon-check *ngIf="last"></wen-icon-check>
+        <ng-container *ngIf="!last">{{ i + 1 }}</ng-container>
+      </div>
+      <div
+        class="mt-1 text-sm font-bold text-center absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap"
+        [ngClass]="{
+          'opacity-50': step.sequenceNum > currentNum
+        }"
+      >
+        {{ step.label }}
+      </div>
+    </div>
+
+    <div
+      *ngIf="!last"
+      class="bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark h-0.5 translate-y-3 flex-1 mx-2"
+      [ngClass]="{ 'opacity-50': currentNum > step.sequenceNum }"
+    ></div>
+  </ng-container>
+</div>

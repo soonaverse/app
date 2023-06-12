@@ -1,0 +1,28 @@
+<wen-content>
+  <h1 i18n class="mt-0 lg:mt-12">NFT Collections</h1>
+
+  <div
+    *ngIf="isMigrationWarningVisible"
+    class="flex items-center justify-between px-5 py-3.5 mt-4 mb-6 rounded-2xl bg-tags-closed dark:bg-tags-closed-dark"
+  >
+    <div class="flex items-center">
+      <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+      <div class="text-sm font-medium" i18n>
+        Some collections may not yet be migrated to the decentralized network. Make sure you know
+        what you are buying.
+      </div>
+    </div>
+
+    <div class="flex items-center cursor-pointer ml-4" (click)="understandMigrationWarning()">
+      <div
+        class="mr-2 font-semibold text-xxs whitespace-nowrap"
+        *ngIf="deviceService.isDesktop$ | async"
+        i18n
+      >
+        I understand
+      </div>
+      <wen-icon-close [size]="16"></wen-icon-close>
+    </div>
+  </div>
+  <router-outlet></router-outlet>
+</wen-content>

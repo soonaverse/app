@@ -1,0 +1,67 @@
+<article
+  class="p-4 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl wen-card"
+  [ngClass]="fullWidth ? 'w-auto h-60 lg:h-44' : 'w-full h-76'"
+  *ngIf="award"
+>
+  <a
+    class="relative block w-full h-full"
+    [ngClass]="fullWidth ? 'lg:flex' : ''"
+    [routerLink]="['/', this.path, award.uid]"
+  >
+    <div
+      class="relative flex flex-col"
+      [ngStyle]="{
+        width: (deviceService.isDesktop$ | async) && fullWidth ? 'calc(100% - 300px)' : '100%'
+      }"
+      [ngClass]="fullWidth ? 'h-auto' : 'lg:h-40'"
+    >
+      <div class="flex items-center w-full space-x-4">
+        <ng-container *ngIf="deviceService.isDesktop$ | async">
+          <nz-avatar
+            [nzSrc]="previewImageService.getAvatarSize((space$ | async)?.avatarUrl)"
+            class="border-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-w-10 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+            nzShape="circle"
+          ></nz-avatar>
+          <p
+            nz-typography
+            class="max-w-sm truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          >
+            {{ (space$ | async)?.name || (space$ | async)?.uid }}
+          </p>
+        </ng-container>
+      </div>
+      <h3
+        class="mt-2 mb-3 text-lg font-bold h-50 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      >
+        {{ award.name || award.uid }}
+      </h3>
+    </div>
+
+    <div class="bottom-0 flex flex-col w-full h-28 lg:relative">
+      <div class="inline-flex items-center space-x-3" [ngClass]="fullWidth ? 'lg:justify-end' : ''">
+        <nz-avatar
+          [nzSrc]="award.badge.image"
+          class="wen-avatar-background"
+          nzShape="circle"
+        ></nz-avatar>
+        <nz-tag class="wen-xp-tag" *ngIf="award.badge.tokenReward">{{
+          (award.badge.tokenReward || 0
+            | formatToken : award.badge.tokenUid : true : false
+            | async) +
+            ' ' +
+            (award.badge.type === awardBadgeTypes.BASE ? award.network : award.badge.tokenSymbol)
+            | uppercase
+        }}</nz-tag>
+        <wen-icon-angle-left
+          class="flex rotate-180"
+          *ngIf="fullWidth && (deviceService.isDesktop$ | async)"
+        ></wen-icon-angle-left>
+      </div>
+
+      <div class="flex flex-wrap mt-4" [ngClass]="fullWidth ? 'lg:absolute bottom-4 right-4' : ''">
+        <wen-award-status [award]="award"></wen-award-status>
+        <wen-date-tag class="block mt-1" [date]="award.endDate"></wen-date-tag>
+      </div>
+    </div>
+  </a>
+</article>

@@ -1,0 +1,26 @@
+<nz-input-group
+  nzSize="small"
+  [nzPrefix]="prefixIconSearchMobile"
+  wenClickOutside
+  (clickOutside)="isSearchInputFocused = false"
+  class="flex ml-auto border-inputs-border dark:border-inputs-border-dark shadow-none outline-0 transition-all w-max relative overflow-hidden"
+  [ngClass]="isSearchInputFocused ? 'min-w-full' : 'min-w-0'"
+  nzSearch
+>
+  <input
+    type="text"
+    nz-input
+    class="absolute left-10 top-1/2 -translate-y-1/2 w-full text-base bg-inputs-background dark:bg-inputs-background-dark transition-all"
+    [formControl]="searchControl"
+    [placeholder]="placeholder"
+  />
+</nz-input-group>
+
+<ng-template #prefixIconSearchMobile>
+  <span
+    nz-icon
+    nzType="search"
+    class="block -mr-1 text-xl"
+    (click)="isSearchInputFocused = !isSearchInputFocused"
+  ></span>
+</ng-template>

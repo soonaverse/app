@@ -1,0 +1,176 @@
+<nz-drawer
+  nzPlacement="right"
+  [nzTitle]="titleTpl"
+  [nzMask]="false"
+  [nzVisible]="true"
+  [nzWidth]="isDesktop ? 621 : '100vw'"
+  (nzOnClose)="close()"
+  [nzClosable]="true"
+  [nzBodyStyle]="!isDesktop ? { overflow: 'auto', padding: '64px 24px 24px' } : {}"
+>
+  <ng-container *nzDrawerContent>
+    <form class="-mt-16 space-y-12" nz-form nzLayout="vertical" [formGroup]="memberForm">
+      <nz-form-item>
+        <h4 nz-typography class="pt-4 mb-1" i18n>Display Name</h4>
+        <span
+          nz-typography
+          class="mb-6 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+          >Set a display name. This does not change your username.</span
+        >
+        <nz-form-control>
+          <nz-input-group [nzPrefix]="prefixName" nzSize="large">
+            <input
+              nz-input
+              i18n-placeholder
+              placeholder="Display name (optional)"
+              [formControl]="nameControl"
+              class="bg-inputs-background dark:bg-inputs-background-dark"
+            />
+            <ng-template #prefixName>@</ng-template>
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <h4 nz-typography class="pt-4 mb-1" i18n>About</h4>
+        <span
+          nz-typography
+          class="mb-6 whitespace-pre-line text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+          >A brief description of yourself shown on your profile.</span
+        >
+        <nz-form-control nzSize="large">
+          <nz-textarea-count [nzMaxCharacterCount]="maxAboutCharacters">
+            <textarea
+              nz-input
+              i18n-placeholder
+              placeholder="Your description (optional)"
+              rows="4"
+              [formControl]="aboutControl"
+            ></textarea>
+          </nz-textarea-count>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <h4 nz-typography class="pt-4 mb-1" i18n>Avatar</h4>
+        <span
+          nz-typography
+          class="mb-6 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+          >Customise your Soonaverse identity. Set NFT as your profile image. Only minted NFT are
+          supported.</span
+        >
+        <nz-form-item class="mt-4">
+          <nz-form-control>
+            <nz-select
+              class="w-full"
+              nzSize="large"
+              nzMode="default"
+              [nzServerSearch]="true"
+              nzShowSearch
+              nzAllowClear
+              i18n-nzPlaceHolder
+              nzPlaceHolder="Type nft name..."
+              [nzCustomTemplate]="selectTpl"
+              (nzOnSearch)="searchNft($event)"
+              [formControl]="avatarNftControl"
+            >
+              <nz-option
+                *ngFor="let s of (filteredNfts$ | async) || []"
+                nzCustomContent
+                [nzLabel]="s.label || s.value"
+                [nzValue]="s.value"
+              >
+                <nz-avatar
+                  [nzSrc]="nftCache[s.value]?.media"
+                  [nzSize]="32"
+                  class="mr-3 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+                  nzShape="circle"
+                >
+                </nz-avatar>
+                {{ s.label || s.value }}
+              </nz-option>
+            </nz-select>
+            <ng-template #selectTpl let-s>
+              <div class="flex items-center space-x-4">
+                <nz-avatar
+                  [nzSrc]="nftCache[s.nzValue]?.media"
+                  [nzSize]="32"
+                  class="mr-3 border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+                  nzShape="circle"
+                >
+                </nz-avatar>
+                <span>{{ s.nzLabel }}</span>
+              </div>
+            </ng-template>
+          </nz-form-control>
+        </nz-form-item>
+      </nz-form-item>
+
+      <div class="space-y-4">
+        <h4 nz-typography class="pt-4 mb-1" i18n>Networking</h4>
+        <nz-form-item>
+          <nz-form-control i18n-nzErrorTip nzErrorTip="Invalid Github username.">
+            <nz-input-group [nzPrefix]="prefixGithub" nzSize="large">
+              <input
+                type="text"
+                nz-input
+                i18n-placeholder
+                placeholder="Type your Github account username"
+                class="bg-inputs-background dark:bg-inputs-background-dark"
+                [formControl]="githubControl"
+              />
+              <ng-template #prefixGithub>
+                <wen-icon-github></wen-icon-github>
+              </ng-template>
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-control i18n-nzErrorTip nzErrorTip="Invalid Twitter username.">
+            <nz-input-group [nzPrefix]="prefixTwitter" nzSize="large">
+              <input
+                type="text"
+                nz-input
+                i18n-placeholder
+                placeholder="Type your Twitter account username"
+                class="bg-inputs-background dark:bg-inputs-background-dark"
+                [formControl]="twitterControl"
+              />
+              <ng-template #prefixTwitter>
+                <wen-icon-twitter></wen-icon-twitter>
+              </ng-template>
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-control i18n-nzErrorTip nzErrorTip="Only username#1234 format supported.">
+            <nz-input-group [nzPrefix]="prefixDiscord" nzSize="large">
+              <input
+                type="text"
+                nz-input
+                i18n-placeholder
+                placeholder="Type your Discord account username"
+                class="bg-inputs-background dark:bg-inputs-background-dark"
+                [formControl]="discordControl"
+              />
+              <ng-template #prefixDiscord>
+                <wen-icon-discord></wen-icon-discord>
+              </ng-template>
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+  <ng-template #titleTpl>
+    <span i18n>Settings</span>
+    <button class="float-right mr-8" nz-button nzType="primary" type="button" (click)="save()" i18n>
+      Save changes
+    </button>
+  </ng-template>
+</nz-drawer>

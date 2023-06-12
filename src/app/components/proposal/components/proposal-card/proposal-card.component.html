@@ -1,0 +1,127 @@
+<article
+  class="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl wen-card"
+  [ngClass]="fullWidth ? 'w-auto h-80 lg:h-auto p-6' : 'w-full h-76 p-4'"
+  *ngIf="proposal"
+>
+  <a
+    class="relative block w-full h-full text-current hover:text-current"
+    [routerLink]="['/', this.path, proposal.uid]"
+  >
+    <wen-icon-angle-left
+      class="absolute flex rotate-180 right-6"
+      *ngIf="fullWidth && (deviceService.isDesktop$ | async)"
+    ></wen-icon-angle-left>
+    <div
+      class="relative flex flex-col w-full"
+      [ngClass]="
+        fullWidth ? 'h-auto' : proposal.questions[0].answers.length === 2 ? 'lg:h-36' : 'lg:h-24'
+      "
+    >
+      <div class="flex items-center w-full space-x-4" *ngIf="!fullWidth">
+        <nz-avatar
+          [nzSrc]="previewImageService.getAvatarSize((space$ | async)?.avatarUrl)"
+          class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-w-10"
+          nzShape="circle"
+        >
+        </nz-avatar>
+        <p
+          nz-typography
+          class="truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        >
+          {{ (space$ | async)?.name || (space$ | async)?.uid }}
+        </p>
+      </div>
+      <h3
+        class="max-w-md mt-2 mb-2 text-lg font-bold text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        [ngClass]="proposal.questions[0].answers.length === 2 ? 'line-clamp-3' : 'lg:truncate'"
+      >
+        {{ proposal.name || proposal.uid }}
+      </h3>
+    </div>
+
+    <div
+      class="bottom-0 flex flex-col w-full lg:relative"
+      [ngClass]="fullWidth ? 'h-auto lg:pr-16' : 'lg:h-52'"
+    >
+      <div
+        class="flex flex-col justify-end"
+        [ngClass]="
+          fullWidth ? 'h-auto' : proposal.questions[0].answers.length === 2 ? 'lg:h-20' : 'lg:h-32'
+        "
+      >
+        <ng-container *ngFor="let q of proposal.questions">
+          <div class="w-full" *ngIf="q.answers.length === 2">
+            <nz-progress
+              nz-tooltip
+              [nzShowInfo]="false"
+              nzStatus="active"
+              [nzPercent]="getProgressForTwo(q.answers)[0] | number : '1.2-2'"
+              nzStrokeLinecap="square"
+            ></nz-progress>
+            <div
+              class="flex justify-between space-x-10 text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            >
+              <div class="w-1/2 text-left break-words line-clamp-2 grow">
+                {{ getProgressForTwo(q.answers)[0] | number : '1.2-2' }}% {{ q.answers[0].text }}
+              </div>
+              <div class="w-1/2 text-right break-words line-clamp-2 grow">
+                {{ getProgressForTwo(q.answers)[1] | number : '1.2-2' }}% {{ q.answers[1].text }}
+              </div>
+            </div>
+          </div>
+          <div *ngIf="q.answers.length > 2" class="flex w-full max-w-full pt-4 pb-2">
+            <div class="w-4/12">
+              <canvas
+                baseChart
+                width="40"
+                height="40"
+                [data]="doughnutChartData"
+                [options]="doughnutChartOptions"
+                [type]="doughnutChartType"
+              ></canvas>
+            </div>
+
+            <div class="w-8/12 ml-3 space-y-1 font-medium text-xxs">
+              <ng-container *ngFor="let item of sortedAnswerResults | slice : 0 : 5; let i = index">
+                <ng-container
+                  *ngTemplateOutlet="answerResult; context: { $implicit: i }"
+                ></ng-container>
+              </ng-container>
+              <div
+                *ngIf="sortedAnswerResults.length > 5"
+                nz-tooltip
+                [nzTooltipTitle]="tooltip"
+                class="underline wen-btn-link"
+                i18n
+              >
+                More
+              </div>
+              <ng-template #tooltip>
+                <div>
+                  <ng-container *ngFor="let item of sortedAnswerResults | slice : 5; let i = index">
+                    <ng-container
+                      *ngTemplateOutlet="answerResult; context: { $implicit: i + 5 }"
+                    ></ng-container>
+                  </ng-container>
+                </div>
+              </ng-template>
+              <ng-template #answerResult let-i>
+                <div class="flex items-center w-full break-words">
+                  <div
+                    class="w-2 h-2 rounded-full"
+                    [ngStyle]="{ 'background-color': castAsStringArray(doughnutChartData?.datasets?.[0]?.backgroundColor)[i] }"
+                  ></div>
+                  <div class="ml-1 text-foregrounds-secondary dark:text-foregrounds-secondary">
+                    {{ getPercentage(sortedAnswerResults[i].result) }}%
+                  </div>
+                  <div class="ml-2 truncate">{{ sortedAnswerResults[i].answer.text }}</div>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+      <wen-proposal-status [proposal]="proposal"></wen-proposal-status>
+    </div>
+  </a>
+</article>

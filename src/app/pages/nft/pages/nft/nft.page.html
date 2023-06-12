@@ -1,0 +1,828 @@
+<wen-content [showBackButton]="true">
+  <div class="flex flex-col mt-12 lg:flex-row lg:mt-10">
+    <div class="w-full mt-10 grow lg:w-1/2 lg:mr-10">
+      <nz-tag
+        class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+        i18n
+        >NFT</nz-tag
+      >
+      <wen-collection-status
+        [collection]="data.collection$ | async"
+        *ngIf="!(data.nft$ | async )?.owner"
+      ></wen-collection-status>
+      <nz-tag
+        class="wen-status-tag bg-tags-available dark:bg-tags-available-dark border-tags-available dark:border-tags-available-dark"
+        *ngIf="(data.nft$ | async )?.owner"
+        i18n
+        >Owned</nz-tag
+      >
+
+      <h1 class="mt-2 mb-1">{{ getTitle(data.nft$ | async) }}</h1>
+      <ng-container *ngIf="deviceService.isMobile$ | async">
+        <div class="relative w-full overflow-hidden cursor-pointer rounded-2xl">
+          <img
+            loading="eager"
+            (click)="isNftPreviewOpen = true"
+            *ngIf="mediaType === 'image'"
+            alt="NFT Image"
+            i18n-alt
+            [src]="previewImageService.getUrl((data.nft$ | async)?.media) || '/assets/mocks/no_banner.jpg'"
+            class="object-cover w-full h-full"
+          />
+
+          <video
+            controls
+            autoplay
+            loop
+            class="object-cover w-full h-full"
+            *ngIf="mediaType === 'video'"
+          >
+            <source [src]="(data.nft$ | async)?.media" type="video/mp4" />
+            Your browser does not support HTML video.
+          </video>
+        </div>
+
+        <wen-share
+          class="block mt-5 mb-8"
+          i18n-shareText
+          shareText="Check out nft"
+          [shareUrl]="helper.getShareUrl(data.nft$ | async)"
+        >
+        </wen-share>
+      </ng-container>
+
+      <wen-countdown
+        *ngIf="helper.getCountdownDate(data.nft$ | async)"
+        class="my-5"
+        wrapperClassName="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+        tabClassName="bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+        [title]="helper.getCountdownTitle(data.nft$ | async)"
+        [finalDate]="helper.getCountdownDate(data.nft$ | async)?.toDate()"
+        size="large"
+      >
+      </wen-countdown>
+
+      <div class="flex flex-wrap items-center mt-5">
+        <div
+          class="flex-1 h-20 px-4 py-3 mr-3 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-xl"
+          *ngIf="!helper.isAvailableForAuction(data.nft$ | async, data.collection$ | async)"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary" i18n>Current price</div>
+          <div class="flex items-center mt-2">
+            <ng-container
+              *ngIf="((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price); else noPrice"
+            >
+              <div
+                class="mr-2 text-xs font-medium line-through truncate text-foregrounds-secondary"
+                *ngIf="discount(data.collection$ | async, data.nft$ | async) < 1"
+              >
+                {{(((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price) |
+                formatToken: ((data.nft$ | async)?.placeholderNft ? (data.collection$ |
+                async)?.mintingData?.network : (data.nft$ | async)?.mintingData?.network): true |
+                async)}}
+              </div>
+              <div class="text-lg font-bold truncate">
+                {{(calc(((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price),
+                discount(data.collection$ | async, data.nft$ | async)) | formatToken: ((data.nft$ |
+                async)?.placeholderNft ? (data.collection$ | async)?.mintingData?.network :
+                (data.nft$ | async)?.mintingData?.network): true | async)}}
+              </div>
+            </ng-container>
+            <ng-template #noPrice>
+              <div class="text-lg font-bold truncate">-</div>
+            </ng-template>
+          </div>
+        </div>
+
+        <div
+          class="flex-1 h-20 px-4 py-3 mb-2 xs:mb-0 xs:mr-3 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-xl"
+          *ngIf="helper.auctionInProgress(data.nft$ | async, data.collection$ | async)"
+          [ngClass]="{
+                      'bg-tags-closed dark:bg-tags-closed-dark': ((auth.member$ | async)?.uid && (data.nft$ | async)?.auctionHighestBidder !== (auth.member$ | async)?.uid) && (data.myBidTransactions$ | async)?.length,
+                      'bg-tags-available dark:bg-tags-available-dark': ((auth.member$ | async)?.uid && (data.nft$ | async)?.auctionHighestBidder === (auth.member$ | async)?.uid)
+                    }"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary">
+            <ng-container
+              *ngIf="(!(data.nft$ | async)?.auctionHighestBidder || (data.nft$ | async)?.auctionHighestBidder !== (auth.member$ | async)?.uid)"
+            >
+              <ng-container *ngIf="(data.nft$ | async)?.auctionHighestBid; else minBidBlock" i18n>
+                Current highest bid</ng-container
+              >
+              <ng-template #minBidBlock i18n>Min bid</ng-template>
+            </ng-container>
+            <ng-container
+              *ngIf="(auth.member$ | async)?.uid && ((data.nft$ | async)?.auctionHighestBidder === (auth.member$ | async)?.uid)"
+              i18n
+              >Your bid is the highest</ng-container
+            >
+          </div>
+          <div class="flex items-center mt-2 text-lg">
+            <div class="mr-2 font-bold truncate">
+              {{ ((data.nft$ | async)?.auctionHighestBid || 0 | formatToken: (data.nft$ |
+              async)?.mintingData?.network | async) || ((data.nft$ | async)?.auctionFloorPrice |
+              formatToken: (data.nft$ | async)?.mintingData?.network: true | async)}}
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex-1 h-20 px-4 py-3 mt-4 xs:mt-0 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-xl"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary" i18n>Space</div>
+          <a class="flex items-center mt-2" [routerLink]="['/space', (data.space$ | async)?.uid]">
+            <nz-avatar
+              class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-w-10"
+              style="max-width: 32px; min-width: 32px"
+              [nzSize]="32"
+              [nzSrc]="previewImageService.getAvatarSize((data.space$ | async)?.avatarUrl)"
+            >
+            </nz-avatar>
+
+            <div class="ml-3 text-base font-medium truncate">
+              {{ (data.space$ | async)?.name || (data.space$ | async)?.uid }}
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div
+        class="flex items-center p-5 mt-6 rounded-xl bg-alerts-warning dark:bg-alerts-warning-dark text-foregrounds-primary dark:text-foregrounds-primary"
+        *ngIf="(data.nft$ | async)?.placeholderNft && helper.isAvailableForSale(data.nft$ | async, data.collection$ | async)"
+      >
+        <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+        <div class="text-base font-bold">
+          <span>{{(data.collection$ | async)?.availableNfts || 0}} </span>
+          <span i18n>remaining</span>
+        </div>
+      </div>
+
+      <ng-container *ngIf="!helper.isCollectionBeingMinted(data.collection$ | async)">
+        <div
+          *ngIf="(data.nft$ | async)?.placeholderNft && (data.collection$ | async)?.approved === true && !helper.isAvailableForSale(data.nft$ | async, data.collection$ | async) && !helper.saleNotStartedYet(data.nft$ | async)"
+          class="flex items-center w-full px-5 py-4 mt-12 bg-icons-secondary dark:bg-icons-secondary-dark rounded-xl text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        >
+          <wen-icon-sad></wen-icon-sad>
+          <div class="font-medium ml-3.5" i18n>Sale ended</div>
+        </div>
+
+        <div
+          *ngIf="(data.collection$ | async)?.approved === true && !helper.isAvailableForSale(data.nft$ | async, data.collection$ | async) && !(data.nft$ | async)?.owner && helper.saleNotStartedYet(data.nft$ | async)"
+          class="flex items-center w-full px-5 py-4 mt-12 bg-icons-secondary dark:bg-icons-secondary-dark rounded-xl text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        >
+          <wen-icon-sad></wen-icon-sad>
+          <div class="font-medium ml-3.5" i18n>Sale hasn't started yet</div>
+        </div>
+
+        <div
+          *ngIf="helper.isLocked(data.nft$ | async, data.collection$ | async, true)"
+          class="flex items-center w-full px-5 py-4 mt-12 bg-icons-secondary dark:bg-icons-secondary-dark rounded-xl text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        >
+          <wen-icon-sad></wen-icon-sad>
+          <div class="font-medium ml-3.5" i18n>NFT is pending other member's transaction</div>
+        </div>
+      </ng-container>
+
+      <div
+        *ngIf="!(data.collection$ | async)?.approved"
+        class="flex items-center w-full px-5 py-4 mt-12 bg-icons-secondary dark:bg-icons-secondary-dark rounded-xl text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      >
+        <wen-icon-sad></wen-icon-sad>
+        <div class="font-medium ml-3.5" i18n>Collection pending approval</div>
+      </div>
+
+      <div
+        *ngIf="(data.collection$ | async)?.rejected === true"
+        class="flex items-center w-full px-5 py-4 mt-12 bg-red-300 rounded-xl text-foregrounds-primary dark:text-foregrounds-primary"
+      >
+        <wen-icon-sad></wen-icon-sad>
+        <div class="font-medium ml-3.5" i18n>Collection rejected!</div>
+      </div>
+
+      <button
+        class="mt-10"
+        nz-button
+        nzType="default"
+        (click)="sell($event)"
+        *ngIf="(data.nft$ | async)?.owner && (data.nft$ | async)?.owner === (auth.member$ | async)?.uid"
+        nzBlock
+        nzSize="large"
+      >
+        <span
+          *ngIf="helper.canBeSetForSale(data.nft$ | async) && (data.nft$ | async)?.owner && (data.nft$ | async)?.owner === (auth.member$ | async)?.uid"
+          i18n
+          >Sell NFT</span
+        >
+        <span
+          *ngIf="!helper.canBeSetForSale(data.nft$ | async) && !helper.willBeAvailableForAuction(data.nft$ | async, data.collection$ | async) && !helper.isAvailableForAuction(data.nft$ | async, data.collection$ | async)"
+          i18n
+          >Change Fixed Price</span
+        >
+        <span
+          *ngIf="!helper.canBeSetForSale(data.nft$ | async) && helper.willBeAvailableForAuction(data.nft$ | async, data.collection$ | async)"
+          i18n
+          >Change Auction</span
+        >
+      </button>
+
+      <div
+        *ngIf="helper.auctionInProgress(data.nft$ | async, data.collection$ | async) && (data.nft$ | async)?.owner !== (auth.member$ | async)?.uid"
+        class="mt-10"
+      >
+        <button
+          nz-button
+          nzType="primary"
+          (click)="bid($event)"
+          *ngIf="auth.isLoggedIn$ | async"
+          nzBlock
+          nzSize="large"
+          i18n
+        >
+          Place bid
+        </button>
+
+        <wen-connect-wallet
+          class="w-full"
+          wrapperClass="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          *ngIf="(auth.isLoggedIn$ | async) === false"
+        ></wen-connect-wallet>
+      </div>
+
+      <div
+        *ngIf="!helper.isLocked(data.nft$ | async, data.collection$ | async, true) && helper.isAvailableForSale(data.nft$ | async, data.collection$ | async) && (!(data.nft$ | async)?.owner || (data.nft$ | async)?.owner !== (auth.member$ | async)?.uid)"
+        class="mt-10"
+      >
+        <button
+          nz-button
+          nzType="primary"
+          (click)="buy($event)"
+          *ngIf="auth.isLoggedIn$ | async"
+          nzBlock
+          nzSize="large"
+          i18n
+        >
+          Buy now
+        </button>
+
+        <wen-connect-wallet
+          class="w-full"
+          wrapperClass="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          *ngIf="(auth.isLoggedIn$ | async) === false"
+        ></wen-connect-wallet>
+      </div>
+
+      <div class="mt-12 font-medium" [innerHtml]="(data.nft$ | async)?.description| markdown"></div>
+
+      <wen-timeline
+        class="mt-12"
+        [items]="getTimelineItems(data.nft$ | async, data.space$ | async, data.ordersAllNetworks$ | async)"
+        [isCollapsable]="true"
+      ></wen-timeline>
+
+      <wen-collapse i18n-title title="Bidding" class="mt-4" [isCollapsed]="true">
+        <div class="flex flex-col px-6 mt-6 mb-4 lg:flex-row lg:items-center">
+          <nz-tag
+            nzMode="checkable"
+            *ngIf="helper.auctionInProgress(data.nft$ | async, data.collection$ | async)"
+            class="mt-2 w-max"
+            [nzChecked]="currentListingType === listingTypes.CURRENT_BIDS"
+            (nzCheckedChange)="currentListingType = listingTypes.CURRENT_BIDS"
+          >
+            <span i18n>Current Bids</span>
+          </nz-tag>
+          <nz-tag
+            nzMode="checkable"
+            class="mt-2 w-max"
+            [nzChecked]="currentListingType === listingTypes.PAST_BIDS"
+            (nzCheckedChange)="currentListingType = listingTypes.PAST_BIDS"
+          >
+            <span i18n>Past bids</span>
+          </nz-tag>
+          <nz-tag
+            nzMode="checkable"
+            *ngIf="helper.auctionInProgress(data.nft$ | async, data.collection$ | async)"
+            class="mt-2 w-max"
+            [nzChecked]="currentListingType === listingTypes.MY_BIDS"
+            (nzCheckedChange)="currentListingType = listingTypes.MY_BIDS"
+          >
+            <span i18n>My biddings</span>
+          </nz-tag>
+        </div>
+
+        <!-- Current Bids -->
+        <nz-table
+          *ngIf="!!(data.nft$ | async) &&  currentListingType === listingTypes.CURRENT_BIDS"
+          class="block h-full px-5 mt-5 overflow-y-auto lg:min-h-0"
+          [nzData]="(data.allBidTransactions$ | async) || []"
+          [nzShowPagination]="false"
+          [nzNoResult]="noCurrentBids"
+        >
+          <thead>
+            <tr>
+              <th i18n>Member</th>
+              <th i18n>Bidded on</th>
+              <th i18n>Amount</th>
+              <th i18n>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            <nz-skeleton
+              *ngIf="data.allBidTransactionsLoading$ | async; else allBidTransactionsBlock"
+              class=""
+              [nzActive]="true"
+              [nzAvatar]="{ size: 'default' }"
+              [nzParagraph]="{ rows: 1, width: 100 }"
+            ></nz-skeleton>
+            <ng-template #allBidTransactionsBlock>
+              <tr *ngFor="let item of (data.allBidTransactions$ | async)">
+                <td [routerLink]="['/member', item.member.uid]" class="cursor-pointer">
+                  <nz-avatar
+                    nzIcon="user"
+                    [nzSrc]="item.member.avatar | resizeAvatar:filesizes.small"
+                    class="mr-2"
+                    [nzSize]="(deviceService.isDesktop$ | async) ? 'default' : 32"
+                  >
+                  </nz-avatar>
+                  <span>@{{ (item.member.name || item.member.uid) | truncate:[16]}}</span>
+                </td>
+                <td>{{ item.transaction.createdOn?.toDate() | date:'short' }}</td>
+                <td>
+                  {{ (item.transaction.payload.amount | formatToken: item.transaction.network |
+                  async) }}
+                </td>
+                <td class="text-right">
+                  <a
+                    class="text-sm font-medium underline wen-btn-link"
+                    target="_blank"
+                    *ngIf="item.transaction.payload.chainReference || item.transaction.payload?.walletReference?.chainReference"
+                    [href]="transactionService.getExplorerLink(item.transaction)"
+                    i18n
+                    >Link</a
+                  >
+                </td>
+              </tr>
+            </ng-template>
+          </tbody>
+        </nz-table>
+
+        <ng-template #noCurrentBids>
+          <div class="text-sm font-medium text-foregrounds-tertiary" i18n>
+            There are no current bids
+          </div>
+        </ng-template>
+
+        <!-- Past bids -->
+        <nz-table
+          *ngIf="!!(data.nft$ | async) && currentListingType === listingTypes.PAST_BIDS"
+          class="block h-full px-5 mt-5 overflow-y-auto lg:min-h-0"
+          [nzData]="(data.pastBidTransactions$ | async) || []"
+          [nzShowPagination]="false"
+          [nzNoResult]="noPastBids"
+        >
+          <thead>
+            <tr>
+              <th i18n>Date</th>
+              <th i18n>Type</th>
+              <th i18n>Amount</th>
+              <th i18n>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            <nz-skeleton
+              *ngIf="data.pastBidTransactionsLoading$ | async; else pastBidTransactionsBlock"
+              class=""
+              [nzActive]="true"
+              [nzAvatar]="{ size: 'default' }"
+              [nzParagraph]="{ rows: 1, width: 100 }"
+            ></nz-skeleton>
+            <ng-template #pastBidTransactionsBlock>
+              <tr *ngFor="let item of data.pastBidTransactions$ | async">
+                <td>{{ item.createdOn?.toDate() | date:'short' }}</td>
+                <td>{{ item.type }}</td>
+                <td>{{ (item.payload.amount | formatToken: item.network | async) }}</td>
+                <td class="text-right">
+                  <a
+                    class="text-sm font-medium underline wen-btn-link"
+                    target="_blank"
+                    *ngIf="item.payload.chainReference || item.payload?.walletReference?.chainReference"
+                    [href]="transactionService.getExplorerLink(item)"
+                    i18n
+                    >Link</a
+                  >
+                </td>
+              </tr>
+            </ng-template>
+          </tbody>
+        </nz-table>
+
+        <ng-template #noPastBids>
+          <div class="text-sm font-medium text-foregrounds-tertiary" i18n>
+            There are no past bids
+          </div>
+        </ng-template>
+
+        <!-- My bids -->
+        <nz-table
+          *ngIf="!!(data.nft$ | async) && currentListingType === listingTypes.MY_BIDS"
+          class="block h-full px-5 mt-5 overflow-y-auto lg:min-h-0"
+          [nzData]="(data.myBidTransactions$ | async) || []"
+          [nzShowPagination]="false"
+          [nzNoResult]="noMyBiddings"
+        >
+          <thead>
+            <tr>
+              <th i18n>Date</th>
+              <th i18n>Type</th>
+              <th i18n>Amount</th>
+              <th i18n>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            <nz-skeleton
+              *ngIf="data.myBidTransactionsLoading$ | async; else myBidTransactionsBlock"
+              class=""
+              [nzActive]="true"
+              [nzAvatar]="{ size: 'default' }"
+              [nzParagraph]="{ rows: 1, width: 100 }"
+            ></nz-skeleton>
+            <ng-template #myBidTransactionsBlock>
+              <tr *ngFor="let item of data.myBidTransactions$ | async">
+                <td>{{ item.createdOn?.toDate() | date:'short' }}</td>
+                <td>{{ item.type }}</td>
+                <td>{{ (item.payload.amount | formatToken: item.network | async) }}</td>
+                <td class="text-right">
+                  <a
+                    class="text-sm font-medium underline wen-btn-link"
+                    target="_blank"
+                    *ngIf="item.payload.chainReference || item.payload?.walletReference?.chainReference"
+                    [href]="transactionService.getExplorerLink(item)"
+                    i18n
+                    >Link</a
+                  >
+                </td>
+              </tr>
+            </ng-template>
+          </tbody>
+        </nz-table>
+
+        <ng-template #noMyBiddings>
+          <div class="text-sm font-medium text-foregrounds-tertiary" i18n>
+            There are no records.
+          </div>
+        </ng-template>
+      </wen-collapse>
+    </div>
+
+    <div class="w-full max-w-screen-sm grow lg:w-1/2">
+      <ng-container *ngIf="deviceService.isDesktop$ | async">
+        <div class="relative w-full overflow-hidden cursor-pointer rounded-2xl">
+          <img
+            loading="eager"
+            (click)="isNftPreviewOpen = true"
+            *ngIf="mediaType === 'image'"
+            alt="NFT Image"
+            [src]="previewImageService.getUrl((data.nft$ | async)?.media) || '/assets/mocks/no_banner.jpg'"
+            class="object-cover w-full h-full"
+          />
+
+          <video
+            controls
+            autoplay
+            loop
+            class="object-cover w-full h-full"
+            *ngIf="mediaType === 'video'"
+          >
+            <source [src]="(data.nft$ | async)?.media" type="video/mp4" />
+            Your browser does not support HTML video.
+          </video>
+        </div>
+
+        <button
+          *ngIf="helper.isMinted(data.nft$ | async) && (data.nft$ | async)?.owner && (data.nft$ | async)?.owner === (auth.member$ | async)?.uid"
+          class="mt-6"
+          nz-button
+          nzType="default"
+          (click)="isWithdrawOpen = true"
+          nzBlock
+          nzSize="large"
+          i18n
+        >
+          Withdraw NFT
+        </button>
+
+        <wen-share
+          *ngIf="deviceService.isDesktop$ | async"
+          class="block mt-6"
+          i18n-shareText
+          shareText="Check out nft"
+          [shareUrl]="helper.getShareUrl(data.nft$ | async)"
+        >
+        </wen-share>
+      </ng-container>
+
+      <wen-collapse i18n-title title="History" class="mt-8" [isCollapsed]="false">
+        <div style="display: block">
+          <canvas
+            baseChart
+            width="400"
+            height="180"
+            [data]="lineChartData"
+            [options]="lineChartOptions"
+            [type]="lineChartType"
+          ></canvas>
+        </div>
+      </wen-collapse>
+
+      <nz-card class="mt-8">
+        <ng-container *ngIf="!helper.isMinted(data.nft$ | async, data.collection$ | async)">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <wen-icon-alert-octagon
+                class="mr-2.5 lg:mr-3.5 text-alerts-error dark:text-alerts-error-dark"
+              ></wen-icon-alert-octagon>
+              <div class="text-lg font-bold" i18n>Network</div>
+            </div>
+          </div>
+
+          <div class="mt-3 font-medium">NFT is not yet migrated to the decentralized network.</div>
+
+          <button
+            nz-button
+            nzType="primary"
+            nzSize="default"
+            class="w-full mt-6"
+            *ngIf="helper.isCollectionBeingMinted(data.collection$ | async)"
+            [disabled]="true"
+          >
+            <span i18n>Minting in Progress</span>
+          </button>
+        </ng-container>
+
+        <div
+          *ngIf="helper.isMinted(data.nft$ | async, data.collection$ | async)"
+          class="flex items-center justify-between"
+        >
+          <div class="text-lg font-bold" i18n>Network</div>
+          <a
+            class="flex items-center px-4 py-3 ml-4 font-medium cursor-pointer rounded-xl bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+            [href]="helper.getExplorerUrl((data.nft$ | async)?.placeholderNft ? (data.collection$ | async) : (data.nft$ | async))"
+            target="_blank"
+          >
+            <ng-container
+              [ngSwitch]="((data.nft$ | async)?.placeholderNft ? (data.collection$ | async)?.mintingData?.network : (data.nft$ | async)?.mintingData?.network)"
+            >
+              <ng-container *ngSwitchCase="networkTypes.SMR">
+                <wen-icon-shimmer [size]="20"></wen-icon-shimmer>
+                <div class="ml-2 w-max" i18n>Shimmer</div>
+              </ng-container>
+              <ng-container *ngSwitchCase="networkTypes.RMS">
+                <wen-icon-shimmer [size]="20"></wen-icon-shimmer>
+                <div class="ml-2 w-max" i18n>Shimmer Testnet</div>
+              </ng-container>
+              <ng-container *ngSwitchCase="networkTypes.IOTA">
+                <wen-icon-iota [size]="20"></wen-icon-iota>
+                <div class="ml-2 w-max" i18n>IOTA</div>
+              </ng-container>
+              <ng-container *ngSwitchCase="networkTypes.ATOI">
+                <wen-icon-iota [size]="20"></wen-icon-iota>
+                <div class="ml-2 w-max" i18n>IOTA Devnet</div>
+              </ng-container>
+            </ng-container>
+          </a>
+        </div>
+      </nz-card>
+
+      <nz-card i18n-nzTitle nzTitle="Owned by" class="mt-4" *ngIf="data.owner$ | async">
+        <a [routerLink]="['/member', (data.owner$ | async)?.uid]" class="flex items-center">
+          <nz-avatar
+            [nzSrc]="(data.owner$ | async)?.avatar | resizeAvatar:filesizes.small"
+            class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-w-10"
+            style="max-width: 32px; min-width: 32px"
+            [nzSize]="32"
+          >
+          </nz-avatar>
+          <div class="ml-3 text-base font-medium truncate">
+            @{{((data.owner$ | async)?.name || (data.owner$ | async)?.uid) }}
+          </div>
+        </a>
+      </nz-card>
+
+      <nz-card
+        i18n-nzTitle
+        nzTitle="Who can buy?"
+        class="mt-4"
+        *ngIf="helper.isAvailableForSale(data.nft$ | async, data.collection$ | async) && (data.saleAccessMembers$ | async)?.length"
+      >
+        <div class="flex font-medium">
+          <wen-icon-specific-members-only class="text-icons-primary dark:text-icons-primary-dark">
+          </wen-icon-specific-members-only>
+          <div class="ml-2 text-sm">
+            <div i18n>Available for specific Member Only</div>
+            <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+              <ng-container
+                *ngFor="let member of (data.saleAccessMembers$ | async); let last = last"
+              >
+                ({{ member.name }}){{ last ? '' : ', ' }}
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </nz-card>
+
+      <wen-collapse
+        [ngClass]="(data.owner$ | async) ? 'mt-4' : 'mt-8'"
+        i18n-title
+        title="System info"
+        *ngIf="!generatedNft(data.nft$ | async)"
+      >
+        <wen-description
+          [items]="[
+                    { title: systemInfoLabels[0], value: (data.nft$ | async)?.ipfsMetadata ? (data.nft$ | async)?.ipfsMetadata : systemInfoValues.preparing, link: (data.nft$ | async)?.ipfsMetadata ? { label: systemInfoValues.view, href: ipfsGateway + (data.nft$ | async)?.ipfsMetadata } : undefined },
+                    { title: systemInfoLabels[1], value: (data.nft$ | async)?.ipfsMedia ? (data.nft$ | async)?.ipfsMedia : systemInfoValues.preparing, link: (data.nft$ | async)?.ipfsMedia ? { label: systemInfoValues.view, href: ipfsGateway + (data.nft$ | async)?.ipfsMedia } : undefined }
+                ]"
+        ></wen-description>
+        <ng-template #onChaingRecordTooltipIcon>
+          <wen-icon-question-circle
+            nz-tooltip
+            i18n-nzTooltipTitle
+            nzTooltipTitle="View all of the transaction details of this NFT on the Tangle"
+          ></wen-icon-question-circle>
+        </ng-template>
+        <ng-template #migrateTooltipIcon>
+          <wen-icon-question-circle
+            nz-tooltip
+            i18n-nzTooltipTitle
+            nzTooltipTitle="The current address is not connected to a live mainnet. As soon as the functionality is supported on IOTA/Shimmer, you will have to ability to one-click migrate this NFT to your network of choice."
+          ></wen-icon-question-circle>
+        </ng-template>
+      </wen-collapse>
+
+      <wen-collapse
+        class="mt-4"
+        title="Properties"
+        *ngIf="helper.getPropStats((data.nft$ | async)?.properties).length"
+      >
+        <wen-description
+          [items]="helper.getPropStats((data.nft$ | async)?.properties)"
+        ></wen-description>
+      </wen-collapse>
+
+      <wen-collapse
+        class="mt-4"
+        title="Stats"
+        *ngIf="helper.getPropStats((data.nft$ | async)?.stats).length"
+      >
+        <wen-description
+          [items]="helper.getPropStats((data.nft$ | async)?.stats)"
+        ></wen-description>
+      </wen-collapse>
+    </div>
+  </div>
+
+  <div
+    class="w-screen h-px mt-16 mb-8 -ml-4 lg:-ml-20 xl:w-full xl:ml-0 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark lg:mt-12"
+  ></div>
+
+  <nz-card class="relative block w-full mt-16" i18n-nzTitle nzTitle="About the collection">
+    <a
+      nz-button
+      nzType="link"
+      class="absolute flex items-center right-6 top-6"
+      [routerLink]="['/', collectionPath, (data.collection$ | async)?.uid]"
+      nzSize="small"
+    >
+      <span>
+        <span i18n>Show </span>
+        <ng-container *ngIf="(deviceService.isDesktop$ | async)" i18n>collection</ng-container>
+      </span>
+      <wen-icon-angle-right></wen-icon-angle-right>
+    </a>
+
+    <div class="flex flex-col lg:flex-row">
+      <div class="w-full lg:w-max">
+        <h1 class="mb-2 break-words">
+          {{ (data.collection$ | async)?.name || (data.collection$ | async)?.uid }}
+        </h1>
+        <div class="flex items-center">
+          <div class="mr-3 text-xs font-medium" i18n>by</div>
+
+          <nz-avatar
+            class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-w-10"
+            style="max-width: 32px; min-width: 32px"
+            [nzSize]="32"
+            [nzSrc]="previewImageService.getAvatarSize((data.space$ | async)?.avatarUrl)"
+          >
+          </nz-avatar>
+
+          <div class="ml-3 text-base font-medium truncate max-w-24">
+            {{ (data.space$ | async)?.name || (data.space$ | async)?.uid }}
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="mt-10 text-sm font-medium lg:mt-2 lg:ml-10 text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        [innerHtml]="(data.collection$ | async)?.description | stripMarkdown"
+      ></div>
+    </div>
+
+    <div class="mt-10 lg:grid place-items-start">
+      <div class="mb-10 wen-cards-wrapper">
+        <nz-skeleton
+          *ngIf="isLoading(data.topNftWithinCollection$ | async)"
+          class="p-4 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl w-76 h-76"
+          [nzActive]="true"
+          [nzAvatar]="{ size: 'default' }"
+          [nzParagraph]="{ rows: 1 }"
+        ></nz-skeleton>
+
+        <nz-card class="w-76" *ngIf="isEmpty(data.topNftWithinCollection$ | async)">
+          <div class="flex flex-col justify-center text-center h-36">
+            <span
+              class="leading-7 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+              i18n
+            >
+              No NFTs
+            </span>
+          </div>
+        </nz-card>
+
+        <!-- Place holder NFT MUST be always first -->
+        <wen-nft-card
+          *ngIf="(data.collection$ | async)?.placeholderNft && (data.firstNftInCollection$ | async)"
+          class="w-full h-full outline-none"
+          [collection]="(data.collection$ | async)"
+          [nft]="(data.firstNftInCollection$ | async)"
+        >
+        </wen-nft-card>
+
+        <ng-container *ngFor="let nft of data.topNftWithinCollection$ | async; trackBy: trackByUid">
+          <wen-nft-card
+            [collection]="(data.collection$ | async)"
+            class="w-full h-full outline-none"
+            *ngIf="!(data.collection$ | async)?.placeholderNft || ((data.collection$ | async)?.placeholderNft && nft.uid !== (data.firstNftInCollection$ | async)?.uid)"
+            [nft]="nft"
+          >
+          </wen-nft-card>
+        </ng-container>
+      </div>
+    </div>
+  </nz-card>
+</wen-content>
+
+<wen-nft-checkout
+  *ngIf="isCheckoutOpen"
+  [isOpen]="isCheckoutOpen"
+  [nft]="data.nft$ | async"
+  [collection]="data.collection$ | async"
+  (wenOnClose)="isCheckoutOpen = false"
+></wen-nft-checkout>
+<wen-nft-sale
+  *ngIf="isSaleOpen"
+  [isOpen]="isSaleOpen"
+  [nft]="data.nft$ | async"
+  [collection]="data.collection$ | async"
+  (wenOnClose)="isSaleOpen = false"
+></wen-nft-sale>
+<wen-nft-bid
+  *ngIf="isBidOpen"
+  [isOpen]="isBidOpen"
+  [nft]="data.nft$ | async"
+  [collection]="data.collection$ | async"
+  [endsOnTicker$]="endsOnTicker$"
+  (wenOnClose)="isBidOpen = false"
+></wen-nft-bid>
+<wen-confirm-modal
+  *ngIf="isWithdrawOpen"
+  [isOpen]="isWithdrawOpen"
+  (wenOnClose)="onWithdraw($event)"
+  [type]="confirmModalTypes.WARNING"
+  i18n-title
+  title="Are you sure you want to withdraw NFT from Soonaverse?"
+  i18n-description
+  description="Once the NFT is withdrawn it won’t be available within Soonaverse and it will appear only in your wallet. You can always bring the NFT back to Soonaverse later."
+  i18n-confirmLabel
+  confirmLabel="Confirm with Metamask"
+></wen-confirm-modal>
+
+<nz-modal
+  nzWidth="min(100vw - 50px, 100vh - 50px)"
+  [nzVisible]="isNftPreviewOpen"
+  (nzOnCancel)="isNftPreviewOpen = false"
+  [nzContent]="prevewNftModalContent"
+  [nzFooter]="null"
+  [nzBodyStyle]="{ padding: '0' }"
+>
+  <ng-template #prevewNftModalContent>
+    <img
+      loading="eager"
+      *ngIf="mediaType === 'image'"
+      [src]="previewImageService.getUrl((data.nft$ | async)?.media) || '/assets/mocks/no_banner.jpg'"
+      class="w-full rounded-3xl"
+    />
+    <video controls autoplay loop class="w-full rounded-3xl" *ngIf="mediaType === 'video'">
+      <source [src]="(data.nft$ | async)?.media" type="video/mp4" />
+      Your browser does not support HTML video.
+    </video>
+  </ng-template>
+</nz-modal>

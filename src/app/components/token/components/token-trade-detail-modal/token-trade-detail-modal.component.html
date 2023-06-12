@@ -1,0 +1,352 @@
+<wen-modal-drawer
+  i18n-title
+  title="Trade details"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="flex items-center mt-8 lg:mt-6">
+    <nz-avatar
+      [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+      class="border-2 border-tags-border dark:border-tags-border-dark min-w-12"
+      nzShape="circle"
+      [nzSize]="48"
+    >
+    </nz-avatar>
+    <div class="ml-4 text-lg font-bold">{{ token?.name }}</div>
+    <div class="ml-2 font-medium">
+      ({{ (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol }})
+    </div>
+  </div>
+
+  <div
+    class="flex items-center justify-between w-full px-6 py-4 mt-6 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-3xl"
+  >
+    <div class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Traded amount
+    </div>
+
+    <div class="font-bold">
+      {{
+        tradeDetailOrder?.count || tradeDetailPurchases[0].count
+          | formatToken : token?.uid : true : false
+          | async
+      }}
+      {{ (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol }}
+    </div>
+  </div>
+  <div
+    class="flex items-center justify-between w-full px-6 py-4 mt-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-3xl"
+  >
+    <div class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Price per token
+    </div>
+
+    <div class="text-right">
+      <div class="font-bold">
+        {{
+          {
+            value: tradeDetailOrder?.price || tradeDetailPurchases[0].price || 0,
+            exponents: token?.decimals
+          }
+            | formatToken : token?.uid : true
+            | async
+        }}
+      </div>
+      <span
+        class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >~{{
+          unitsService.getUsd(
+            tradeDetailOrder?.price || tradeDetailPurchases[0].price || 0,
+            token?.mintingData?.networkFormat || token?.mintingData?.network
+          )
+            | async
+            | currency : 'USD'
+            | UsdBelowTwoDecimals
+        }}</span
+      >
+    </div>
+  </div>
+  <div
+    class="flex items-center justify-between w-full px-6 py-4 mt-2 space-x-4 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-3xl"
+  >
+    <div class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Date and Time
+    </div>
+
+    <div class="font-bold text-right">
+      {{
+        (tradeDetailOrder?.createdOn || tradeDetailPurchases[0].createdOn)?.toDate()
+          | date : 'medium'
+      }}
+    </div>
+  </div>
+  <div
+    *ngIf="tradeDetailOrder"
+    class="flex items-center justify-between w-full px-6 py-4 mt-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-3xl"
+  >
+    <div class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Fullfilled
+    </div>
+
+    <div class="font-bold">{{ helper.getTradeOrderStatus(tradeDetailOrder) }}</div>
+  </div>
+
+  <nz-table
+    class="block w-full mt-8 overflow-y-auto lg:min-h-0"
+    *ngIf="tradeDetailPurchases.length > 0"
+    [nzData]="[{}]"
+    [nzShowPagination]="false"
+    nzSize="small"
+  >
+    <thead>
+      <tr>
+        <th i18n>Date</th>
+        <th i18n>Amount</th>
+        <th i18n>State</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let item of tradeDetailPurchases; let i = index">
+        <tr *ngIf="billPaymentTransactions$[i] | async">
+          <td
+            class="text-sm font-medium"
+            nz-tooltip
+            nzTooltipTrigger="click"
+            [nzTooltipTitle]="getDebugInfo(billPaymentTransactions$[i] | async)"
+          >
+            {{ (billPaymentTransactions$[i] | async)?.createdOn?.toDate() | date : 'medium' }}
+          </td>
+          <td
+            class="text-sm font-medium"
+            *ngIf="(billPaymentTransactions$[i] | async)?.payload.nativeTokens?.[0]?.amount"
+          >
+            {{
+              (billPaymentTransactions$[i] | async)?.payload.nativeTokens[0].amount
+                | formatToken : (billPaymentTransactions$[i] | async)?.payload.token : true : false
+                | async
+            }}
+            {{ (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol }}
+
+            <span
+              class="text-xs"
+              nz-tooltip
+              i18n-nzTooltipTitle
+              nzTooltipTitle="Storage deposit fee"
+            >
+              ({{
+                (billPaymentTransactions$[i] | async)?.payload.amount
+                  | formatToken : (billPaymentTransactions$[i] | async)?.network : true
+                  | async
+              }})
+            </span>
+          </td>
+          <td
+            class="text-sm font-medium"
+            *ngIf="!(billPaymentTransactions$[i] | async)?.payload.nativeTokens?.[0]?.amount"
+          >
+            {{
+              (billPaymentTransactions$[i] | async)?.payload.amount
+                | formatToken : (billPaymentTransactions$[i] | async)?.network : true
+                | async
+            }}
+          </td>
+          <td class="text-sm font-medium">
+            <ng-container
+              *ngIf="tradeDetailPurchases[i]?.triggeredBy === tokenTradeOrderTypes.BUY"
+              i18n
+              >Fullfilment</ng-container
+            >
+            <ng-container
+              *ngIf="tradeDetailPurchases[i]?.triggeredBy === tokenTradeOrderTypes.SELL"
+              i18n
+              >Seller</ng-container
+            >
+          </td>
+          <td class="text-right">
+            <span
+              class="text-xs font-medium"
+              *ngIf="
+                transactionService.paymentNotProcessedOrInProgress(
+                  billPaymentTransactions$[i] | async
+                )
+              "
+              i18n
+              >{{ getWalletStatus(billPaymentTransactions$[i] | async) }}</span
+            >
+            <a
+              class="text-xs font-medium wen-btn-link"
+              *ngIf="
+                !transactionService.paymentNotProcessedOrInProgress(
+                  (billPaymentTransactions$[i] | async) || undefined
+                )
+              "
+              target="_blank"
+              [href]="
+                transactionService.getExplorerLink(
+                  (billPaymentTransactions$[i] | async) || undefined
+                )
+              "
+              i18n
+              >Transaction</a
+            >
+          </td>
+        </tr>
+        <tr *ngIf="buyerBillPaymentTransactions$[i] | async">
+          <td
+            class="text-sm font-medium"
+            nz-tooltip
+            nzTooltipTrigger="click"
+            [nzTooltipTitle]="getDebugInfo(buyerBillPaymentTransactions$[i] | async)"
+          >
+            {{ (buyerBillPaymentTransactions$[i] | async)?.createdOn?.toDate() | date : 'medium' }}
+          </td>
+          <td
+            class="text-sm font-medium"
+            *ngIf="(buyerBillPaymentTransactions$[i] | async)?.payload.nativeTokens?.[0]?.amount"
+          >
+            {{
+              (buyerBillPaymentTransactions$[i] | async)?.payload.nativeTokens[0].amount
+                | formatToken
+                  : (buyerBillPaymentTransactions$[i] | async)?.payload?.token
+                  : true
+                  : false
+                | async
+            }}
+            {{ (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol }}
+          </td>
+          <td
+            class="text-sm font-medium"
+            *ngIf="!(buyerBillPaymentTransactions$[i] | async)?.payload.nativeTokens?.[0]?.amount"
+          >
+            {{
+              (buyerBillPaymentTransactions$[i] | async)?.payload.amount
+                | formatToken : (buyerBillPaymentTransactions$[i] | async)?.network : true
+                | async
+            }}
+          </td>
+          <td class="text-sm font-medium">
+            <ng-container
+              *ngIf="tradeDetailPurchases[i]?.triggeredBy === tokenTradeOrderTypes.BUY"
+              i18n
+              >Seller</ng-container
+            >
+            <ng-container
+              *ngIf="tradeDetailPurchases[i]?.triggeredBy === tokenTradeOrderTypes.SELL"
+              i18n
+              >Fullfilment</ng-container
+            >
+          </td>
+          <td class="text-right">
+            <span
+              class="text-xs font-medium"
+              *ngIf="
+                transactionService.paymentNotProcessedOrInProgress(
+                  buyerBillPaymentTransactions$[i] | async
+                )
+              "
+              i18n
+              >{{ getWalletStatus(buyerBillPaymentTransactions$[i] | async) }}</span
+            >
+            <a
+              class="text-xs font-medium wen-btn-link"
+              *ngIf="
+                !transactionService.paymentNotProcessedOrInProgress(
+                  (buyerBillPaymentTransactions$[i] | async) || undefined
+                )
+              "
+              target="_blank"
+              [href]="
+                transactionService.getExplorerLink(
+                  (buyerBillPaymentTransactions$[i] | async) || undefined
+                )
+              "
+              i18n
+              >Transaction</a
+            >
+          </td>
+        </tr>
+        <tr *ngFor="let item of royaltyBillPaymentsTransactions$[i] | async">
+          <td
+            class="text-sm font-medium"
+            nz-tooltip
+            nzTooltipTrigger="click"
+            [nzTooltipTitle]="getDebugInfo(item)"
+          >
+            {{ item?.createdOn?.toDate() | date : 'medium' }}
+          </td>
+          <td class="text-sm font-medium">
+            {{ item?.payload.amount | formatToken : item?.network : true | async }}
+          </td>
+          <td class="text-sm font-medium">
+            <a class="wen-btn-link" target="_blank" [routerLink]="['/', spacePath, item.space]">
+              {{ getFeeName(item) }}
+            </a>
+          </td>
+          <td class="text-right">
+            <span
+              class="text-xs font-medium"
+              *ngIf="transactionService.paymentNotProcessedOrInProgress(item)"
+              i18n
+              >{{ getWalletStatus(item) }}</span
+            >
+            <a
+              class="text-xs font-medium wen-btn-link"
+              *ngIf="!transactionService.paymentNotProcessedOrInProgress(item || undefined)"
+              target="_blank"
+              [href]="transactionService.getExplorerLink(item || undefined)"
+              i18n
+              >Transaction</a
+            >
+          </td>
+        </tr>
+        <tr *ngIf="creditTransactions$[i] | async">
+          <td
+            class="text-sm font-medium"
+            nz-tooltip
+            nzTooltipTrigger="click"
+            [nzTooltipTitle]="getDebugInfo(creditTransactions$[i] | async)"
+          >
+            {{ (creditTransactions$[i] | async)?.createdOn?.toDate() | date : 'medium' }}
+          </td>
+          <td class="text-sm font-medium">
+            {{
+              (creditTransactions$[i] | async)?.payload.amount
+                | formatToken : (creditTransactions$[i] | async)?.network : true
+                | async
+            }}
+          </td>
+          <td class="text-sm font-medium" i18n>Credit</td>
+          <td class="text-right">
+            <span
+              class="text-xs font-medium"
+              *ngIf="
+                transactionService.paymentNotProcessedOrInProgress(creditTransactions$[i] | async)
+              "
+              i18n
+              >{{ getWalletStatus(creditTransactions$[i] | async) }}</span
+            >
+            <a
+              class="text-xs font-medium wen-btn-link"
+              *ngIf="
+                !transactionService.paymentNotProcessedOrInProgress(
+                  (creditTransactions$[i] | async) || undefined
+                )
+              "
+              target="_blank"
+              [href]="
+                transactionService.getExplorerLink((creditTransactions$[i] | async) || undefined)
+              "
+              i18n
+              >Transaction</a
+            >
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </nz-table>
+</ng-template>

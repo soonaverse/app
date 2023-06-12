@@ -1,0 +1,48 @@
+<nz-card i18n-nzTitle nzTitle="Breakdown" class="mt-4">
+  <wen-description [items]="breakdownData"></wen-description>
+</nz-card>
+
+<nz-card i18n-nzTitle nzTitle="Token distribution" class="mt-4 lg:mt-6">
+  <div class="flex flex-col justify-start w-full xl:flex-row">
+    <div class="relative block w-full xl:w-3/5 h-max">
+      <canvas
+        baseChart
+        width="400"
+        height="180"
+        [data]="doughnutChartData"
+        [options]="doughnutChartOptions"
+        [type]="doughnutChartType"
+      ></canvas>
+
+      <div
+        class="absolute z-10 text-center -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 text-2xl"
+        *ngIf="(data.token$ | async)?.totalSupply"
+      >
+        <span class="font-bold"
+          >{{ (data.token$ | async)?.totalSupply | formatToken:(data.token$ |
+          async)?.uid:false:false | async }}</span
+        >
+        <span>{{ ' ' + (data.token$ | async)?.symbol }}</span>
+      </div>
+    </div>
+
+    <div
+      class="flex flex-wrap items-start mt-8 xl:space-x-0 xl:space-y-3 xl:flex-col xl:mt-0 ml-10 w-full xl:w-3/10"
+    >
+      <div
+        *ngFor="let a of (data.token$ | async)?.allocations; let i = index"
+        class="flex mt-4 mr-4 xl:mr-0 xl:mt-0 w-full"
+      >
+        <div class="w-6 h-3 mr-2 rounded-md" [ngStyle]="{ 'background-color': colors[i] }"></div>
+        <div class="font-medium -mt-1.5 w-full">
+          <div class="break-word w-full">{{ a.title }}</div>
+          <div
+            class="mt-1 truncate text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          >
+            {{ a.percentage }}% ({{ percentageTokenAmount(a, (data.token$ | async) || undefined) }})
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nz-card>

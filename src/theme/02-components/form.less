@@ -1,0 +1,48 @@
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-picker-input > input,
+.ant-select-selector {
+  outline-color: @input-hover-border-color;
+}
+
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused,
+.ant-input-number:focus,
+.ant-input-number-focused,
+.ant-input-number:focus-within,
+.ant-picker:focus-within,
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input)
+  .ant-select-selector {
+  border-color: @input-hover-border-color;
+  border-width: 1px !important;
+  outline: 1px solid @input-hover-border-color;
+  box-shadow: none;
+}
+
+.ant-input-affix-wrapper > input.ant-input,
+.ant-picker-input > input {
+  border-radius: 0;
+}
+
+.outline-0 {
+  outline: 0 !important;
+}
+
+.ant-radio-wrapper {
+  @apply leading-10;
+}
+
+.ant-radio {
+  @apply font-medium;
+}
+
+.ant-tooltip-inner {
+  @apply px-4 py-6;
+}
+
+.ant-input-group-addon {
+  @apply px-2;
+}

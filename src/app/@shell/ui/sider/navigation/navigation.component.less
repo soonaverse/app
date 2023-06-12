@@ -1,0 +1,19 @@
+:host {
+  @apply block w-full;
+}
+
+.item {
+  @apply h-12 p-0 text-current lg:w-10 lg:h-10 rounded-3xl items-center justify-center my-1;
+
+  &__selected {
+    @apply text-tabs-text-selected dark:text-tabs-text-selected-dark bg-tabs-selected dark:bg-tabs-selected-dark;
+  }
+}
+
+.item_menu {
+  @apply px-4 py-0 text-current rounded-3xl my-1 w-full h-12 items-center;
+
+  &__selected {
+    @apply text-tabs-text-selected dark:text-tabs-text-selected-dark bg-tabs-selected dark:bg-tabs-selected-dark;
+  }
+}

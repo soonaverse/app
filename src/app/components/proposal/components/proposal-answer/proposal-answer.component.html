@@ -1,0 +1,16 @@
+<wen-radio
+  class="block w-full px-5 py-3 lg:border lg:border-solid rounded-large"
+  [value]="answer?.value || ''"
+>
+  <div class="flex">
+    <span class="mr-4 text-lg font-bold text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      >#{{ answer?.value }}</span
+    >
+    <p nz-typography class="text-lg font-medium">{{ answer?.text }}</p>
+  </div>
+</wen-radio>
+<p
+  nz-typography
+  class="pl-16 my-6 text-base leading-6 whitespace-pre-line"
+  [innerHtml]="answer?.additionalInfo | markdown"
+></p>

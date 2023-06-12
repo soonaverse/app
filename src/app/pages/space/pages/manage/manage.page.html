@@ -1,0 +1,175 @@
+<div class="space-y-12">
+  <nz-card i18n-nzTitle nzTitle="Space Options" class="overflow-hidden">
+    <ng-container *ngTemplateOutlet="contentSpace"></ng-container>
+  </nz-card>
+
+  <nz-card i18n-nzTitle nzTitle="Token Options" class="overflow-hidden">
+    <ng-container *ngTemplateOutlet="contentToken"></ng-container>
+  </nz-card>
+
+  <ng-template #contentSpace>
+    <nz-list>
+      <div nz-row class="px-8">
+        <div nz-col [nzLg]="12" [nzXs]="24" class="flex flex-col space-y-2">
+          <nz-list-item>
+            <a
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [routerLink]="['/space', 'edit', { spaceId: (data.space$ | async)?.uid}]"
+            >
+              <div class="text-xs mr-0.5" i18n>Edit Space</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+          <nz-list-item>
+            <a nz-button nzType="default" nzSize="small" (click)="manageAddresses()">
+              <div class="text-xs mr-0.5" i18n>Manage Addresses</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+          <nz-list-item>
+            <a
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [routerLink]="['/space', (data.space$ | async)?.uid, 'members']"
+            >
+              <div class="text-xs mr-0.5" i18n>Manage Guardians</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+          <nz-list-item>
+            <a nz-button nzType="default" nzSize="small" (click)="exportCurrentMembers()">
+              <div class="text-xs mr-0.5" i18n>Export Current Members</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+        </div>
+        <div nz-col [nzLg]="12" [nzXs]="24" class="flex flex-col space-y-2">
+          <nz-list-item>
+            <a
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [routerLink]="['/award', 'new', { space: (data.space$ | async)?.uid}]"
+            >
+              <div class="text-xs mr-0.5" i18n>Create New Award</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+          <nz-list-item>
+            <a
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [routerLink]="['/proposal', 'new', { space: (data.space$ | async)?.uid}]"
+            >
+              <div class="text-xs mr-0.5" i18n>Create New Proposal</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+          <nz-list-item>
+            <a
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [routerLink]="['/collection', 'new', { space: (data.space$ | async)?.uid}]"
+            >
+              <div class="text-xs mr-0.5" i18n>Create New Collection</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+          <nz-list-item>
+            <a nz-button nzType="default" nzSize="small" (click)="openAuditOneModal()">
+              <div class="text-xs mr-0.5" i18n>Request Verification</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+        </div>
+      </div>
+    </nz-list>
+  </ng-template>
+
+  <ng-template #contentToken>
+    <nz-list>
+      <div nz-row class="px-8">
+        <div nz-col [nzLg]="12" [nzXs]="24" class="flex flex-col space-y-2">
+          <nz-list-item *ngIf="!(data.token$ | async)?.uid">
+            <a
+              nz-button
+              nzType="default"
+              nzSize="small"
+              (click)="isImportTokenVisible = !isImportTokenVisible"
+            >
+              <div class="text-xs mr-0.5" i18n>Import minted token</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+          <nz-list-item *ngIf="data.token$ | async">
+            <a
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [routerLink]="['/token', (data.token$ | async)?.uid, { edit: true }]"
+            >
+              <div class="text-xs mr-0.5" i18n>Edit Token</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+          <nz-list-item *ngIf="(data.token$ | async) && !(data.token$ | async)?.mintingData">
+            <a
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [routerLink]="['/token', (data.token$ | async)?.uid, { mint: true }]"
+            >
+              <div class="text-xs mr-0.5" i18n>Mint Token</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+          <nz-list-item *ngIf="data.token$ | async">
+            <a
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [routerLink]="['/token', (data.token$ | async)?.uid, 'airdrops']"
+            >
+              <div class="text-xs mr-0.5" i18n>Create Airdrop</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+        </div>
+        <div nz-col [nzLg]="12" [nzXs]="24" class="flex flex-col space-y-2">
+          <nz-list-item *ngIf="data.token$ | async">
+            <a nz-button nzType="default" nzSize="small" (click)="stakingRewardSchedule()">
+              <div class="text-xs mr-0.5" i18n>Staking Reward Schedule</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+          <nz-list-item *ngIf="data.token$ | async">
+            <a nz-button nzType="default" nzSize="small" (click)="exportCurrentStakers()">
+              <div class="text-xs mr-0.5" i18n>Export Current Stakers</div>
+              <wen-icon-angle-right [size]="18"></wen-icon-angle-right>
+            </a>
+          </nz-list-item>
+        </div>
+      </div>
+    </nz-list>
+  </ng-template>
+</div>
+
+<wen-audit-one-modal
+  [dataset]="data.auditOneStatus$ | async"
+  *ngIf="isAuditOneModalOpen"
+  [canManage]="!!(data.isGuardianWithinSpace$ | async)"
+  [entity]="(data.space$ | async)?.uid"
+  (wenOnClose)="closeAuditOneModal()"
+></wen-audit-one-modal>
+
+<wen-token-import
+  *ngIf="isImportTokenVisible"
+  [isOpen]="isImportTokenVisible"
+  [space]="(data.space$ | async) || undefined"
+  (wenOnClose)="isImportTokenVisible = false"
+></wen-token-import>

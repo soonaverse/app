@@ -1,0 +1,45 @@
+<ng-container *ngIf="content">
+  <nz-modal
+    *ngIf="deviceService.isDesktop$ | async"
+    [(nzVisible)]="isOpen"
+    nzCentered
+    [nzClosable]="false"
+    [nzMaskClosable]="true"
+    [nzMask]="true"
+    (nzOnCancel)="close()"
+    [nzContent]="modalContent"
+    [nzFooter]="null"
+    [nzBodyStyle]="{ padding: hasPadding ? '28px 24px 24px 24px' : '0px' }"
+    [nzWidth]="modalWidth"
+  >
+    <ng-template #modalContent>
+      <div *ngIf="showHeader" class="flex items-start justify-between">
+        <div class="text-2xl font-bold">{{ title }}</div>
+        <wen-icon-close class="cursor-pointer" (click)="close()"></wen-icon-close>
+      </div>
+
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </ng-template>
+  </nz-modal>
+
+  <nz-drawer
+    *ngIf="deviceService.isMobile$ | async"
+    [nzBodyStyle]="{ overflow: 'auto', padding: '20px' }"
+    [nzWidth]="'100vw'"
+    #drawer
+    [nzClosable]="false"
+    [nzWrapClassName]="primaryColor ? '' : 'secondary'"
+    [nzVisible]="isOpen"
+  >
+    <div *nzDrawerContent class="relative min-h-full h-max">
+      <ng-container *ngIf="showHeader">
+        <div class="pb-4 text-3xl font-bold">{{ title }}</div>
+        <button class="absolute right-0 z-10 top-1" (click)="close()">
+          <wen-icon-close></wen-icon-close>
+        </button>
+      </ng-container>
+
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </div>
+  </nz-drawer>
+</ng-container>

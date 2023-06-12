@@ -1,0 +1,117 @@
+<wen-modal-drawer
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+  [modalWidth]="1000"
+  [hasPadding]="false"
+  [showHeader]="false"
+  [primaryColor]="false"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div
+    class="flex items-center justify-between px-6 pt-6 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-t-3xl"
+  >
+    <div class="text-2xl font-bold" i18n>Give badges</div>
+    <wen-icon-close class="cursor-pointer" (click)="close()"></wen-icon-close>
+  </div>
+
+  <div
+    class="flex flex-col px-6 pt-6 lg:flex-row bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+  ></div>
+
+  <ng-container *ngIf="uploadStage === 0">
+    <div class="relative px-6 pb-6 mt-6">
+      <div class="flex items-center justify-between w-full font-medium">
+        <div
+          class="text-lg font-bold text-foregrouds-primary dark:text-foregrounds-primary-dark"
+          i18n
+        >
+          Upload CSV
+        </div>
+        <a class="underline wen-btn-link" (click)="generateTemplate()" i18n
+          >Download CSV template</a
+        >
+      </div>
+
+      <div
+        class="mt-6 font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        You can create badge airdrops for any user. You can upload CSV with users addresses and they
+        will be properly reward.
+      </div>
+
+      <div
+        class="mt-3 font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        If you don’t know how to prepare CSV file, you can download our template made for you.
+      </div>
+
+      <div class="mt-6">
+        <nz-form-item>
+          <nz-form-control>
+            <nz-upload
+              class="wen-banner"
+              nzName="banner"
+              nzType="drag"
+              nzListType="picture-card"
+              [nzDirectory]="false"
+              [nzBeforeUpload]="beforeCSVUpload.bind(this)"
+              nzFileType="text/csv,application/vnd.ms-excel"
+            >
+              <ng-container>
+                <i class="upload-icon" nz-icon nzType="upload"></i>
+              </ng-container>
+            </nz-upload>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="uploadStage === 1">
+    <div class="flex items-center justify-between w-full px-6 my-6 font-medium">
+      <div class="text-lg font-bold" i18n>Confirm schedule</div>
+      <wen-icon-trash
+        class="cursor-pointer text-icons-destructive dark:text-icons-destructive-dark"
+        (click)="uploadStage = 0"
+      ></wen-icon-trash>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="uploadStage === 1">
+    <nz-table
+      class="px-6"
+      [nzPageSize]="50"
+      #headerTable
+      [nzScroll]="{ y: '600px' }"
+      *ngIf="badgesToGive.length > 0"
+      [nzData]="badgesToGive"
+      [nzShowPagination]="false"
+    >
+      <thead>
+        <tr>
+          <th i18n>Address</th>
+          <th i18n>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of badgesToGive">
+          <td>{{ t.address }}</td>
+          <td i18n>Badge</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+
+  <ng-container *ngIf="uploadStage === 1">
+    <div class="relative px-6 pb-6 mt-6">
+      <button nz-button nzType="primary" nzSize="large" class="w-full mt-10" (click)="submit()">
+        Confirm and Give badges
+      </button>
+    </div>
+  </ng-container>
+</ng-template>

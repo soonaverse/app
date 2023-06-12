@@ -1,0 +1,228 @@
+<wen-content [showBackButton]="true">
+  <ng-container *ngIf="deviceService.isMobile$ | async">
+    <wen-drawer-toggle i18n-label label="Award info" (click)="isAwardInfoVisible = true">
+    </wen-drawer-toggle>
+  </ng-container>
+
+  <div class="relative py-12" nz-row [nzGutter]="40">
+    <div
+      nz-col
+      nzFlex="auto"
+      [ngStyle]="{
+        'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+      }"
+    >
+      <div class="flex flex-wrap items-center mb-8 space-x-3 space-y-2 lg:space-y-0">
+        <a [routerLink]="['/space', (data.space$ | async)?.uid]">
+          <nz-avatar
+            [nzSrc]="previewImageService.getAvatarSize((data.space$ | async)?.avatarUrl)"
+            class="mr-3 wen-avatar-background"
+            nzShape="circle"
+          >
+          </nz-avatar>
+          {{((data.space$ | async)?.name || (data.space$ | async)?.uid) }}
+        </a>
+
+        <nz-tag
+          class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
+          i18n
+          >Award</nz-tag
+        >
+
+        <wen-award-status [award]="data.award$ | async"></wen-award-status>
+
+        <a
+          class="flex ant-tag wen-status-tag bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+          *ngIf="(data.award$ | async)?.collectionBlockId"
+          [href]="getExplorerUrl(data.award$ | async)"
+          target="_blank"
+        >
+          <span i18n class="float-left mr-1">Minted on:</span>
+          <ng-container [ngSwitch]="(data.award$ | async)?.network">
+            <ng-container *ngSwitchCase="networkTypes.SMR">
+              <wen-icon-shimmer class="float-left" [size]="14"></wen-icon-shimmer>
+              <div class="float-right ml-1" i18n>Shimmer</div>
+            </ng-container>
+            <ng-container *ngSwitchCase="networkTypes.RMS">
+              <wen-icon-shimmer class="float-left" [size]="14"></wen-icon-shimmer>
+              <div class="float-right ml-1" i18n>Shimmer Testnet</div>
+            </ng-container>
+            <ng-container *ngSwitchCase="networkTypes.IOTA">
+              <wen-icon-iota class="float-left" [size]="14"></wen-icon-iota>
+              <div class="float-right ml-1" i18n>IOTA</div>
+            </ng-container>
+            <ng-container *ngSwitchCase="networkTypes.ATOI">
+              <wen-icon-iota class="float-left" [size]="14"></wen-icon-iota>
+              <div class="float-right ml-1" i18n>IOTA Devnet</div>
+            </ng-container>
+          </ng-container>
+        </a>
+      </div>
+
+      <h1 class="mb-6">{{(data.award$ | async)?.name}}</h1>
+
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center">
+          <i
+            nz-icon
+            nzType="calendar"
+            class="pr-2 text-lg text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            nzTheme="outline"
+          ></i>
+          <span>{{(data.award$ | async)?.createdOn?.toDate() | date:'short'}}</span>
+        </div>
+      </div>
+
+      <wen-tabs class="block w-screen mt-12 -ml-5 lg:w-max lg:ml-0" [tabs]="sections"></wen-tabs>
+
+      <div
+        *ngIf="deviceService.isMobile$ | async"
+        class="w-screen h-px mt-6 -ml-5 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark"
+      ></div>
+
+      <div class="w-full py-12">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+    <div
+      class="mt-4 space-y-4 lg:mt-0 lg:max-w-450"
+      nz-col
+      [nzFlex]="(deviceService.isDesktop$ | async) ? '450px' : 'auto'"
+      [ngStyle]="{
+        'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+      }"
+    >
+      <span
+        *ngIf="!helper.isCompleted(data.award$ | async) && (isLoggedIn$ | async) && (data.award$ | async)?.approved"
+      >
+        <button
+          nz-button
+          nzType="primary"
+          nzBlock
+          nzSize="large"
+          (click)="showParticipateModal()"
+          [disabled]="(data.isParticipantWithinAward$ | async)"
+        >
+          {{ (data.isParticipantWithinAward$ | async) ? 'Already Participated' : 'Participate'}}
+        </button>
+      </span>
+
+      <div
+        *ngIf="!(data.award$ | async)?.approved && (data.isGuardianWithinSpace$ | async) && !(data.award$ | async)?.rejected && !isMintingInProgress(data.award$ | async)"
+      >
+        <button
+          class="wen-secondary"
+          nz-button
+          nzBlock
+          nzSize="large"
+          (click)="openAwardFund = true"
+          i18n
+        >
+          Fund Award
+        </button>
+      </div>
+
+      <div
+        *ngIf="!(data.award$ | async)?.approved && (data.isGuardianWithinSpace$ | async) && !(data.award$ | async)?.rejected && isMintingInProgress(data.award$ | async)"
+      >
+        <button class="wen-secondary" nz-button nzBlock nzSize="large" [disabled]="true" i18n>
+          Minting in Progress
+        </button>
+      </div>
+
+      <wen-share
+        class="block p-6 mb-4 lg:p-0"
+        i18n-shareText
+        shareText="Check out award"
+        [shareUrl]="helper.getShareUrl(data.award$ | async)"
+      >
+      </wen-share>
+
+      <wen-award-awards class="block" *ngIf="deviceService.isDesktop$ | async"> </wen-award-awards>
+      <wen-award-info class="block space-y-4" *ngIf="deviceService.isDesktop$ | async">
+      </wen-award-info>
+
+      <div
+        class="pt-6 lg:mt-4 lg:pt-0"
+        *ngIf="!(data.award$ | async)?.approved && (data.isGuardianWithinSpace$ | async) && !(data.award$ | async)?.rejected && !isMintingInProgress(data.award$ | async)"
+      >
+        <button
+          class="flex justify-center wen-secondary"
+          nz-button
+          nzBlock
+          nzDanger
+          (click)="reject()"
+        >
+          <wen-icon-close class="mr-2"></wen-icon-close>
+          <span i18n>Reject Award</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <nz-modal
+    [(nzVisible)]="isSubmitParticipationModalVisible"
+    i18n-nzTitle
+    nzTitle="Confirm your participation"
+    nzClosable="false"
+    [nzContent]="modalContent"
+    [nzFooter]="modalFooter"
+    [nzWidth]="700"
+  >
+    <ng-template #modalContent>
+      <p class="text-lg mb-9" i18n>
+        The whole communication is now handled outside the platform, let the award creator know how
+        to contact you.
+      </p>
+      <textarea
+        nz-input
+        i18n-placeholder
+        placeholder="Provide description or link to your work."
+        [formControl]="commentControl"
+        rows="5"
+      ></textarea>
+    </ng-template>
+
+    <ng-template #modalFooter>
+      <div class="text-left">
+        <button nz-button class="mr-4" nzType="primary" (click)="participate()" i18n>Submit</button>
+        <button nz-button nzType="default" (click)="handleParticipateCancel()" i18n>Cancel</button>
+      </div>
+    </ng-template>
+  </nz-modal>
+
+  <nz-drawer
+    [nzBodyStyle]="{ overflow: 'auto', padding: '8px' }"
+    [nzWidth]="'100vw'"
+    [nzClosable]="false"
+    [nzVisible]="isAwardInfoVisible"
+  >
+    <div *nzDrawerContent class="relative h-full">
+      <button class="absolute z-10 -top-4 right-5" (click)="isAwardInfoVisible = false">
+        <wen-icon-close></wen-icon-close>
+      </button>
+
+      <h1 class="w-3/4 mt-10 mb-12 ml-5">{{(data.award$ | async)?.name}}</h1>
+
+      <wen-share
+        class="block p-6 mb-4 lg:p-0"
+        i18n-shareText
+        shareText="Check out award"
+        [shareUrl]="helper.getShareUrl(data.award$ | async)"
+      >
+      </wen-share>
+
+      <wen-award-awards></wen-award-awards>
+
+      <wen-award-info></wen-award-info>
+    </div>
+  </nz-drawer>
+</wen-content>
+
+<wen-award-mint
+  *ngIf="openAwardFund"
+  [isOpen]="openAwardFund"
+  [token]="(data.token$ | async) || undefined"
+  [award]="(data.award$ | async) || undefined"
+  (wenOnClose)="openAwardFund = false"
+></wen-award-mint>

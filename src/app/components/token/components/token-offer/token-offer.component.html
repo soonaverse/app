@@ -1,0 +1,158 @@
+<wen-modal-drawer
+  i18n-title
+  title="Open Token Sell"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="flex items-center mt-8 lg:mt-6">
+    <nz-avatar
+      [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+      class="border-2 border-tags-border dark:border-tags-border-dark min-w-12"
+      nzShape="circle"
+      [nzSize]="48"
+    >
+    </nz-avatar>
+    <div class="ml-4 text-lg font-bold">{{ token?.name }}</div>
+    <div class="ml-2 font-medium">{{ '(' + token?.symbol + ')' }}</div>
+  </div>
+
+  <div
+    class="mt-6 font-medium text-foregrounds-secondary dark:text-foregroundsd-secondary-dark"
+    i18n
+  >
+    Token ID
+  </div>
+  <div class="font-medium">{{ token?.uid }}</div>
+
+  <div
+    class="mt-6 font-medium text-foregrounds-secondary dark:text-foregroundsd-secondary-dark"
+    i18n
+  >
+    Your Balance
+  </div>
+  <div class="font-medium">
+    {{ memberDistribution?.tokenOwned | formatToken : token?.uid : true : false | async }}
+    {{ token?.symbol }}
+  </div>
+
+  <div
+    class="mt-8 font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    i18n
+  >
+    Summary
+  </div>
+
+  <div class="summary-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+    <div class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Offered price per token
+    </div>
+    <div class="text-right">
+      <div class="font-bold whitespace-nowrap">{{ price }} MIOTA</div>
+      <span
+        class="ml-1 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >~{{ unitsService.getUsd(price) | async | currency : 'USD' | UsdBelowTwoDecimals }}</span
+      >
+    </div>
+  </div>
+
+  <div class="summary-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+    <div class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      Offered amount of tokens
+    </div>
+    <div class="font-bold whitespace-nowrap">
+      {{
+        { value: amount, exponents: token?.decimals }
+          | formatToken : token?.uid : true : false
+          | async
+      }}
+      {{ token?.symbol }}
+    </div>
+  </div>
+
+  <div class="summary-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+    <div class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+      You will receive
+    </div>
+    <div class="text-right">
+      <div class="font-bold whitespace-nowrap">
+        {{
+          { value: getTargetAmount(), exponents: token?.decimals }
+            | formatToken : token?.uid : true
+            | async
+        }}
+      </div>
+      <span
+        class="ml-1 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        >{{
+          unitsService.getUsd(
+            getTargetAmount(),
+            token?.mintingData?.networkFormat || token?.mintingData?.network
+          )
+            | async
+            | currency : 'USD'
+            | UsdBelowTwoDecimals
+        }}</span
+      >
+      <div
+        class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        *ngIf="(auth.member$ | async)?.tokenTradingFeePercentage !== 0"
+      >
+        <ng-container i18n>Fee</ng-container> {{ exchangeFee }}% (
+        {{ getFee() | formatToken : this.token?.mintingData?.network : true : true | async }})
+      </div>
+      <div
+        class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        *ngIf="(auth.member$ | async)?.tokenTradingFeePercentage === 0"
+        i18n
+      >
+        No FEES!
+      </div>
+    </div>
+  </div>
+
+  <div [ngSwitch]="currentStep" class="w-full mt-6">
+    <ng-container *ngSwitchCase="stepType.CONFIRM">
+      <ng-container *ngTemplateOutlet="confirmTemplate"></ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #confirmTemplate>
+  <wen-terms-and-conditions
+    class="mt-10"
+    [isChecked]="agreeTermsConditions"
+    documentLink="https://docs.google.com/document/d/1oOFhZIip2XTEGVYhtr_3eUeSG6fbLDILFJGBvmtlFgc"
+    (wenOnCheckChange)="agreeTermsConditions = $event"
+  >
+  </wen-terms-and-conditions>
+
+  <wen-terms-and-conditions
+    class="mt-4"
+    [isChecked]="agreeTokenTermsConditions"
+    i18n-label
+    label="I agree with"
+    i18n-linkLabel
+    linkLabel="Token terms and Conditions"
+    [documentLink]="token?.termsAndConditions || ''"
+    (wenOnCheckChange)="agreeTokenTermsConditions = $event"
+  >
+  </wen-terms-and-conditions>
+
+  <div class="flex flex-col items-center w-full">
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-10 lg:w-auto"
+      [disabled]="!agreeTermsConditions || !agreeTokenTermsConditions"
+      i18n
+      (click)="proceedWithOrder()"
+    >
+      Create a Sell Order
+    </button>
+  </div>
+</ng-template>

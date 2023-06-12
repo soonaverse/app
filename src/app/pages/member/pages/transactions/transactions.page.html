@@ -1,0 +1,141 @@
+<div class="flex items-center justify-between w-full mb-6 lg:mb-4">
+  <label class="font-medium text-foregrounds-primary dark:text-foregrounds-primary-dark">
+    <span i18n></span>
+  </label>
+
+  <button nz-button nzType="default" nzSize="default" (click)="exportTransactions()">
+    <ng-container *ngIf="!exportingTransactions">
+      <wen-icon-file-export></wen-icon-file-export>
+      <div class="text-lg font-semibold ml-2.5" i18n>Export CSV</div>
+    </ng-container>
+    <ng-container *ngIf="exportingTransactions">
+      <wen-icon-refresh class="animate-spin"></wen-icon-refresh>
+      <div class="text-lg font-semibold ml-2.5" i18n>Exporting CSV</div>
+    </ng-container>
+  </button>
+</div>
+
+<nz-card *ngIf="deviceService.isDesktop$ | async" nzTitle="Transactions" i18n-nzTitle>
+  <div class="overflow-x-auto">
+    <nz-table class="block" #table [nzData]="(transactions$ | async) || []" [nzPageSize]="50">
+      <thead>
+        <tr>
+          <th i18n>Date</th>
+          <th i18n>Item</th>
+          <th i18n>Type</th>
+          <th i18n>Amount</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of table.data">
+          <td
+            class="font-medium"
+            nz-tooltip
+            nzTooltipTrigger="click"
+            [nzTooltipTitle]="getDebugInfo(t)"
+          >
+            {{ t.createdOn?.toDate() | date: 'short' }}
+          </td>
+          <td class="font-medium">
+            <a
+              class="mr-4 font-medium underline wen-btn-link"
+              *ngIf="t.payload.nft"
+              [routerLink]="['/', 'nft', t.payload.nft]"
+              >NFT</a
+            >
+            <a
+              class="mr-4 font-medium underline wen-btn-link"
+              *ngIf="t.payload.token"
+              [routerLink]="['/', 'token', t.payload.token]"
+              >Token</a
+            >
+            <a
+              class="font-medium underline wen-btn-link"
+              *ngIf="t.payload.collection"
+              [routerLink]="['/', 'collection', t.payload.collection]"
+              >Collection</a
+            >
+          </td>
+          <td class="font-medium">{{ transactionService.getTitle(t) }}</td>
+          <td class="font-medium" *ngIf="t.payload.nativeTokens?.[0]?.amount">
+            {{ t.payload.nativeTokens[0].amount| formatToken: t.payload.token:false:false | async }}
+            &nbsp;{{ t.payload.tokenSymbol || 'Tokens' }}
+          </td>
+          <td class="font-medium" *ngIf="!t.payload.nativeTokens?.[0]?.amount">
+            {{ t.payload.amount | formatToken: t.network | async }}
+          </td>
+          <td class="right">
+            <a
+              *ngIf="transactionService.getExplorerLink(t); else anotherReason"
+              class="font-medium wen-btn-link"
+              [href]="transactionService.getExplorerLink(t)"
+              target="_blank"
+              i18n
+              >Transaction</a
+            >
+            <ng-template #anotherReason>
+              <div *ngIf="t.ignoreWallet" i18n>Non Transferable</div>
+              <div *ngIf="t.ignoreWallet && t.ignoreWalletReason">
+                <button
+                  *ngIf="((data.member$ | async)?.uid === (loggedInMember$ | async)?.uid)"
+                  class="font-medium underline wen-btn-link"
+                  (click)="claimLocked(t)"
+                >
+                  Claim locked
+                </button>
+              </div>
+              <div *ngIf="!t.ignoreWallet && isNotVote(t.type)" i18n>Processing...</div>
+            </ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</nz-card>
+
+<div class="mt-3" *ngIf="deviceService.isMobile$ | async">
+  <p nz-typography nzType="secondary" class="mb-6" *ngIf="!isLoading(transactions$ | async)">
+    {{ ((transactions$ | async)?.length || 0) + ((maxRecords$ | async) === false ? '+' : '') }} NFTs
+  </p>
+  <div
+    class="mb-10"
+    infiniteScroll
+    [infiniteScrollDistance]="5"
+    [infiniteScrollThrottle]="50"
+    (scrolled)="onScroll()"
+  >
+    <nz-skeleton
+      *ngIf="isLoading(transactions$ | async)"
+      class="p-4 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl w-76 lg:w-full h-76 lg:h-16"
+      [nzActive]="true"
+      [nzAvatar]="{ size: 'default' }"
+      [nzParagraph]="{ rows: 1 }"
+    ></nz-skeleton>
+
+    <nz-card class="w-76" *ngIf="isEmpty(transactions$ | async)">
+      <div class="flex flex-col justify-center text-center h-36">
+        <span
+          class="leading-7 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          i18n
+        >
+          No transactions
+        </span>
+      </div>
+    </nz-card>
+
+    <wen-transaction-card
+      *ngFor="let transaction of transactions$ | async; trackBy: trackByUid"
+      [transaction]="transaction"
+      class="block mt-3"
+    >
+    </wen-transaction-card>
+  </div>
+</div>
+
+<wen-locked-token-claim
+  *ngIf="!!openLockedTokenClaim"
+  [isOpen]="!!openLockedTokenClaim"
+  [transaction]="openLockedTokenClaim"
+  (wenOnClose)="openLockedTokenClaim = null"
+></wen-locked-token-claim>

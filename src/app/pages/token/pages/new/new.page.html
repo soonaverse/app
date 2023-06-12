@@ -1,0 +1,42 @@
+<wen-content [showBackButton]="true">
+  <h1 class="mt-8" i18n>Create token</h1>
+
+  <div class="flex items-center overflow-auto">
+    <ng-container *ngFor="let s of sections; let last = last">
+      <div
+        class="px-6 py-2 font-semibold rounded-3xl cursor-pointer"
+        [ngClass]="{
+          'text-tabs-text-selected dark:text-tabs-text-selected-dark bg-tabs-selected dark:bg-tabs-selected-dark': currentStep === s.step,
+          'text-tabs-text-enabled dark:text-tabs-text-enabled-dark bg-tabs-background dark:bg-tabs-background-dark': currentStep !== s.step
+        }"
+        (click)="currentStep = s.step"
+      >
+        {{ s.label }}
+      </div>
+      <div
+        *ngIf="!last"
+        class="h-0.5 min-w-8 w-12 bg-foregrounds-placeholder dark:bg-foregrounds-placeholder-dark"
+      ></div>
+    </ng-container>
+  </div>
+
+  <form nz-form nzLayout="vertical" [formGroup]="newService.tokenForm" class="mt-4">
+    <wen-new-introduction
+      [ngClass]="{ 'hidden': currentStep !== stepTypes.INTRODUCTION }"
+      (wenOnTabChange)="currentStep = $event"
+    ></wen-new-introduction>
+    <wen-new-metrics
+      [ngClass]="{ 'hidden': currentStep !== stepTypes.METRICS }"
+      (wenOnTabChange)="currentStep = $event"
+    ></wen-new-metrics>
+    <wen-new-overview
+      [ngClass]="{ 'hidden': currentStep !== stepTypes.OVERVIEW }"
+      (wenOnTabChange)="currentStep = $event"
+    ></wen-new-overview>
+    <wen-new-summary
+      [ngClass]="{ 'hidden': currentStep !== stepTypes.SUMMARY }"
+      (wenOnTabChange)="currentStep = $event"
+      (wenOnSubmit)="submit()"
+    ></wen-new-summary>
+  </form>
+</wen-content>

@@ -1,0 +1,36 @@
+<div
+  class="w-full px-4 py-3 mt-14 lg:mt-4 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl"
+>
+  <div class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+    <ng-container *ngIf="!targetText">
+      <span i18n>Send</span> {{ formattedAmount }} <span i18n> to following address:</span>
+    </ng-container>
+
+    <span *ngIf="targetText">{{ targetText }}</span>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-between mt-2 break-all">
+    <div class="text-base font-medium break-words">
+      {{ targetAddress }}
+    </div>
+
+    <button
+      nz-button
+      nzBlock
+      nzSize="small"
+      nzType="primary"
+      class="w-16 mt-4 lg:mt-0 wen-btn-max"
+      (click)="copyAddress()"
+    >
+      <ng-container *ngIf="isCopied; else isNotCopied" i18n>Copied</ng-container>
+      <ng-template #isNotCopied i18n>Copy</ng-template>
+    </button>
+  </div>
+</div>
+
+<div
+  class="mt-10 text-xs font-medium text-center text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-4/5"
+  i18n
+>
+  Do not send funds from an exchange, always use wallets you fully control.
+</div>

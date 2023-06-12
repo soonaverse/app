@@ -1,0 +1,54 @@
+<wen-modal-drawer
+  i18n-title
+  title="AuditOne Validation"
+  [isOpen]="true"
+  [content]="content"
+  [primaryColor]="false"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <nz-table
+    #addressesTable
+    class="block w-full h-full mt-4"
+    [nzShowPagination]="false"
+    [nzData]="getFilterModal()"
+    [nzNoResult]="noRecords"
+  >
+    <thead>
+      <tr>
+        <th class="text-xs font-medium" i18n>Description</th>
+        <th class="text-xs font-medium" i18n>Requested On</th>
+        <th class="text-xs font-medium" i18n>Last Update</th>
+        <th class="text-xs font-medium right" i18n>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let att of dataset?.attributes">
+        <td class="flex items-center space-x-2 text-sm font-medium">
+          <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+            <span class="text-alerts-error dark:text-alerts-error-dark">{{ att.label }}</span>
+          </div>
+        </td>
+        <td class="text-sm font-medium">
+          {{ att.requestedOn ? (att.requestedOn | date) : ' - ' }}
+        </td>
+        <td class="text-sm font-medium">{{ att.updatedOn ? (att.updatedOn | date) : ' - ' }}</td>
+        <td class="right">
+          <a
+            class="text-sm font-medium wen-btn-link"
+            target="_blank"
+            *ngIf="!att.link.adminOnly || (canManage && att.link.adminOnly)"
+            [href]="att.link.url"
+            >{{ att.link.label }}</a
+          >
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+
+  <ng-template #noRecords>
+    <div class="text-sm font-medium text-foregrounds-tertiary" i18n>There are no records.</div>
+  </ng-template>
+</ng-template>

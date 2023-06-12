@@ -1,0 +1,124 @@
+<div class="w-full space-y-3" *ngIf="!isHidden">
+  <div
+    *ngFor="let item of initialItemsList.length ? initialItemsList : state.items"
+    class="flex items-center cursor-pointer"
+    (click)="refine($event, item)"
+  >
+    <ng-container *ngIf="showIcon">
+      <div *ngIf="filterType === algoliaCheckboxFilterTypes.SPACE">
+        <nz-avatar
+          *ngIf="(cache.getSpace(item.label) | async)?.avatarUrl"
+          [nzSrc]="
+            previewImageService.getAvatarSize((cache.getSpace(item.label) | async)?.avatarUrl)
+          "
+          [nzSize]="20"
+          class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+          nzShape="circle"
+        >
+        </nz-avatar>
+      </div>
+
+      <div *ngIf="filterType === algoliaCheckboxFilterTypes.TOKEN">
+        <nz-avatar
+          *ngIf="(cache.getToken(item.label) | async)?.icon"
+          [nzSrc]="previewImageService.getTokenSize((cache.getToken(item.label) | async)?.icon)"
+          [nzSize]="20"
+          class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+          nzShape="circle"
+        >
+        </nz-avatar>
+      </div>
+
+      <div *ngIf="filterType === algoliaCheckboxFilterTypes.COLLECTION">
+        <nz-avatar
+          *ngIf="(cache.getCollection(item.label) | async)?.bannerUrl"
+          [nzSrc]="
+            previewImageService.getCollectionSize(
+              (cache.getCollection(item.label) | async)?.bannerUrl
+            )
+          "
+          [nzSize]="20"
+          class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark"
+          nzShape="circle"
+        >
+        </nz-avatar>
+      </div>
+
+      <div
+        *ngIf="filterType === algoliaCheckboxFilterTypes.SALE"
+        class="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-full w-5 h-5 flex items-center justify-center text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      >
+        <wen-icon-open-sale
+          *ngIf="item.value === collectionAccesses.OPEN + ''"
+          [size]="20"
+        ></wen-icon-open-sale>
+        <wen-icon-members-only
+          *ngIf="item.value === collectionAccesses.MEMBERS_ONLY + ''"
+          [size]="20"
+        ></wen-icon-members-only>
+        <wen-icon-guardians-only
+          *ngIf="item.value === collectionAccesses.GUARDIANS_ONLY + ''"
+          [size]="20"
+        ></wen-icon-guardians-only>
+        <wen-icon-members-with-badge
+          *ngIf="item.value === collectionAccesses.MEMBERS_WITH_BADGE + ''"
+          [size]="20"
+        ></wen-icon-members-with-badge>
+        <wen-icon-members-with-nft-from-collection
+          *ngIf="item.value === collectionAccesses.MEMBERS_WITH_NFT_FROM_COLLECTION + ''"
+          [size]="20"
+        ></wen-icon-members-with-nft-from-collection>
+      </div>
+
+      <label
+        *ngIf="filterType === algoliaCheckboxFilterTypes.DEFAULT"
+        nz-checkbox
+        [nzChecked]="item.isRefined"
+        (nzCheckedChange)="refine(undefined, item)"
+      >
+      </label>
+    </ng-container>
+
+    <span
+      class="ml-2 text-xs inline-block truncate"
+      [ngClass]="item.isRefined ? 'font-bold' : 'font-medium'"
+      *ngIf="filterType === algoliaCheckboxFilterTypes.SPACE"
+    >
+      {{ (cache.getSpace(item.label) | async)?.name }}
+    </span>
+    <span
+      class="ml-2 text-xs inline-block truncate"
+      [ngClass]="item.isRefined ? 'font-bold' : 'font-medium'"
+      *ngIf="filterType === algoliaCheckboxFilterTypes.TOKEN"
+    >
+      {{ (cache.getToken(item.label) | async)?.name }}
+    </span>
+    <span
+      class="ml-2 text-xs inline-block truncate"
+      [ngClass]="item.isRefined ? 'font-bold' : 'font-medium'"
+      *ngIf="filterType === algoliaCheckboxFilterTypes.COLLECTION"
+    >
+      {{ (cache.getCollection(item.label) | async)?.name }}
+    </span>
+    <span
+      class="ml-2 text-xs inline-block truncate"
+      [ngClass]="item.isRefined ? 'font-bold' : 'font-medium'"
+      *ngIf="
+        filterType !== algoliaCheckboxFilterTypes.SPACE &&
+        filterType !== algoliaCheckboxFilterTypes.TOKEN &&
+        filterType !== algoliaCheckboxFilterTypes.COLLECTION
+      "
+    >
+      {{ item.label }}
+    </span>
+    <div
+      class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark text-xs font-medium mx-1"
+    >
+      ({{ getCount(item) }})
+    </div>
+    <wen-icon-check
+      *ngIf="item.isRefined"
+      class="ml-auto text-accent-primary dark:text-accent-primary-dark"
+    ></wen-icon-check>
+  </div>
+</div>

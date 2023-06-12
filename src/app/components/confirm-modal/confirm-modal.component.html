@@ -1,0 +1,58 @@
+<nz-modal
+  [(nzVisible)]="isOpen"
+  nzCentered
+  [nzClosable]="false"
+  [nzMaskClosable]="true"
+  [nzMask]="true"
+  (nzOnCancel)="close(false)"
+  [nzContent]="modalContent"
+  [nzFooter]="null"
+  [nzBodyStyle]="{ padding: '28px 24px 24px 24px' }"
+  [nzWidth]="460"
+>
+  <ng-template #modalContent>
+    <div class="flex">
+      <ng-container [ngSwitch]="type">
+        <wen-icon-alert-octagon
+          *ngSwitchCase="confirmModalTypes.WARNING"
+          class="text-alerts-error dark:text-alerts-error-dark mr-2.5"
+        ></wen-icon-alert-octagon>
+      </ng-container>
+
+      <div>
+        <div class="text-lg font-bold">{{ title }}</div>
+        <div
+          class="text-sm font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark mt-2"
+        >
+          {{ description }}
+        </div>
+
+        <div
+          *ngIf="warning"
+          class="flex items-start px-4 py-4 mt-6 rounded-xl bg-tags-pending dark:bg-tags-pending-dark text-foregrounds-primary dark:text-foregrounds-primary"
+        >
+          <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+          <div class="text-base font-bold">
+            {{ warning }}
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end mt-8">
+          <button
+            nz-button
+            nzType="default"
+            nzSize="default"
+            class="mr-3"
+            (click)="close(false)"
+            i18n
+          >
+            {{ declineLabel }}
+          </button>
+          <button nz-button nzType="primary" nzSize="default" class="" (click)="close(true)" i18n>
+            {{ confirmLabel }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</nz-modal>

@@ -1,0 +1,200 @@
+<wen-content [showBackButton]="true">
+  <ng-container *ngIf="deviceService.isMobile$ | async">
+    <wen-drawer-toggle i18n-label label="About space" (click)="isAboutSpaceVisible = true">
+    </wen-drawer-toggle>
+  </ng-container>
+
+  <div
+    class="absolute left-0 w-auto h-56 overflow-hidden top-18 lg:top-0 lg:right-0 lg:h-96 rounded-10 lg:rounded-large lg:rounded-r-none lg:left-24"
+  >
+    <img
+      alt=""
+      [src]="(bannerUrl$ | async) || '/assets/mocks/no_banner.jpg'"
+      class="object-cover w-full h-full"
+    />
+  </div>
+
+  <div
+    class="relative w-full py-12 mt-48 lg:mt-80 lg:w-auto"
+    nz-row
+    [nzGutter]="40"
+    *ngIf="(data.space$ | async)"
+  >
+    <wen-audit-one-badge
+      [dataset]="data.auditOneStatus$ | async"
+      [entity]="(data.space$ | async)?.uid"
+      class="absolute top-0 -mt-8 -translate-y-1/2 left-4"
+    >
+      <nz-avatar
+        class="border-2 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark border-tags-border dark:border-tags-border-dark"
+        [nzSrc]="(avatarUrl$ | async) || undefined"
+        [nzSize]="(deviceService.isDesktop$ | async) ? 120 : 80"
+        nzShape="circle"
+      >
+      </nz-avatar>
+    </wen-audit-one-badge>
+
+    <div
+      class="flex-auto p-0 mx-5 my-0 lg:mx-0 lg:px-5"
+      [ngStyle]="{
+      'max-width': (deviceService.isDesktop$ | async) ? 'calc(100% - 450px)' : '100%'
+    }"
+    >
+      <h1 class="mb-8 lg:mb-10">{{ (data.space$ | async)!.name }}</h1>
+
+      <div *ngIf="deviceService.isMobile$ | async" class="mb-14">
+        <button
+          nz-button
+          nzType="primary"
+          (click)="join()"
+          nzBlock
+          nzSize="large"
+          i18n
+          *ngIf="(data.isMemberWithinSpace$ | async) === false && (member$ | async) && ((data.space$ | async)!.open === true || ((data.space$ | async)!.tokenBased && (userStakedEnoughToJoin$() | async)))"
+        >
+          Join Space
+        </button>
+
+        <button
+          nz-button
+          nzType="primary"
+          (click)="join()"
+          nzBlock
+          nzSize="large"
+          [disabled]="(data.isPendingMemberWithSpace$ | async) === true"
+          *ngIf="(data.isMemberWithinSpace$ | async) === false && (member$ | async) && (data.space$ | async)!.open !== true && !(data.space$ | async)!.tokenBased"
+        >
+          <ng-container *ngIf="data.isPendingMemberWithSpace$ | async; else askBlock" i18n
+            >Pending Request</ng-container
+          >
+          <ng-template #askBlock i18n>Ask to join Space</ng-template>
+        </button>
+        <div>
+          <button
+            (click)="edit()"
+            class="wen-secondary"
+            nz-button
+            nzBlock
+            nzSize="large"
+            *ngIf="(data.isGuardianWithinSpace$ | async)"
+            i18n
+          >
+            Edit Space
+          </button>
+        </div>
+      </div>
+
+      <wen-tabs
+        [tabs]="sections"
+        class="block w-screen -ml-5 overflow-x-auto overflow-y-hidden lg:w-max lg:ml-0"
+      >
+      </wen-tabs>
+
+      <div
+        *ngIf="deviceService.isMobile$ | async"
+        class="w-screen h-px mt-6 -ml-5 bg-foregrounds-tertiary dark:bg-foregrounds-tertiary-dark"
+      ></div>
+
+      <div class="w-full py-14 lg:py-12">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+    <div
+      class="space-y-4"
+      nz-col
+      nzFlex="450px"
+      style="max-width: 450px"
+      *ngIf="deviceService.isDesktop$ | async"
+    >
+      <button
+        nz-button
+        nzType="primary"
+        (click)="join()"
+        nzBlock
+        nzSize="large"
+        i18n
+        *ngIf="(data.isMemberWithinSpace$ | async) === false && (member$ | async) && ((data.space$ | async)!.open === true || ((data.space$ | async)!.tokenBased && (userStakedEnoughToJoin$() | async)))"
+      >
+        Join Space
+      </button>
+
+      <button
+        nz-button
+        nzType="primary"
+        (click)="join()"
+        nzBlock
+        nzSize="large"
+        [disabled]="(data.isPendingMemberWithSpace$ | async) === true"
+        *ngIf="(data.isMemberWithinSpace$ | async) === false && (member$ | async) && (data.space$ | async)!.open !== true && !(data.space$ | async)!.tokenBased"
+      >
+        <ng-container *ngIf="data.isPendingMemberWithSpace$ | async; else askBlock" i18n
+          >Pending Request</ng-container
+        >
+        <ng-template #askBlock i18n>Ask to join Space</ng-template>
+      </button>
+
+      <button
+        nz-button
+        nzType="primary"
+        (click)="aboutspace.openStakeModal(data.space$.value?.minStakedValue)"
+        nzBlock
+        nzSize="large"
+        *ngIf="(data.isMemberWithinSpace$ | async) === false && (member$ | async)  && (data.space$ | async)!.tokenBased && (userStakedEnoughToJoin$() | async) === false"
+      >
+        <ng-container i18n>Stake </ng-container>
+        {{ '&nbsp;' + ((data.space$ | async)?.minStakedValue | formatToken: (data.token$ |
+        async)?.uid: true: false: 2 | async) + ' ' + (data.token$ | async)?.symbol + '&nbsp;' }}
+        <ng-container i18n> to Join</ng-container>
+      </button>
+
+      <div>
+        <button
+          (click)="edit()"
+          class="wen-secondary"
+          nz-button
+          nzBlock
+          nzSize="large"
+          *ngIf="(data.isGuardianWithinSpace$ | async)"
+          i18n
+        >
+          Edit Space
+        </button>
+      </div>
+
+      <wen-space-about
+        #aboutspace
+        class="block"
+        [avatarUrl]="(avatarUrl$ | async) || undefined"
+        (wenOnLeave)="leave()"
+      ></wen-space-about>
+    </div>
+  </div>
+
+  <nz-drawer
+    [nzBodyStyle]="{ overflow: 'auto', padding: '8px' }"
+    [nzWidth]="'100vw'"
+    [nzClosable]="false"
+    [nzVisible]="isAboutSpaceVisible"
+  >
+    <div *nzDrawerContent class="relative h-full">
+      <button class="absolute z-10 -top-0 right-5" (click)="isAboutSpaceVisible = false">
+        <wen-icon-close></wen-icon-close>
+      </button>
+
+      <wen-space-about
+        #aboutspace
+        [avatarUrl]="(avatarUrl$ | async) || undefined"
+        (wenOnLeave)="leave()"
+      ></wen-space-about>
+    </div>
+  </nz-drawer>
+</wen-content>
+
+<wen-space-reward-schedule
+  [isGuardian]="!!(data.isGuardianWithinSpace$ | async)"
+  [isOpen]="isRewardScheduleVisible"
+  (wenOnClose)="isRewardScheduleVisible = false"
+  *ngIf="(data.token$ | async) && (data.space$ | async)"
+  [token]="(data.token$ | async)!"
+  [space]="(data.space$ | async)!"
+></wen-space-reward-schedule>

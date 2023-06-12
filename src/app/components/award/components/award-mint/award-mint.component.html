@@ -1,0 +1,185 @@
+<wen-modal-drawer
+  i18n-title
+  title="Fund Award & Mint"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="w-full pb-4 overflow-x-auto lg:pb-0">
+    <wen-transaction-steps
+      class="mx-6 mt-10"
+      [steps]="steps"
+      [currentNum]="getCurrentSequenceNum()"
+    ></wen-transaction-steps>
+  </div>
+
+  <div class="relative flex flex-col w-full mt-6 space-y-4 font-medium">
+    <div class="info-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+      <div i18n>Reward Token</div>
+      <div class="mt-1">
+        <div class="flex items-center">
+          <nz-avatar
+            [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+            class="border-2 border-tags-border dark:border-tags-border-dark min-w-12"
+            nzShape="circle"
+            [nzSize]="48"
+          >
+          </nz-avatar>
+          <div
+            class="ml-3 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          >
+            {{ token?.symbol }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="relative flex flex-col w-full mt-3 space-y-4 font-medium">
+    <div class="info-item bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark">
+      <div i18n>Reward to be funded</div>
+      <div class="mt-1">
+        <div class="flex items-center">
+          <div
+            class="ml-4 text-xs font-medium font-bold text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+          >
+            {{
+              (award?.badge?.total || 0) * (award?.badge?.tokenReward || 0)
+                | formatToken : award?.badge?.tokenUid : true : false
+                | async
+            }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div [ngSwitch]="true" class="wen-modal-tabs">
+    <ng-container *ngSwitchCase="currentStep === stepType.SELECT">
+      <ng-container *ngTemplateOutlet="selectTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="currentStep === stepType.TRANSACTION">
+      <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container
+      *ngSwitchCase="currentStep === stepType.WAIT || currentStep === stepType.CONFIRMED"
+    >
+      <ng-container *ngTemplateOutlet="waitTemplate"></ng-container>
+    </ng-container>
+  </div>
+
+  <ng-template #selectTemplate>
+    <div class="wen-transaction-select-container">
+      <wen-terms-and-conditions
+        class="w-full mt-8"
+        [isChecked]="agreeTermsConditions"
+        documentLink="https://docs.google.com/document/d/1ng67fXTdINhmgkLpnbS_SkiDlZSsDAqrd13cbwXQCcQ"
+        (wenOnCheckChange)="agreeTermsConditions = $event"
+      >
+      </wen-terms-and-conditions>
+
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="large"
+        class="w-full mt-6 lg:w-auto"
+        [disabled]="!agreeTermsConditions"
+        (click)="proceedWithMint()"
+        i18n
+      >
+        Confirm & Start
+      </button>
+
+      <div
+        class="w-3/5 mt-6 text-sm font-medium text-center text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+        i18n
+      >
+        Once you agree with the terms, the generated address will remain active during the whole
+        process.
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #transactionTemplate>
+    <div class="wen-transaction-active-container">
+      <div
+        class="flex w-full p-4 mt-3 font-medium bg-tags-commencing dark:bg-tags-commencing-dark rounded-xl"
+      >
+        <wen-icon-info-circle
+          class="text-icons-primary dark:text-icons-primary-dark"
+        ></wen-icon-info-circle>
+        <div class="ml-2.5" i18n>
+          Use deeplink to make the transfer. Unfortunatelly no manual entry supported by Firefly.
+        </div>
+      </div>
+
+      <nz-alert
+        class="mt-2"
+        nzType="warning"
+        nzShowIcon
+        *ngIf="!isExpired(transaction$ | async) && invalidPayment"
+        nzMessage="We received invalid amount. Try again."
+      ></nz-alert>
+
+      <wen-wallet-deeplink
+        *ngIf="!isExpired(transaction$ | async)"
+        class="mt-6"
+        [targetAddress]="targetAddress"
+        [network]="award?.network"
+        [tokenId]="token?.mintingData?.tokenId"
+        [tokenAmount]="(transaction$ | async)?.payload.nativeTokens?.[0]?.amount"
+        [surplus]="true"
+        [targetAmount]="((transaction$ | async)?.payload.amount).toString()"
+      >
+      </wen-wallet-deeplink>
+    </div>
+  </ng-template>
+
+  <ng-template #waitTemplate>
+    <div class="wen-transaction-wait-container">
+      <div
+        class="w-full mt-10 border border-inputs-border dark:border-inputs-border-dark rounded-2xl"
+      >
+        <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+        <div class="wen-modal-history-log">
+          <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+            <div class="mr-2 text-sm font-medium text-foregrounds-secondary">
+              {{ t.date | Time }}
+            </div>
+            <a
+              class="absolute text-sm font-medium underline left-16 wen-btn-link"
+              target="_blank"
+              *ngIf="t.link"
+              [href]="transactionService.getExplorerLink(t.transaction)"
+              >{{ t.label }}</a
+            >
+            <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngIf="currentStep === stepType.CONFIRMED">
+        <div class="flex items-center mt-10 lg:w-3/5">
+          <div
+            class="flex items-center justify-center w-10 h-10 rounded-full min-w-10 min-h-10 bg-alerts-success dark:bg-alerts-success-dark"
+          >
+            <wen-icon-check
+              class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+            ></wen-icon-check>
+          </div>
+          <div class="ml-3.5 text-lg font-medium" i18n>Transaction complete. Congratulations.</div>
+        </div>
+
+        <button nz-button nzType="primary" nzSize="large" class="mt-10" (click)="close()" i18n>
+          Finish Mint
+        </button>
+      </ng-container>
+    </div>
+  </ng-template>
+</ng-template>

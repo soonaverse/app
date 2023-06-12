@@ -1,0 +1,385 @@
+<wen-modal-drawer
+  i18n-title
+  title="Make a bid"
+  [isOpen]="isOpen"
+  [content]="content"
+  (wenOnClose)="close()"
+>
+</wen-modal-drawer>
+
+<ng-template #content>
+  <div class="flex flex-col mt-12 lg:flex-row lg:mt-6">
+    <div class="relative w-full lg:w-72 lg:w-overflow-hidden">
+      <img
+        loading="lazy"
+        *ngIf="mediaType === 'image'"
+        i18n-alt
+        alt="NFT image"
+        [src]="previewImageService.getUrl(getRecord()?.media) || '/assets/mocks/no_banner.jpg'"
+        class="object-cover w-full h-full rounded-2xl"
+      />
+
+      <video controls class="object-cover w-full h-full rounded-2xl" *ngIf="mediaType === 'video'">
+        <source [src]="getRecord()?.media" type="video/mp4" />
+        Your browser does not support HTML video.
+      </video>
+    </div>
+    <div class="mt-8 grow lg:ml-8 lg:mt-0">
+      <div class="relative flex flex-col w-full h-full">
+        <h3 class="mb-1 text-2xl font-bold truncate">{{ nft?.name }}</h3>
+        <div class="text-xl font-medium">{{ collection?.name }}</div>
+
+        <div class="flex items-center mt-6" *ngIf="expiryTicker$ | async">
+          <wen-icon-time
+            class="mr-2.5 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            [size]="20"
+          ></wen-icon-time>
+          <div class="font-medium">
+            <span i18n>Ends </span>{{ expiryTicker$ | async | relativeTime : 'from' }}
+          </div>
+        </div>
+
+        <div class="flex items-center mt-2.5 mb-2.5">
+          <wen-icon-crown
+            class="mr-2.5 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            [size]="20"
+          ></wen-icon-crown>
+          <div class="font-medium">
+            {{ (collection?.royaltiesFee || 0) * 100 }}% <span i18n>Royalties</span>
+          </div>
+          <wen-icon-question-circle
+            [size]="20"
+            class="ml-1.5 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            nz-tooltip
+            i18n-nzTooltipTitle
+            nzTooltipTitle="Royalties are automatically deducted and paid to artists."
+          ></wen-icon-question-circle>
+        </div>
+
+        <a
+          *ngIf="royaltySpace && royaltySpace?.uid !== collection?.space"
+          [routerLink]="['/space', royaltySpace.uid]"
+          class="flex items-center justify-between mb-2.5 w-max"
+        >
+          <nz-avatar
+            [nzSrc]="previewImageService.getAvatarSize(royaltySpace.avatarUrl)"
+            [nzSize]="24"
+            class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark min-w-6"
+            nzShape="circle"
+          >
+          </nz-avatar>
+          <div class="ml-3 text-xs font-medium">
+            <div class="text-foregrounds-secondary dark:text-foregrounds-secondary-dark" i18n>
+              Royalties goes to
+            </div>
+            <div class="" i18n>{{ royaltySpace.name | truncate : [20] }}</div>
+          </div>
+        </a>
+
+        <wen-countdown
+          class="my-5"
+          wrapperClassName="bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark"
+          tabClassName="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark"
+          [title]="helper.getCountdownTitle(data.nft$ | async)"
+          [finalDate]="helper.getCountdownDate(data.nft$ | async)?.toDate()"
+          size="default"
+        >
+        </wen-countdown>
+
+        <div
+          class="w-full px-5 py-3 mt-8 lg:mt-auto rounded-2xl"
+          [ngClass]="{
+            'bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark':
+              !getRecord()?.auctionHighestBidder ||
+              !(auth.member$ | async)?.uid ||
+              (getRecord()?.auctionHighestBidder !== (auth.member$ | async)?.uid &&
+                (linkedTransactions$ | async)?.length === 0),
+            'bg-tags-closed dark:bg-tags-closed-dark':
+              (auth.member$ | async)?.uid &&
+              getRecord()?.auctionHighestBidder !== (auth.member$ | async)?.uid &&
+              (linkedTransactions$ | async)?.length,
+            'bg-tags-available dark:bg-tags-available-dark':
+              (auth.member$ | async)?.uid &&
+              getRecord()?.auctionHighestBidder === (auth.member$ | async)?.uid
+          }"
+        >
+          <div class="text-xs font-medium text-foregrounds-secondary">
+            <ng-container *ngIf="!(linkedTransactions$ | async)?.length">
+              <ng-container *ngIf="getRecord()?.auctionHighestBid; else minBidBlock" i18n
+                >Current highest bid</ng-container
+              >
+              <ng-template #minBidBlock i18n>Min bid</ng-template>
+            </ng-container>
+            <ng-container
+              *ngIf="
+                getRecord()?.auctionHighestBidder !== (auth.member$ | async)?.uid &&
+                (linkedTransactions$ | async)?.length
+              "
+              i18n
+              >Current highest bid</ng-container
+            >
+            <ng-container
+              *ngIf="
+                (auth.member$ | async)?.uid &&
+                getRecord()?.auctionHighestBidder === (auth.member$ | async)?.uid
+              "
+              i18n
+              >Your bid is the highest</ng-container
+            >
+          </div>
+          <div class="flex items-center mt-2 text-lg">
+            <div class="mr-2 font-bold truncate">
+              {{
+                getRecord()?.auctionHighestBid || getRecord()?.auctionFloorPrice || 0
+                  | formatToken : getRecord()?.mintingData?.network : true
+                  | async
+              }}
+            </div>
+            <a
+              *ngIf="
+                (auth.member$ | async)?.uid &&
+                getRecord()?.auctionHighestBidder === (auth.member$ | async)?.uid
+              "
+              [routerLink]="['/member', (auth.member$ | async)?.uid]"
+              class="flex items-center"
+            >
+              <nz-avatar
+                [nzSrc]="(auth.member$ | async)?.avatar | resizeAvatar : filesizes.small"
+                class="border-2 border-foregrounds-tertiary dark:border-foregrounds-tertiary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark min-w-8"
+                [nzSize]="32"
+              >
+              </nz-avatar>
+              <div class="ml-6 text-base font-medium truncate lg:ml-3 lg:max-w-20">
+                @{{ (auth.member$ | async)?.name || (auth.member$ | async)?.uid }}
+              </div>
+            </a>
+          </div>
+        </div>
+        <div class="flex items-center mt-2">
+          <wen-icon-question-circle
+            [size]="14"
+            class="mr-2 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            nz-tooltip
+            i18n-nzTooltipTitle
+            nzTooltipTitle="Royalties are automatically deducted and paid to artists."
+          ></wen-icon-question-circle>
+          <div
+            class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            i18n
+          >
+            Current price is refreshing in real time
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div [ngSwitch]="currentStep" class="w-full">
+    <ng-container *ngSwitchCase="stepType.CONFIRM">
+      <ng-container *ngTemplateOutlet="confirmTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.TRANSACTION">
+      <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.WAIT">
+      <ng-container *ngTemplateOutlet="waitTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.COMPLETE">
+      <ng-container *ngTemplateOutlet="completeTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.EXPIRED">
+      <ng-container *ngTemplateOutlet="expiredTemplate"></ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #confirmTemplate>
+  <div class="wen-transaction-select-container">
+    <div
+      class="text-xs font-medium text-center text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-4/5"
+    >
+      <span i18n
+        >Adress of your desired NTF will be locked for you for the whole auction. After payment your
+        bid will be locked, if there is a higher bid, you will be refunded immediately.</span
+      >
+    </div>
+    <div
+      class="mt-4 text-xs font-medium text-center text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-4/5"
+      i18n
+    >
+      If there is a higher bid, you will be refunded immediately. If you want to make another bid,
+      send higher amount directly to the same address.
+    </div>
+
+    <wen-terms-and-conditions
+      class="mt-6 lg:ml-6"
+      [isChecked]="agreeTermsConditions"
+      documentLink="https://docs.google.com/document/d/1ng67fXTdINhmgkLpnbS_SkiDlZSsDAqrd13cbwXQCcQ"
+      (wenOnCheckChange)="agreeTermsConditions = $event"
+    >
+    </wen-terms-and-conditions>
+
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-6 lg:w-auto"
+      [disabled]="!agreeTermsConditions"
+      i18n
+      (click)="proceedWithBid()"
+    >
+      Make a bid
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #transactionTemplate>
+  <div class="wen-transaction-active-container">
+    <wen-send-funds
+      class="block w-full"
+      [targetAddress]="targetAddress"
+      [formattedAmount]="unitsService.label(nft?.mintingData?.network)"
+    >
+    </wen-send-funds>
+
+    <div
+      class="mt-4 text-xs font-medium text-center text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-4/5"
+      i18n
+    >
+      If there is a higher bid, you will be refunded immediately. If you want to make another bid,
+      send higher amount directly to the same address.
+    </div>
+
+    <wen-wallet-deeplink
+      class="w-full mt-6 lg:w-auto"
+      [targetAddress]="targetAddress"
+      [network]="nft?.mintingData?.network"
+      [targetAmount]="(targetAmount || 0).toString()"
+    >
+    </wen-wallet-deeplink>
+  </div>
+</ng-template>
+
+<ng-template #waitTemplate>
+  <div class="wen-transaction-wait-container">
+    <wen-send-funds
+      class="block w-full"
+      [targetAddress]="targetAddress"
+      [formattedAmount]="unitsService.label(nft?.mintingData?.network)"
+    >
+    </wen-send-funds>
+
+    <div class="w-full px-2 mt-8 text-sm font-bold" i18n>Your transactions</div>
+    <nz-table
+      class="block w-full h-full mt-4 overflow-y-auto lg:min-h-0 lg:max-h-56"
+      [nzData]="[{}]"
+      [nzShowPagination]="false"
+    >
+      <thead>
+        <tr>
+          <th i18n>Sent Date</th>
+          <th i18n>Time</th>
+          <th i18n>Action</th>
+          <th i18n>Amount</th>
+          <th>
+            <div class="text-right" i18n>Detail</div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of linkedTransactions$ | async; trackBy: trackByUniqueId">
+          <td class="text-sm font-medium">{{ item.createdOn?.toDate() | date : 'shortDate' }}</td>
+          <td class="text-sm font-medium">{{ item.createdOn?.toDate() | date : 'mediumTime' }}</td>
+          <td class="text-sm font-medium">{{ item.type }}</td>
+          <td class="text-sm font-medium">
+            {{ item.payload.amount | formatToken : item.network | async }}
+          </td>
+          <td class="text-right">
+            <a
+              class="text-sm font-medium underline wen-btn-link"
+              target="_blank"
+              *ngIf="item.payload.chainReference || item.payload?.walletReference?.chainReference"
+              [href]="transactionService.getExplorerLink(item)"
+              i18n
+              >Link</a
+            >
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+
+    <div
+      class="mt-10 text-xs font-medium text-center text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-4/5"
+      i18n
+    >
+      If there is a higher bid, you will be refunded immediately. If you want to make another bid,
+      send higher amount directly to the same address.
+    </div>
+
+    <wen-wallet-deeplink
+      class="w-full mt-6 lg:w-auto"
+      [targetAddress]="targetAddress"
+      [network]="nft?.mintingData?.network"
+      [targetAmount]="(targetAmount || 0).toString()"
+    >
+    </wen-wallet-deeplink>
+  </div>
+</ng-template>
+
+<ng-template #completeTemplate>
+  <div class="wen-transaction-active-container">
+    <div class="flex lg:items-center">
+      <div
+        class="flex items-center justify-center w-10 h-10 rounded-full bg-alerts-success dark:bg-alerts-success-dark"
+      >
+        <wen-icon-check
+          class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+        ></wen-icon-check>
+      </div>
+      <div class="ml-3.5 text-lg font-medium" i18n>Congratulations you won the NFT.</div>
+    </div>
+
+    <div class="flex flex-col items-center w-full mt-8 lg:flex-row lg:w-auto">
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="large"
+        class="w-full lg:mr-2"
+        i18n
+        (click)="close()"
+      >
+        Close checkout
+      </button>
+
+      <button
+        nz-button
+        nzType="default"
+        (click)="goToNft()"
+        nzSize="large"
+        class="w-full mb-6 lg:mb-0 lg:mt-1"
+        i18n
+      >
+        Show my NFT
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #expiredTemplate>
+  <div class="wen-transaction-active-container">
+    <div class="flex lg:items-center">
+      <div
+        class="flex items-center justify-center w-10 h-10 rounded-full bg-alerts-success dark:bg-alerts-success-dark"
+      >
+        <wen-icon-check
+          class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+        ></wen-icon-check>
+      </div>
+      <div class="ml-3.5 text-lg font-medium" i18n>Bidding is expired. Good luck next time :)</div>
+    </div>
+  </div>
+</ng-template>

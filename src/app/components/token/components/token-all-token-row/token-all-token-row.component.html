@@ -1,0 +1,196 @@
+<nz-skeleton
+  *ngIf="!token?.uid"
+  class="block px-3 py-3 lg:px-5 lg:py-3.5 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl h-18 w-full"
+  [nzActive]="true"
+  [nzAvatar]="{ size: 'default' }"
+  [nzTitle]="{ width: '100%' }"
+  [nzParagraph]="{ rows: 0 }"
+></nz-skeleton>
+
+<div
+  *ngIf="token?.uid"
+  class="relative w-full bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark px-3 py-3 lg:px-5 lg:py-3.5 rounded-2xl"
+>
+  <a
+    class="block lg:flex lg:items-center hover:text-current border-box-children"
+    [routerLink]="getTokenRoute()"
+  >
+    <div class="flex items-center w-full lg:min-w-[15%] lg:max-w-[15%] overflow-hidden">
+      <div class="flex items-center">
+        <nz-avatar
+          [nzSrc]="previewImageService.getTokenSize(token?.icon)"
+          class="border-2 border-tags-border dark:border-tags-border-dark min-w-10"
+          nzShape="circle"
+          [nzSize]="40"
+        >
+        </nz-avatar>
+        <div class="flex items-center ml-3 lg:block">
+          <div class="text-sm font-bold lg:text-base">
+            {{ (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol }}
+          </div>
+          <div class="wen-card-highlight-title lg:text-sm lg:ml-0">{{ token?.name }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="flex flex-wrap items-center justify-between mt-4 space-y-1"
+      *ngIf="deviceService.isMobile$ | async"
+    >
+      <ng-container *ngTemplateOutlet="statsBlock"></ng-container>
+    </div>
+
+    <ng-container *ngIf="deviceService.isDesktop$ | async">
+      <ng-container *ngTemplateOutlet="statsBlock"></ng-container>
+    </ng-container>
+
+    <div
+      *ngIf="deviceService.isDesktop$ | async"
+      class="min-w-[18%] max-w-[18%] overflow-hidden flex items-center justify-end"
+    >
+      <button
+        nz-button
+        nzType="default"
+        nzSize="small"
+        class="w-16 mr-2"
+        [routerLink]="['/', this.path, token?.uid]"
+        (click)="$event.preventDefault()"
+        i18n
+      >
+        Detail
+      </button>
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="small"
+        class="w-16"
+        [disabled]="token?.tradingDisabled"
+        i18n
+      >
+        Trade
+      </button>
+    </div>
+  </a>
+</div>
+
+<ng-template #statsBlock>
+  <div
+    class="w-full font-medium lg:text-right min-w-[45%] max-w-[45%] lg:min-w-[10%] lg:max-w-[10%] overflow-hidden"
+  >
+    <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+      <ng-container i18n>Price</ng-container> ({{
+        unitsService.label(token?.mintingData?.networkFormat || token?.mintingData?.network)
+      }})
+    </div>
+    <div class="mt-0.5">
+      {{
+        { value: (listenAvgPrice$ | async) || 0, exponents: getDefaultNetworkDecimals() }
+          | formatToken
+            : token?.mintingData?.networkFormat || token?.mintingData?.network
+            : false
+            : false
+          | async
+          | unknownIfZero
+      }}
+    </div>
+  </div>
+
+  <div
+    class="w-full font-medium lg:text-right min-w-[45%] max-w-[45%] lg:min-w-[10%] lg:max-w-[10%] overflow-hidden"
+  >
+    <div class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+      <ng-container i18n>Price (USD)</ng-container>
+    </div>
+    <div class="mt-0.5">
+      <ng-container *ngIf="listenAvgPrice$ | async; else noValue">
+        {{
+          unitsService.getUsd(
+            listenAvgPrice$ | async,
+            token?.mintingData?.networkFormat || token?.mintingData?.network
+          )
+            | async
+            | currency : 'USD'
+            | UsdBelowTwoDecimals
+        }}
+      </ng-container>
+      <ng-template #noValue> - </ng-template>
+    </div>
+  </div>
+
+  <div
+    class="w-full font-medium lg:text-right min-w-[45%] max-w-[45%] lg:min-w-[12%] lg:max-w-[12%] overflow-hidden"
+  >
+    <div
+      class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-full whitespace-nowrap"
+      i18n
+    >
+      24h Change
+    </div>
+    <div
+      [ngClass]="
+        (((listenChangePrice24h$ | async) || 0) > 0
+          ? 'text-alerts-success class.dark:text-alerts-success-dark'
+          : '') +
+        (((listenChangePrice24h$ | async) || 0) < 0
+          ? 'text-alerts-error class.dark:text-alerts-error-dark'
+          : '')
+      "
+      class="mt-0.5 lg:w-full whitespace-nowrap"
+    >
+      <ng-container *ngIf="((listenChangePrice24h$ | async) || 0) !== 0; else noValue">
+        {{ (listenChangePrice24h$ | async)?.toString() | percent : '1.0-2' }}
+      </ng-container>
+      <ng-template #noValue> - </ng-template>
+    </div>
+  </div>
+
+  <div
+    class="w-full font-medium lg:text-right lg:px-0 lg:mt-0 min-w-[45%] max-w-[45%] lg:min-w-[10%] lg:max-w-[20%] overflow-hidden"
+    *ngIf="deviceService.isDesktop$ | async"
+  >
+    <ng-container>
+      <div
+        class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-full whitespace-nowrap"
+      >
+        <ng-container i18n>24h Volume</ng-container> ({{
+          (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol
+        }})
+      </div>
+      <div class="mt-0.5 lg:w-full whitespace-nowrap">
+        {{
+          listenVolume24h$
+            | async
+            | formatToken : token?.uid : false : false : 0
+            | async
+            | unknownIfZero
+        }}
+      </div>
+    </ng-container>
+  </div>
+
+  <div
+    class="w-full font-medium lg:text-right min-w-[45%] max-w-[45%] lg:min-w-[15%] lg:max-w-[20%] overflow-hidden"
+  >
+    <div
+      class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-full whitespace-nowrap"
+    >
+      <ng-container i18n>M. Cap</ng-container> (USD)
+    </div>
+    <div class="mt-0.5 lg:w-full whitespace-nowrap">
+      <ng-container
+        *ngIf="(this.token?.totalSupply || 0) * ((listenAvgPrice$ | async) || 0); else noValue"
+      >
+        {{
+          unitsService.getUsd(
+            ((this.token?.totalSupply || 0) * ((listenAvgPrice$ | async) || 0)) / 1000 / 1000,
+            token?.mintingData?.networkFormat || token?.mintingData?.network
+          )
+            | async
+            | currency : 'USD'
+            | UsdBelowTwoDecimals
+        }}
+      </ng-container>
+      <ng-template #noValue> - </ng-template>
+    </div>
+  </div>
+</ng-template>

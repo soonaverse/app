@@ -1,0 +1,79 @@
+:host {
+  .trade-dropdown-btn {
+    &:hover,
+    &:focus {
+      @apply bg-tabs-selected dark:bg-tabs-selected-dark text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark
+                border-tabs-selected dark:border-tabs-selected-dark !important;
+    }
+  }
+}
+
+:host ::ng-deep {
+  .order-book .ant-card-body {
+    @apply p-0 flex flex-col h-full !important;
+
+    .ant-table-tbody .ant-table-row .ant-table-cell {
+      @apply border-b-backgrounds-tertiary dark:border-b-backgrounds-tertiary-dark !important;
+    }
+  }
+
+  .asks-table {
+    @apply flex flex-col justify-end;
+  }
+
+  .trade-history-order {
+    &__buy {
+      @apply text-[#28B16F] !important;
+    }
+
+    &__sell {
+      @apply text-[#E14F4F] !important;
+    }
+  }
+}
+
+.price-suggestion {
+  @apply cursor-pointer w-20 py-2 border-2 border-[#EDECE8] rounded-2xl text-xxs font-semibold flex items-center justify-center;
+
+  &__disabled {
+    @apply text-foregrounds-secondary dark:text-foregrounds-secondary-dark pointer-events-none;
+  }
+
+  &__selected {
+    @apply border-accent-primary dark:border-accent-primary-dark;
+  }
+}
+
+.input__error {
+  @apply border-inputs-error dark:border-inputs-error-dark;
+}
+
+.stat-box {
+  @apply flex-1 w-full lg:w-auto px-4 py-4 lg:py-3 lg:h-auto rounded-xl flex items-center justify-between flex-wrap lg:flex-row;
+}
+
+::ng-deep .order-book-options {
+  nz-option-container {
+    cdk-virtual-scroll-viewport {
+      height: 150px !important;
+    }
+  }
+}
+
+.price-option {
+  @apply text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark cursor-pointer;
+  &__selected {
+    @apply text-accent-primary dark:text-accent-primary-dark;
+  }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}

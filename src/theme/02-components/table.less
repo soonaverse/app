@@ -1,0 +1,68 @@
+.ant-table-content {
+  @apply bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark;
+
+  .ant-table-thead > tr > th {
+    @apply text-foregrounds-secondary dark:text-foregrounds-secondary-dark;
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    @apply border-b-foregrounds-separator dark:border-b-foregrounds-separator-dark;
+
+    &.right {
+      @apply text-right !important;
+    }
+
+    &.padding-left-0 {
+      @apply pl-0 !important;
+    }
+
+    &.padding-left-5 {
+      @apply pl-5 !important;
+    }
+
+    &.padding-right-0 {
+      @apply pr-0 !important;
+    }
+  }
+
+  .ant-table-tbody > tr > td {
+    @apply text-foregrounds-primary dark:text-foregrounds-primary-dark font-medium;
+  }
+
+  .ant-table-tbody .ant-table-row:hover .ant-table-cell {
+    @apply bg-accent-selected dark:bg-accent-selected-dark !important;
+  }
+
+  .ant-table-placeholder:hover {
+    .ant-table-cell {
+      @apply bg-inherit;
+    }
+  }
+}
+
+.ant-table-pagination {
+  @apply flex justify-center;
+
+  ul {
+    @apply flex justify-center;
+  }
+
+  .ant-pagination-item,
+  .ant-pagination-prev .ant-pagination-item-link,
+  .ant-pagination-next .ant-pagination-item-link {
+    @apply flex justify-center items-center border-0 font-medium text-sm bg-transparent;
+
+    a {
+      @apply text-foregrounds-primary dark:text-foregrounds-primary-dark;
+    }
+  }
+
+  .ant-pagination-item-active {
+    @apply bg-accent-primary dark:bg-accent-primary-dark;
+
+    a {
+      @apply text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark;
+    }
+  }
+}
