@@ -1,4 +1,3 @@
-const useEmulator = false;
 export const environment = {
   production: false,
   algolia: {
