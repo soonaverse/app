@@ -8,11 +8,7 @@ import {
   WEN_FUNC,
   WenRequest,
 } from '@build-5/interfaces';
-import {
-  TokenDistributionRepository,
-  TokenRepository,
-  TokenStatsRepository,
-} from '@build-5/lib';
+import { TokenDistributionRepository, TokenRepository, TokenStatsRepository } from '@build-5/lib';
 import { Observable, of } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
 
@@ -93,9 +89,6 @@ export class TokenApi extends BaseApi<Token> {
 
   public topPublic = (lastValue?: string, limit?: number) =>
     this.tokenRepo.getByStatusLive([], lastValue, limit);
-
-  public top = (lastValue?: string, limit?: number): Observable<Token[]> =>
-    this.tokenRepo.getTopLive(lastValue, limit);
 
   public space = (space: string, lastValue?: string) =>
     this.tokenRepo.getBySpaceLive(space, lastValue);

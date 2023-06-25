@@ -191,7 +191,7 @@ export class ActivityPage implements OnInit {
         payload: {
           image: b.payload.image,
           date: b.createdOn?.toDate(),
-          name: b.payload.name,
+          name: b.payload.name || '',
           network: b.network,
         },
       })) || []

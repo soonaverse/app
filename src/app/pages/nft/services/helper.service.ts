@@ -14,7 +14,6 @@ import {
   PropStats,
   Timestamp,
   Transaction,
-  TransactionBillPayment,
   TransactionType,
   TRANSACTION_AUTO_EXPIRY_MS,
 } from '@build-5/interfaces';
@@ -220,15 +219,13 @@ export class HelperService {
     return dayjs(this.getDate(nft!.availableFrom)).isAfter(dayjs(), 's');
   }
 
-  public getLatestBill(
-    orders?: SuccesfullOrdersWithFullHistory[] | null,
-  ): TransactionBillPayment | undefined {
+  public getLatestBill(orders?: SuccesfullOrdersWithFullHistory[] | null): Transaction | undefined {
     if (!orders) {
       return undefined;
     }
 
     // Get all non royalty bills.
-    let lastestBill: TransactionBillPayment | undefined = undefined;
+    let lastestBill: Transaction | undefined = undefined;
     for (const h of orders) {
       for (const l of h.transactions || []) {
         if (

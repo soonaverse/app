@@ -1,12 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {
-  PublicCollections,
-  Space,
-  SpaceMember,
-  WEN_FUNC,
-  WenRequest,
-} from '@build-5/interfaces';
+import { PublicCollections, Space, SpaceMember, WEN_FUNC, WenRequest } from '@build-5/interfaces';
 import {
   MemberRepository,
   SpaceBlockedMemberRepository,

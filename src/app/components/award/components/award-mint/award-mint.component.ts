@@ -112,7 +112,7 @@ export class AwardMintComponent implements OnInit {
           // It's expired.
           removeItem(StorageItem.AwardMintTransaction);
         }
-        if (val.linkedTransactions?.length > 0) {
+        if (val.linkedTransactions && val.linkedTransactions?.length > 0) {
           this.currentStep = StepType.WAIT;
           // Listen to other transactions.
           for (const tranId of val.linkedTransactions) {

@@ -30,8 +30,8 @@
       <div class="mt-1">
         {{
           (
-            this.transaction?.payload.nativeTokens?.[0].amount| formatToken:
-            this.transaction?.payload.token:
+            this.transaction?.payload?.nativeTokens?.[0]?.amount | formatToken:
+            this.transaction?.payload?.token:
             false:
             false | async
           )
@@ -65,8 +65,8 @@
       <div class="mt-1 text-lg font-bold">
         {{
           (
-            this.transaction?.payload.nativeTokens?.[0].amount | formatToken:
-            this.transaction?.payload.token:
+            this.transaction?.payload?.nativeTokens?.[0]?.amount | formatToken:
+            this.transaction?.payload?.token:
             false:
             false | async
           )

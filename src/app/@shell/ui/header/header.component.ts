@@ -34,7 +34,7 @@ import {
   Notification,
   NotificationType,
   TRANSACTION_AUTO_EXPIRY_MS,
-  TransactionOrder,
+  Transaction,
 } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationRef, NzNotificationService } from 'ng-zorro-antd/notification';
@@ -82,8 +82,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private notificationRef?: NzNotificationRef;
   public expiryTicker$: BehaviorSubject<dayjs.Dayjs | null> =
     new BehaviorSubject<dayjs.Dayjs | null>(null);
-  private transaction$: BehaviorSubject<TransactionOrder | undefined> = new BehaviorSubject<
-    TransactionOrder | undefined
+  private transaction$: BehaviorSubject<Transaction | undefined> = new BehaviorSubject<
+    Transaction | undefined
   >(undefined);
   private subscriptionTransaction$?: Subscription;
   private subscriptionNotification$?: Subscription;

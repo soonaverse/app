@@ -59,8 +59,8 @@
           </td>
           <td class="font-medium">{{ transactionService.getTitle(t) }}</td>
           <td class="font-medium" *ngIf="t.payload.nativeTokens?.[0]?.amount">
-            {{ t.payload.nativeTokens[0].amount| formatToken: t.payload.token:false:false | async }}
-            &nbsp;{{ t.payload.tokenSymbol || 'Tokens' }}
+            {{ (t?.payload?.nativeTokens?.[0]?.amount || 0) | formatToken:
+            t.payload.token:false:false | async }} &nbsp;{{ t.payload.tokenSymbol || 'Tokens' }}
           </td>
           <td class="font-medium" *ngIf="!t.payload.nativeTokens?.[0]?.amount">
             {{ t.payload.amount | formatToken: t.network | async }}

@@ -29,14 +29,16 @@ export class FormatTokenPipe implements PipeTransform {
   }
 
   public async transform(
-    value: number | null | undefined | ConvertValue,
+    value: string | number | null | undefined | ConvertValue,
     tokenUidOrNetwork?: string | null,
     removeZeroes = false,
     showUnit = true,
     defDecimals = DEF_DECIMALS,
   ): Promise<string> {
     let network = DEFAULT_NETWORK;
-    if (typeof value === 'object') {
+    if (typeof value === 'string') {
+      value = Number(value);
+    } else if (typeof value === 'object') {
       if (value?.value) {
         value = this.multiValue(value);
       } else {

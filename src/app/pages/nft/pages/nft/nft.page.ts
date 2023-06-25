@@ -414,7 +414,7 @@ export class NFTPage implements OnInit, OnDestroy {
     const spaceRewards = (this.auth.member$.value.spaces || {})[collection.space];
     const descDiscounts = [...(collection.discounts || [])].sort((a, b) => b.amount - a.amount);
     for (const discount of descDiscounts) {
-      const awardStat = (spaceRewards?.awardStat || {})[discount.tokenUid];
+      const awardStat = (spaceRewards?.awardStat || {})[discount.tokenUid!];
       const memberTotalReward = awardStat?.totalReward || 0;
       if (memberTotalReward >= discount.tokenReward) {
         return 1 - discount.amount;

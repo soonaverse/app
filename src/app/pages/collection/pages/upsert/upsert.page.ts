@@ -565,8 +565,8 @@ export class UpsertPage implements OnInit, OnDestroy {
     data.discounts.forEach((v: DiscountLine) => {
       if (v.amount > 0) {
         discounts.push({
-          tokenReward: (v.tokenReward || 0) * Math.pow(10, this.tokenCache[v.tokenUid].decimals),
-          tokenSymbol: this.tokenCache[v.tokenUid].symbol,
+          tokenReward: (v.tokenReward || 0) * Math.pow(10, this.tokenCache[v.tokenUid!].decimals),
+          tokenSymbol: this.tokenCache[v.tokenUid!].symbol,
           amount: v.amount / 100,
         });
       }

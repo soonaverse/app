@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import {
   FILE_SIZES,
-  SOON_PROD_ADDRESS_API,
-  SOON_TEST_ADDRESS_API,
+  BUILD5_PROD_ADDRESS_API,
+  BUILD5_TEST_ADDRESS_API,
   WEN_FUNC,
 } from '@build-5/interfaces';
 import { NzUploadXHRArgs } from 'ng-zorro-antd/upload';
@@ -47,7 +47,7 @@ export class FileApi {
     formData.append('file', <Blob>item.postFile);
     formData.append('member', memberId);
     formData.append('uid', item.file.uid);
-    const origin = environment.production ? SOON_PROD_ADDRESS_API : SOON_TEST_ADDRESS_API;
+    const origin = environment.production ? BUILD5_PROD_ADDRESS_API : BUILD5_TEST_ADDRESS_API;
     return this.httpClient
       .post(origin + WEN_FUNC.uploadFile, formData)
       .pipe(

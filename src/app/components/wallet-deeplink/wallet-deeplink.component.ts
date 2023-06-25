@@ -60,8 +60,8 @@ export class WalletDeeplinkComponent {
   }
 
   @Input()
-  set tokenAmount(value: number | undefined) {
-    this._tokenAmount = value;
+  set tokenAmount(value: string | number | undefined) {
+    this._tokenAmount = Number(value);
     this.setLinks();
   }
 
