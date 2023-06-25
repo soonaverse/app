@@ -38,13 +38,13 @@ export class OverviewPage implements OnInit {
   ) {
     // Init start date.
     this.startDateTicker$ = new BehaviorSubject<Timestamp>(
-      this.data.proposal$.value?.settings?.startDate,
+      this.data.proposal$.value?.settings?.startDate || Timestamp.now(),
     );
   }
 
   public ngOnInit(): void {
     this.data.currentMembersVotes$.pipe(untilDestroyed(this)).subscribe((tran) => {
-      if (tran?.[0]?.payload?.values?.length > 0) {
+      if (tran?.[0]?.payload?.values && tran?.[0]?.payload?.values?.length > 0) {
         // TODO Deal with multiple answers.
         tran?.[0]?.payload?.values.forEach((v: number) => {
           this.voteControl.setValue(v);
@@ -53,7 +53,7 @@ export class OverviewPage implements OnInit {
     });
 
     this.data.proposal$.pipe(untilDestroyed(this)).subscribe((p) => {
-      this.startDateTicker$.next(p?.settings?.startDate);
+      this.startDateTicker$.next(p?.settings?.startDate || Timestamp.now());
 
       this.seo.setTags(
         $localize`Proposal - ` + p?.name || '',

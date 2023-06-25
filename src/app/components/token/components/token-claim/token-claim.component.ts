@@ -111,7 +111,7 @@ export class TokenClaimComponent implements OnInit, OnDestroy {
         if (expiresOn.isBefore(dayjs()) || val.payload?.void || val.payload?.reconciled) {
           this.token && removeTokenClaimItem(this.token.uid);
         }
-        if (val.linkedTransactions?.length > 0) {
+        if (val.linkedTransactions && val.linkedTransactions.length > 0) {
           this.currentStep = StepType.TRANSACTION;
           // Listen to other transactions.
           for (const tranId of val.linkedTransactions) {
@@ -165,7 +165,7 @@ export class TokenClaimComponent implements OnInit, OnDestroy {
             val.createdOn,
             $localize`Transaction confirmed.`,
           );
-          this.purchasedAmount = val.payload.amount;
+          this.purchasedAmount = val.payload.amount || 0;
           this.receivedTransactions = true;
           this.currentStep = StepType.COMPLETE;
           this.cd.markForCheck();

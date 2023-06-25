@@ -3,8 +3,7 @@ import {
   DEF_WALLET_PAY_IN_PROGRESS,
   Network,
   Transaction,
-  TransactionMintCollectionType,
-  TransactionMintTokenType,
+  TransactionPayloadType,
   TransactionType,
 } from '@build-5/interfaces';
 
@@ -45,15 +44,15 @@ export class TransactionService {
 
   public getMintedSubtypesText(t: Transaction): string {
     let base = '';
-    if (t.payload.type === TransactionMintCollectionType.MINT_ALIAS) {
+    if (t.payload.type === TransactionPayloadType.MINT_ALIAS) {
       base += ' ' + $localize`(Mint Alias)`;
-    } else if (t.payload.type === TransactionMintCollectionType.MINT_NFTS) {
+    } else if (t.payload.type === TransactionPayloadType.MINT_NFTS) {
       base += ' ' + $localize`(Mint NFTs)`;
-    } else if (t.payload.type === TransactionMintTokenType.MINT_FOUNDRY) {
+    } else if (t.payload.type === TransactionPayloadType.MINT_FOUNDRY) {
       base += ' ' + $localize`(Mint Foundry)`;
-    } else if (t.payload.type === TransactionMintCollectionType.SEND_ALIAS_TO_GUARDIAN) {
+    } else if (t.payload.type === TransactionPayloadType.SEND_ALIAS_TO_GUARDIAN) {
       base += ' ' + $localize`(Send Alias to Guardian)`;
-    } else if (t.payload.type === TransactionMintCollectionType.LOCK_COLLECTION) {
+    } else if (t.payload.type === TransactionPayloadType.LOCK_COLLECTION) {
       base += ' ' + $localize`(Lock Collection)`;
     }
 
@@ -65,7 +64,7 @@ export class TransactionService {
     if (this.paymentNotProcessedOrInProgress(t)) return null;
     const link = t.payload.chainReference || t.payload?.walletReference?.chainReference;
 
-    return this.generateLink(link, t.network);
+    return this.generateLink(link!, t.network);
   }
 
   public generateLink(link: string, network?: Network): string {
@@ -85,7 +84,8 @@ export class TransactionService {
   public paymentNotProcessedOrInProgress(tran: Transaction | undefined | null): boolean {
     return (
       (!tran?.payload.chainReference && !tran?.payload.walletReference?.chainReference) ||
-      tran.payload.walletReference?.chainReference.startsWith(DEF_WALLET_PAY_IN_PROGRESS)
+      tran.payload.walletReference?.chainReference?.startsWith(DEF_WALLET_PAY_IN_PROGRESS) ||
+      false
     );
   }
 }

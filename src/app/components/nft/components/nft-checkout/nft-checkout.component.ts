@@ -167,7 +167,7 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
           // It's expired.
           removeItem(StorageItem.CheckoutTransaction);
         }
-        if (val.linkedTransactions?.length > 0) {
+        if (val.linkedTransactions && val.linkedTransactions?.length > 0) {
           this.currentStep = StepType.WAIT;
           // Listen to other transactions.
           for (const tranId of val.linkedTransactions) {
@@ -372,7 +372,7 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
       (a, b) => b.amount - a.amount,
     );
     for (const discount of descDiscounts) {
-      const awardStat = (spaceRewards?.awardStat || {})[discount.tokenUid];
+      const awardStat = (spaceRewards?.awardStat || {})[discount.tokenUid!];
       const memberTotalReward = awardStat?.totalReward || 0;
       if (memberTotalReward >= discount.tokenReward) {
         return 1 - discount.amount;

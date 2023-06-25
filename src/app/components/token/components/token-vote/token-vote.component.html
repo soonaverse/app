@@ -122,7 +122,7 @@
       {{ now$ | async | date : 'long' }}
     </div>
     <div class="font-bold whitespace-nowrap" *ngIf="helperProposal.isCommencing(proposal)">
-      {{ proposal?.settings?.startDate.toDate() | date : 'long' }}
+      {{ proposal?.settings?.startDate?.toDate() | date : 'long' }}
     </div>
   </div>
 

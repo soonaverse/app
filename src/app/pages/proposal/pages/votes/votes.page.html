@@ -33,7 +33,7 @@
         </td>
         <td>{{ t.createdOn?.toDate() | date : 'short' }}</td>
         <td>
-          {{ helper.findAnswerText((data.proposal$ | async)?.questions, t.payload.values) }} ({{
+          {{ helper.findAnswerText((data.proposal$ | async)?.questions, t.payload.values||[]) }} ({{
           (data.proposal$ | async)?.type === proposalTypes.NATIVE ? (t.payload.weight | formatToken:
           (data.token$ | async)?.uid: false: false: 2 | async) + ' ' + ((data.token$ |
           async)?.symbol === 'IOTA' ? 'M' : '') + (data.token$ | async)?.symbol : t.payload.weight

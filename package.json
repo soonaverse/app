@@ -16,7 +16,8 @@
     "i18n": "ng extract-i18n --out-file=src/locale/messages.xlf",
     "analyze": "webpack-bundle-analyzer dist/soonaverse/stats.json",
     "dev:ssr": "node --max-old-space-size=8192 node_modules/@angular/cli/bin/ng run soonaverse:serve-ssr",
-    "serve:ssr": "node dist/soonaverse-server/main.js"
+    "serve:ssr": "node dist/soonaverse-server/main.js",
+    "prettier": "npx prettier --write ./src"
   },
   "dependencies": {
     "@angular/animations": "15.1.3",

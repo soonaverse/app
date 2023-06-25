@@ -150,11 +150,13 @@ export class NftBidComponent implements OnInit {
           const expiresOn: dayjs.Dayjs = dayjs(val.payload.expiresOn.toDate());
           if (expiresOn.isBefore(dayjs()) || val.payload?.void || val.payload?.reconciled) {
             // It's expired.
-            removeBitItemItem(val.payload.nft + this.auth.member$.value?.uid + expiresOn.valueOf());
+            removeBitItemItem(
+              val.payload.nft! + this.auth.member$.value?.uid + expiresOn.valueOf(),
+            );
           }
           this.expiryTicker$.next(expiresOn);
         }
-        if (val.linkedTransactions?.length > 0) {
+        if (val.linkedTransactions && val.linkedTransactions?.length > 0) {
           this.currentStep = StepType.WAIT;
           // Listen to other transactions.
           for (const tranId of val.linkedTransactions) {

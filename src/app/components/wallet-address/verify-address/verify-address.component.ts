@@ -104,7 +104,7 @@ export class VerifyAddressComponent implements OnInit, OnDestroy {
           getVerifyAddressItem(this.network || DEFAULT_NETWORK);
         }
 
-        if (val.linkedTransactions?.length > 0) {
+        if (val.linkedTransactions && val.linkedTransactions.length > 0) {
           this.currentStep = StepType.WAIT;
           // Listen to other transactions.
           for (const tranId of val.linkedTransactions) {
