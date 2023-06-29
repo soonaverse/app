@@ -209,11 +209,12 @@ export class NftStakeComponent implements OnInit {
         val.payload.reconciled === true &&
         !val.payload?.walletReference?.chainReference
       ) {
+        const response = val.payload?.response;
         this.pushToHistory(
           val,
           val.uid + '_false',
           val.createdOn,
-          $localize`Invalid NFT received. ` + val.payload?.response?.key || '',
+          $localize`Invalid NFT received. ` + (response?.key || response?.message || ''),
         );
       }
 
