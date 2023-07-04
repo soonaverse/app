@@ -1,4 +1,4 @@
-name: Action | Auto deploy "develop" to wen.soonaverse.com
+name: Action | Auto deploy "production" to soonaverse.com
 
 on:
   release:
