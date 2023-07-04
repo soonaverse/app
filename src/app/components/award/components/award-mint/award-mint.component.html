@@ -132,9 +132,9 @@
         [targetAddress]="targetAddress"
         [network]="award?.network"
         [tokenId]="token?.mintingData?.tokenId"
-        [tokenAmount]="(transaction$ | async)?.payload.nativeTokens?.[0]?.amount"
+        [tokenAmount]="(transaction$ | async)?.payload?.nativeTokens?.[0]?.amount"
         [surplus]="true"
-        [targetAmount]="((transaction$ | async)?.payload.amount).toString()"
+        [targetAmount]="((transaction$ | async)?.payload?.amount || 0).toString()"
       >
       </wen-wallet-deeplink>
     </div>

@@ -1,7 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
+  Member,
   PublicCollections,
+  QUERY_MAX_LENGTH,
   Space,
   SpaceMember,
   WEN_FUNC,
@@ -16,6 +18,7 @@ import {
 } from '@build-5/lib';
 import { Observable, map, of, switchMap } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
+import { chunkArray } from '@core/utils/common.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -55,10 +58,8 @@ export class SpaceApi extends BaseApi<Space> {
   public listenGuardians = (spaceId: string, lastValue?: string) =>
     this.spaceGuardianRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
 
-  public listenMembersWithoutData = (spaceId: string, lastValue?: string) =>
-    this.spaceMemberRepo
-      .getAllLive(spaceId, lastValue)
-      .pipe(map((members) => members.map((m) => ({ uid: m.uid }))));
+  public getMembersWithoutData = (spaceId: string, lastValue?: string) =>
+    this.spaceMemberRepo.getAll(spaceId, lastValue);
 
   public listenMembers = (spaceId: string, lastValue?: string) =>
     this.spaceMemberRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
@@ -70,10 +71,11 @@ export class SpaceApi extends BaseApi<Space> {
     this.spaceKnockingRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
 
   private getMembers = async (spaceMembers: SpaceMember[]) => {
-    const promises = spaceMembers.map(
-      async (spaceMember) => (await this.memberRepo.getById(spaceMember.uid))!,
+    const uids = spaceMembers.map((m) => m.uid);
+    const promises = chunkArray(uids, QUERY_MAX_LENGTH).map((chunk) =>
+      this.memberRepo.getManyById(chunk),
     );
-    return await Promise.all(promises);
+    return (await Promise.all(promises)).flat();
   };
 
   public create = (req: WenRequest): Observable<Space | undefined> =>

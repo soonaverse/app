@@ -118,7 +118,7 @@ export class NftDepositComponent implements OnInit {
           // It's expired.
           removeItem(StorageItem.DepositNftTransaction);
         }
-        if (val.linkedTransactions?.length > 0) {
+        if (val.linkedTransactions && val.linkedTransactions?.length > 0) {
           this.currentStep = StepType.WAIT;
           // Listen to other transactions.
           for (const tranId of val.linkedTransactions) {
@@ -184,11 +184,12 @@ export class NftDepositComponent implements OnInit {
         val.payload.reconciled === true &&
         !val.payload?.walletReference?.chainReference
       ) {
+        const response = val.payload?.response;
         this.pushToHistory(
           val,
           val.uid + '_false',
           val.createdOn,
-          $localize`Invalid NFT received. ` + val.payload?.response?.key || '',
+          $localize`Invalid NFT received. ` + (response?.key || response?.message || ''),
         );
       }
 

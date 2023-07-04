@@ -123,11 +123,11 @@
           </td>
           <td
             class="text-sm font-medium"
-            *ngIf="(billPaymentTransactions$[i] | async)?.payload.nativeTokens?.[0]?.amount"
+            *ngIf="(billPaymentTransactions$[i] | async)?.payload?.nativeTokens?.[0]?.amount"
           >
             {{
-              (billPaymentTransactions$[i] | async)?.payload.nativeTokens[0].amount
-                | formatToken : (billPaymentTransactions$[i] | async)?.payload.token : true : false
+              (billPaymentTransactions$[i] | async)?.payload?.nativeTokens?.[0]?.amount
+                | formatToken : (billPaymentTransactions$[i] | async)?.payload?.token : true : false
                 | async
             }}
             {{ (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol }}
@@ -139,7 +139,7 @@
               nzTooltipTitle="Storage deposit fee"
             >
               ({{
-                (billPaymentTransactions$[i] | async)?.payload.amount
+                (billPaymentTransactions$[i] | async)?.payload?.amount
                   | formatToken : (billPaymentTransactions$[i] | async)?.network : true
                   | async
               }})
@@ -147,10 +147,10 @@
           </td>
           <td
             class="text-sm font-medium"
-            *ngIf="!(billPaymentTransactions$[i] | async)?.payload.nativeTokens?.[0]?.amount"
+            *ngIf="!(billPaymentTransactions$[i] | async)?.payload?.nativeTokens?.[0]?.amount"
           >
             {{
-              (billPaymentTransactions$[i] | async)?.payload.amount
+              (billPaymentTransactions$[i] | async)?.payload?.amount
                 | formatToken : (billPaymentTransactions$[i] | async)?.network : true
                 | async
             }}
@@ -207,10 +207,10 @@
           </td>
           <td
             class="text-sm font-medium"
-            *ngIf="(buyerBillPaymentTransactions$[i] | async)?.payload.nativeTokens?.[0]?.amount"
+            *ngIf="(buyerBillPaymentTransactions$[i] | async)?.payload?.nativeTokens?.[0]?.amount"
           >
             {{
-              (buyerBillPaymentTransactions$[i] | async)?.payload.nativeTokens[0].amount
+              (buyerBillPaymentTransactions$[i] | async)?.payload?.nativeTokens?.[0]?.amount
                 | formatToken
                   : (buyerBillPaymentTransactions$[i] | async)?.payload?.token
                   : true
@@ -221,10 +221,10 @@
           </td>
           <td
             class="text-sm font-medium"
-            *ngIf="!(buyerBillPaymentTransactions$[i] | async)?.payload.nativeTokens?.[0]?.amount"
+            *ngIf="!(buyerBillPaymentTransactions$[i] | async)?.payload?.nativeTokens?.[0]?.amount"
           >
             {{
-              (buyerBillPaymentTransactions$[i] | async)?.payload.amount
+              (buyerBillPaymentTransactions$[i] | async)?.payload?.amount
                 | formatToken : (buyerBillPaymentTransactions$[i] | async)?.network : true
                 | async
             }}
@@ -280,7 +280,7 @@
             {{ item?.createdOn?.toDate() | date : 'medium' }}
           </td>
           <td class="text-sm font-medium">
-            {{ item?.payload.amount | formatToken : item?.network : true | async }}
+            {{ item?.payload?.amount | formatToken : item?.network : true | async }}
           </td>
           <td class="text-sm font-medium">
             <a class="wen-btn-link" target="_blank" [routerLink]="['/', spacePath, item.space]">
@@ -315,7 +315,7 @@
           </td>
           <td class="text-sm font-medium">
             {{
-              (creditTransactions$[i] | async)?.payload.amount
+              (creditTransactions$[i] | async)?.payload?.amount
                 | formatToken : (creditTransactions$[i] | async)?.network : true
                 | async
             }}

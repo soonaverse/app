@@ -149,7 +149,7 @@ export class TokenTradeDetailModalComponent implements OnDestroy {
   }
 
   public getWalletStatus(tran: Transaction | undefined | null): string {
-    if (tran?.ignoreWallet && tran?.payload?.amount < MIN_IOTA_AMOUNT) {
+    if (tran?.ignoreWallet && Number(tran?.payload?.amount) < MIN_IOTA_AMOUNT) {
       return $localize`Non Transferable`;
     } else {
       return $localize`Processing...`;
@@ -181,8 +181,8 @@ export class TokenTradeDetailModalComponent implements OnDestroy {
       this.buyerBillPaymentTransactions$[i],
     ]).pipe(
       map(([royalty, bill]) => {
-        let total = royalty?.reduce((acc, act) => acc + act.payload.amount, 0);
-        total += bill?.payload.amount;
+        let total = (royalty || []).reduce((acc, act) => acc + Number(act.payload.amount), 0);
+        total += Number(bill?.payload.amount);
         if (total && tran?.payload.amount) {
           return tran?.payload.amount / total;
         } else {

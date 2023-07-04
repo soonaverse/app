@@ -183,18 +183,4 @@ export class ActivityPage implements OnInit {
   public trackByUid(index: number, item: any): number {
     return item.uid;
   }
-
-  public getTimelineItems(badges?: Transaction[] | null): TimelineItem[] {
-    return (
-      badges?.map((b) => ({
-        type: TimelineItemType.BADGE,
-        payload: {
-          image: b.payload.image,
-          date: b.createdOn?.toDate(),
-          name: b.payload.name,
-          network: b.network,
-        },
-      })) || []
-    );
-  }
 }

@@ -6,9 +6,7 @@ import {
   Nft,
   PublicCollections,
   Transaction,
-  TransactionOrder,
-  TransactionOrderType,
-  TransactionPayment,
+  TransactionPayloadType,
   TransactionType,
   WEN_FUNC,
   WenRequest,
@@ -19,13 +17,13 @@ import { BaseApi, SOON_ENV } from './base.api';
 
 export interface SuccesfullOrdersWithFullHistory {
   newMember: Member;
-  order: TransactionOrder;
+  order: Transaction;
   transactions: Transaction[];
 }
 
 export interface OffersHistory {
   member: Member;
-  transaction: TransactionPayment;
+  transaction: Transaction;
 }
 
 @Injectable({
@@ -77,7 +75,7 @@ export class NftApi extends BaseApi<Nft> {
           const sourceTransaction = Array.isArray(sourceTransactions)
             ? sourceTransactions[sourceTransactions.length - 1]
             : sourceTransactions;
-          const order = (await this.transactionRepo.getById(sourceTransaction))!;
+          const order = (await this.transactionRepo.getById(sourceTransaction!))!;
           const member = (await this.memberRepo.getById(transaction.member!))!;
 
           const successfullOrder: SuccesfullOrdersWithFullHistory = {
@@ -86,7 +84,7 @@ export class NftApi extends BaseApi<Nft> {
             transactions: [],
           };
 
-          for (const link of order.linkedTransactions) {
+          for (const link of order.linkedTransactions!) {
             const linkedTransaction = (await this.transactionRepo.getById(link))!;
             if (
               (!linkedTransaction.payload.void && !linkedTransaction.payload.invalidPayment) ||
@@ -121,7 +119,7 @@ export class NftApi extends BaseApi<Nft> {
           return { member, transaction } as OffersHistory;
         });
         return (await Promise.all(promises)).sort(
-          (a, b) => b.transaction.payload.amount - a.transaction.payload.amount,
+          (a, b) => Number(b.transaction.payload.amount) - Number(a.transaction.payload.amount),
         );
       }),
     );
@@ -135,16 +133,16 @@ export class NftApi extends BaseApi<Nft> {
           let sourceTransactionId = Array.isArray(sourceTransactions)
             ? sourceTransactions[sourceTransactions.length - 1]
             : sourceTransactions;
-          let sourceTransaction = (await this.transactionRepo.getById(sourceTransactionId))!;
+          let sourceTransaction = (await this.transactionRepo.getById(sourceTransactionId!))!;
 
           if (sourceTransaction.type === TransactionType.PAYMENT) {
             sourceTransactions = sourceTransaction.payload.sourceTransaction;
             sourceTransactionId = Array.isArray(sourceTransactions)
               ? sourceTransactions[sourceTransactions.length - 1]
               : sourceTransactions;
-            sourceTransaction = (await this.transactionRepo.getById(sourceTransactionId))!;
+            sourceTransaction = (await this.transactionRepo.getById(sourceTransactionId!))!;
           }
-          const isNftBid = sourceTransaction.payload.type === TransactionOrderType.NFT_BID;
+          const isNftBid = sourceTransaction.payload.type === TransactionPayloadType.NFT_BID;
           return isNftBid ? transaction : undefined;
         });
 

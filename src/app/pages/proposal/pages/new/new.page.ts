@@ -44,7 +44,7 @@ export class NewPage implements OnInit, OnDestroy {
   );
   public startControl: FormControl = new FormControl('', Validators.required);
   public endControl: FormControl = new FormControl('', Validators.required);
-  public typeControl: FormControl = new FormControl(ProposalType.NATIVE, Validators.required);
+  public typeControl: FormControl = new FormControl(ProposalType.MEMBERS, Validators.required);
   public votingAwardControl: FormControl = new FormControl([]);
   public additionalInfoControl: FormControl = new FormControl('', Validators.required);
   // Questions / answers.
@@ -148,9 +148,9 @@ export class NewPage implements OnInit, OnDestroy {
     });
 
     this.selectedGroupControl.valueChanges.pipe(untilDestroyed(this)).subscribe((val) => {
-      if (val !== ProposalType.NATIVE) {
-        this.typeControl.setValue(ProposalType.MEMBERS);
-      }
+      this.typeControl.setValue(
+        val === ProposalType.NATIVE ? ProposalType.NATIVE : ProposalType.MEMBERS,
+      );
     });
   }
 
