@@ -56,7 +56,7 @@ export class TokenAllTokenRowComponent implements OnInit, OnDestroy {
     if (this.tokenId) {
       this.tokenApi
         .listen(this.tokenId)
-        .pipe(first(), untilDestroyed(this))
+        .pipe(untilDestroyed(this))
         .subscribe((token) => {
           if (token) {
             this.token = token;
