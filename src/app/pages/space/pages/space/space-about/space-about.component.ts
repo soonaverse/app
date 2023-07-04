@@ -20,9 +20,11 @@ import { DataService, SpaceAction } from '@pages/space/services/data.service';
 import {
   FILE_SIZES,
   Member,
+  QUERY_MAX_LENGTH,
   SOON_SPACE,
   SOON_SPACE_TEST,
   Space,
+  SpaceMember,
   StakeType,
   getDefDecimalIfNotSet,
 } from '@build-5/interfaces';
@@ -126,31 +128,31 @@ export class SpaceAboutComponent implements OnInit, OnDestroy {
     );
   }
 
-  public exportMembers(): void {
-    if (this.exportingMembers) return;
+  public async exportMembers(): Promise<void> {
+    const space = this.data.space$.value;
+    if (this.exportingMembers || !space?.uid) {
+      return;
+    }
     this.exportingMembers = true;
 
-    const space = this.data.space$.value;
-    if (!space?.uid) return;
+    const data: string[][] = [];
+    let members: SpaceMember[] = [];
+    do {
+      const last = data[data.length - 1]?.[0];
+      members = await this.spaceApi.getMembersWithoutData(space.uid, last);
+      data.push(...members.map((m) => [m.uid]));
+      if (members.length < QUERY_MAX_LENGTH) {
+        break;
+      }
+    } while (members.length);
 
-    this.spaceApi
-      .listenMembersWithoutData(space?.uid, undefined)
-      .pipe(skip(1), first())
-      .subscribe((members) => {
-        this.exportingMembers = false;
-        const fields = ['', 'address'];
-        const csv = Papa.unparse({
-          fields,
-          data: members.map((m) => [m.uid]),
-        });
+    this.exportingMembers = false;
+    const fields = ['', 'address'];
+    const csv = Papa.unparse({ fields, data });
 
-        const filteredSpaceName = space?.name?.toLowerCase().replace(/[^a-zA-Z0-9-_]/g, '');
-        download(
-          `data:text/csv;charset=utf-8${csv}`,
-          `soonaverse_${filteredSpaceName}_members.csv`,
-        );
-        this.cd.markForCheck();
-      });
+    const filteredSpaceName = space?.name?.toLowerCase().replace(/[^a-zA-Z0-9-_]/g, '');
+    download(`data:text/csv;charset=utf-8${csv}`, `soonaverse_${filteredSpaceName}_members.csv`);
+    this.cd.markForCheck();
   }
 
   public isSoonSpace(): Observable<boolean> {

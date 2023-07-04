@@ -7,7 +7,7 @@ import {
   BUILD5_TEST_ADDRESS_API,
   WEN_FUNC,
 } from '@build-5/interfaces';
-import { Build5Env, initBuild5Env } from '@build-5/lib';
+import { Build5Env } from '@build-5/lib';
 import { CrudRepository } from '@build-5/lib/lib/repositories/CrudRepository';
 import { Observable, map } from 'rxjs';
 
@@ -19,8 +19,6 @@ export const FULL_TODO_CHANGE_TO_PAGING = FULL_LIST;
 export const FULL_TODO_MOVE_TO_PROTOCOL = FULL_LIST;
 
 export const SOON_ENV = environment.production ? Build5Env.PROD : Build5Env.TEST;
-
-initBuild5Env(SOON_ENV);
 
 export class BaseApi<T> {
   protected repo: CrudRepository<T>;
