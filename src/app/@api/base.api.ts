@@ -9,7 +9,7 @@ import {
 } from '@build-5/interfaces';
 import { Build5Env } from '@build-5/lib';
 import { CrudRepository } from '@build-5/lib/lib/repositories/CrudRepository';
-import { Observable, map } from 'rxjs';
+import { Observable, map, of } from 'rxjs';
 
 export const DEFAULT_LIST_SIZE = 50;
 export const WHERE_IN_BATCH = 10;
@@ -29,7 +29,8 @@ export class BaseApi<T> {
 
   public listen = (id: string) => this.repo.getByIdLive(id);
 
-  public listenMultiple = (ids: EthAddress[]) => this.repo.getManyByIdLive(ids);
+  public listenMultiple = (ids: EthAddress[]) =>
+    ids.length ? this.repo.getManyByIdLive(ids) : of([]);
 
   public top = (lastValue?: string, limit?: number) => this.repo.getTopLive(lastValue, limit);
 

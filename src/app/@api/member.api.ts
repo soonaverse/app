@@ -33,7 +33,7 @@ import {
   TransactionRepository,
 } from '@build-5/lib';
 import dayjs from 'dayjs';
-import { Observable, combineLatest, map, switchMap } from 'rxjs';
+import { Observable, combineLatest, map, of, switchMap } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
 
 export interface TokenDistributionWithAirdrops extends TokenDistribution {
@@ -91,17 +91,19 @@ export class MemberApi extends BaseApi<Member> {
   };
 
   public listenMultiple = (ids: EthAddress[]) =>
-    this.memberRepo
-      .getByFieldLive(
-        ids.map(() => 'uid'),
-        ids,
-      )
-      .pipe(
-        map((members) => {
-          members.sort((a, b) => (a.createdOn?.seconds || 0) - (b.createdOn?.seconds || 0));
-          return members;
-        }),
-      );
+    ids.length
+      ? this.memberRepo
+          .getByFieldLive(
+            ids.map(() => 'uid'),
+            ids,
+          )
+          .pipe(
+            map((members) => {
+              members.sort((a, b) => (a.createdOn?.seconds || 0) - (b.createdOn?.seconds || 0));
+              return members;
+            }),
+          )
+      : of([]);
 
   public topStakes = (memberId: EthAddress, lastValue?: string): Observable<StakeWithTokenRec[]> =>
     this.stakeRepo.getByMemberLive(memberId, lastValue).pipe(
