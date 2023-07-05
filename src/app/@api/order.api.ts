@@ -8,7 +8,7 @@ import {
   WenRequest,
 } from '@build-5/interfaces';
 import { TransactionRepository } from '@build-5/lib';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
 
 @Injectable({
@@ -34,8 +34,10 @@ export class OrderApi extends BaseApi<Transaction> {
     this.request(WEN_FUNC.openBid, req);
 
   public listenMultiple = (ids: EthAddress[]) =>
-    this.transactionRepo.getByFieldLive(
-      ids.map(() => 'uid'),
-      ids,
-    );
+    ids.length
+      ? this.transactionRepo.getByFieldLive(
+          ids.map(() => 'uid'),
+          ids,
+        )
+      : of([]);
 }
