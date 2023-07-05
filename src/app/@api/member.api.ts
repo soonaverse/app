@@ -194,15 +194,15 @@ export class MemberApi extends BaseApi<Member> {
   ): Observable<Transaction[]> {
     const orderBys = Array.isArray(orderBy) ? orderBy : [orderBy];
 
-    const all = this.transactionRepo
-      .getTopTransactionsLive(orderBys, lastValue)
+    const prevOwner = this.transactionRepo
+      .getTopTransactionsLive(orderBys, lastValue, undefined, memberId)
       .pipe(map((result) => result.filter((t) => t.member !== memberId)));
 
     const members = this.transactionRepo.getTopTransactionsLive(orderBys, lastValue, memberId);
 
-    return combineLatest([all, members]).pipe(
-      map(([notForMember, forMember]) =>
-        [...notForMember, ...forMember].sort((a, b) => {
+    return combineLatest([prevOwner, members]).pipe(
+      map((combined) =>
+        combined.flat().sort((a, b) => {
           const aTime = a.createdOn?.toDate().getTime() || 0;
           const bTime = b.createdOn?.toDate().getTime() || 0;
           return -aTime + bTime;
