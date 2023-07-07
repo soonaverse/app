@@ -61,6 +61,17 @@ export class SpaceApi extends BaseApi<Space> {
   public getMembersWithoutData = (spaceId: string, lastValue?: string) =>
     this.spaceMemberRepo.getAll(spaceId, lastValue);
 
+  public getAllMembersWithoutData = async (spaceId: string) => {
+    const members: SpaceMember[] = [];
+    let actMembers: SpaceMember[] = [];
+    do {
+      const last = members[members.length - 1]?.uid;
+      actMembers = await this.getMembersWithoutData(spaceId, last);
+      members.push(...actMembers);
+    } while (members.length === QUERY_MAX_LENGTH);
+    return members;
+  };
+
   public listenMembers = (spaceId: string, lastValue?: string) =>
     this.spaceMemberRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
 

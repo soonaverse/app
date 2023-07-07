@@ -7,7 +7,7 @@ import { download } from '@core/utils/tools.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService } from '@pages/token/services/data.service';
 import { HelperService } from '@pages/token/services/helper.service';
-import { Token } from '@build-5/interfaces';
+import { QUERY_MAX_LENGTH, Token, TokenDistribution } from '@build-5/interfaces';
 import Papa from 'papaparse';
 import { debounceTime } from 'rxjs';
 
@@ -46,46 +46,43 @@ export class TokenInfoDescriptionComponent {
     return DescriptionItemType;
   }
 
-  public downloadCurrentDistribution(): void {
-    this.tokenApi
-      .getDistributions(this.token?.uid)
-      .pipe(debounceTime(2500), untilDestroyed(this))
-      .subscribe((distributions) => {
-        const fields = [
-          '',
-          'ethAddress',
-          'tokenOwned',
-          'unclaimedTokens',
-          'tokenClaimed',
-          'lockedForSale',
-          'sold',
-          'totalBought',
-          'refundedAmount',
-          'totalPaid',
-          'totalDeposit',
-        ];
-        const csv = Papa.unparse({
-          fields,
-          data:
-            distributions?.map((d) => [
-              d.uid,
-              d.tokenOwned,
-              <any>d.totalUnclaimedAirdrop || 0,
-              d.tokenClaimed,
-              d.lockedForSale,
-              d.sold,
-              d.totalBought,
-              d.refundedAmount,
-              d.totalPaid,
-              d.totalDeposit,
-            ]) || [],
-        });
+  public async downloadCurrentDistribution(): Promise<void> {
+    const distributions = await this.tokenApi.getAllDistributions(this.token?.uid);
+    const fields = [
+      '',
+      'ethAddress',
+      'tokenOwned',
+      'unclaimedTokens',
+      'tokenClaimed',
+      'lockedForSale',
+      'sold',
+      'totalBought',
+      'refundedAmount',
+      'totalPaid',
+      'totalDeposit',
+    ];
 
-        download(
-          `data:text/csv;charset=utf-8${csv}`,
-          `soonaverse_${this.token?.symbol}_distribution.csv`,
-        );
-        this.cd.markForCheck();
-      });
+    const csv = Papa.unparse({
+      fields,
+      data:
+        distributions?.map((d) => [
+          d.uid,
+          d.tokenOwned,
+          d.totalUnclaimedAirdrop || 0,
+          d.tokenClaimed,
+          d.lockedForSale,
+          d.sold,
+          d.totalBought,
+          d.refundedAmount,
+          d.totalPaid,
+          d.totalDeposit,
+        ]) || [],
+    });
+
+    download(
+      `data:text/csv;charset=utf-8${csv}`,
+      `soonaverse_${this.token?.symbol}_distribution.csv`,
+    );
+    this.cd.markForCheck();
   }
 }

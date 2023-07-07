@@ -106,7 +106,7 @@ export class TokenPage implements OnInit, OnDestroy {
         );
         this.subscriptions$.push(
           this.tokenApi
-            .getDistributions(t.uid)
+            .getDistributionsLive(t.uid)
             .pipe(debounceTime(2500), untilDestroyed(this))
             .subscribe(this.data.distributions$),
         );
