@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   PublicCollections,
+  QUERY_MAX_LENGTH,
   Token,
   TokenDistribution,
   Transaction,
@@ -73,12 +74,22 @@ export class TokenApi extends BaseApi<Token> {
     return this.tokenDistributionRepo.getByIdLive(tokenId.toLowerCase(), memberId.toLowerCase());
   }
 
-  public getDistributions(tokenId?: string): Observable<TokenDistribution[] | undefined> {
+  public getDistributionsLive = (tokenId?: string, lastValue?: string) =>
+    tokenId ? this.tokenDistributionRepo.getAllLive(tokenId.toLowerCase(), lastValue) : of([]);
+
+  public getAllDistributions = async (tokenId?: string) => {
     if (!tokenId) {
-      return of(undefined);
+      return [];
     }
-    return this.tokenDistributionRepo.getAllLive(tokenId.toLowerCase());
-  }
+    const distributions: TokenDistribution[] = [];
+    let actDistributions: TokenDistribution[] = [];
+    do {
+      const last = distributions[distributions.length - 1]?.uid;
+      actDistributions = await this.tokenDistributionRepo.getAll(tokenId.toLowerCase(), last);
+      distributions.push(...actDistributions);
+    } while (actDistributions.length === QUERY_MAX_LENGTH);
+    return distributions;
+  };
 
   public stats(tokenId: string) {
     if (!tokenId) {

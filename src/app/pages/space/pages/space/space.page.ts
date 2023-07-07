@@ -24,10 +24,9 @@ import {
   SOON_SPACE_TEST,
   Space,
   StakeType,
-  TokenDistribution,
 } from '@build-5/interfaces';
 import Papa from 'papaparse';
-import { BehaviorSubject, combineLatest, debounceTime, map, Observable, skip } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, skip } from 'rxjs';
 import { SpaceApi } from './../../../../@api/space.api';
 import { NavigationService } from './../../../../@core/services/navigation/navigation.service';
 import { NotificationService } from './../../../../@core/services/notification/notification.service';
@@ -147,46 +146,39 @@ export class SpacePage implements OnInit, OnDestroy {
     );
   }
 
-  public exportCurrentStakers(token: string): void {
-    // In progress.
+  public async exportCurrentStakers(token: string): Promise<void> {
     if (this.exportingCurrentStakers) {
       return;
     }
 
     this.exportingCurrentStakers = true;
-    this.tokenApi
-      .getDistributions(token)
-      .pipe(debounceTime(2500), untilDestroyed(this))
-      .subscribe((transactions: TokenDistribution[] | undefined) => {
-        if (!transactions) {
-          return;
-        }
+    const distributions = await this.tokenApi.getAllDistributions(token);
 
-        this.exportingCurrentStakers = false;
-        const fields = [
-          '',
-          'memberId',
-          'tokenStakedDynamic',
-          'tokenStakedStatic',
-          'stakedValueDynamic',
-          'stakedValueStatic',
-          'totalStakeRewards',
-        ];
-        const csv = Papa.unparse({
-          fields,
-          data: transactions.map((t) => [
-            t.uid,
-            t.stakes?.[StakeType.DYNAMIC]?.amount || 0,
-            t.stakes?.[StakeType.STATIC]?.amount || 0,
-            t.stakes?.[StakeType.DYNAMIC]?.value || 0,
-            t.stakes?.[StakeType.STATIC]?.value || 0,
-            t.stakeRewards || 0,
-          ]),
-        });
+    const fields = [
+      '',
+      'memberId',
+      'tokenStakedDynamic',
+      'tokenStakedStatic',
+      'stakedValueDynamic',
+      'stakedValueStatic',
+      'totalStakeRewards',
+    ];
+    const csv = Papa.unparse({
+      fields,
+      data: distributions.map((t) => [
+        t.uid,
+        t.stakes?.[StakeType.DYNAMIC]?.amount || 0,
+        t.stakes?.[StakeType.STATIC]?.amount || 0,
+        t.stakes?.[StakeType.DYNAMIC]?.value || 0,
+        t.stakes?.[StakeType.STATIC]?.value || 0,
+        t.stakeRewards || 0,
+      ]),
+    });
 
-        download(`data:text/csv;charset=utf-8${csv}`, `soonaverse_${token}_stakers.csv`);
-        this.cd.markForCheck();
-      });
+    download(`data:text/csv;charset=utf-8${csv}`, `soonaverse_${token}_stakers.csv`);
+    this.cd.markForCheck();
+
+    this.exportingCurrentStakers = false;
   }
 
   public get bannerUrl$(): Observable<string | undefined> {
