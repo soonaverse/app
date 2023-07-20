@@ -5,16 +5,13 @@ import {
   HostListener,
   OnInit,
 } from '@angular/core';
-import { MilestoneApi } from '@api/milestone.api';
-import { MilestoneAtoiApi } from '@api/milestone_atoi.api';
-import { MilestoneRmsApi } from '@api/milestone_rms.api';
-import { MilestoneSmrApi } from '@api/milestone_smr.api';
 import { DeviceService } from '@core/services/device';
 import { environment } from '@env/environment';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { UntilDestroy } from '@ngneat/until-destroy';
 import { Milestone, Network, PROD_NETWORKS, TEST_NETWORKS } from '@build-5/interfaces';
 import dayjs from 'dayjs';
-import { BehaviorSubject, map } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+import { MilestoneApi } from '@api/milestone.api';
 
 const ESCAPE_KEY = 'Escape';
 
@@ -50,52 +47,16 @@ export class NetworkStatusComponent implements OnInit {
   constructor(
     public deviceService: DeviceService,
     private milestoneApi: MilestoneApi,
-    private milestoneRmsApi: MilestoneRmsApi,
-    private milestoneSmrApi: MilestoneSmrApi,
-    private milestonreAtoiApi: MilestoneAtoiApi,
     private cd: ChangeDetectorRef,
   ) {}
 
   public ngOnInit(): void {
-    this.milestoneApi
-      .top(undefined, 1)
-      ?.pipe(
-        untilDestroyed(this),
-        map((o: Milestone[]) => {
-          return o[0];
-        }),
-      )
-      .subscribe(this.lastIotaMilestone$);
-
-    this.milestoneRmsApi
-      .top(undefined, 1)
-      ?.pipe(
-        untilDestroyed(this),
-        map((o: Milestone[]) => {
-          return o[0];
-        }),
-      )
-      .subscribe(this.lastRmsMilestone$);
-
-    this.milestonreAtoiApi
-      .top(undefined, 1)
-      ?.pipe(
-        untilDestroyed(this),
-        map((o: Milestone[]) => {
-          return o[0];
-        }),
-      )
-      .subscribe(this.lastAtoiMilestone$);
-
-    this.milestoneSmrApi
-      .top(undefined, 1)
-      ?.pipe(
-        untilDestroyed(this),
-        map((o: Milestone[]) => {
-          return o[0];
-        }),
-      )
-      .subscribe(this.lastSmrMilestone$);
+    this.milestoneApi.getTopMilestonesLive().subscribe((milestones) => {
+      this.lastIotaMilestone$.next(milestones[Network.IOTA]);
+      this.lastAtoiMilestone$.next(milestones[Network.ATOI]);
+      this.lastSmrMilestone$.next(milestones[Network.SMR]);
+      this.lastRmsMilestone$.next(milestones[Network.RMS]);
+    });
   }
 
   public isSmrEnabled(): boolean {
