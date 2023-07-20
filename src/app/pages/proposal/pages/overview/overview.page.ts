@@ -112,23 +112,21 @@ export class OverviewPage implements OnInit {
       return;
     }
 
-    if (!(this.voteControl.value > -1)) {
+    if (!this.voteControl.value || !(this.voteControl.value > -1)) {
       this.nzNotification.error('', 'Please select option first!');
       return;
     }
 
-    await this.auth.sign(
-      {
-        uid: this.data.proposal$.value.uid,
-        values: [this.voteControl.value],
-      },
-      (sc, finish) => {
-        this.notification
-          .processRequest(this.proposalApi.vote(sc), 'Voted.', finish)
-          .subscribe(() => {
-            // none.
-          });
-      },
-    );
+    const params = {
+      uid: this.data.proposal$.value.uid,
+      value: this.voteControl.value,
+    };
+    await this.auth.sign(params, (sc, finish) => {
+      this.notification
+        .processRequest(this.proposalApi.vote(sc), 'Voted.', finish)
+        .subscribe(() => {
+          // none.
+        });
+    });
   }
 }

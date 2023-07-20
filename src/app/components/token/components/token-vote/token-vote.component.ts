@@ -354,7 +354,7 @@ export class TokenVoteComponent implements OnInit, OnDestroy {
     }
     const params: any = {
       uid: this.proposal.uid,
-      values: [this.answer.value],
+      value: this.answer.value,
     };
 
     if (this.voteTypeControl.value === VoteType.NATIVE_TOKEN) {
