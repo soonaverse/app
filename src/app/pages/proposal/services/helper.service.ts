@@ -61,7 +61,7 @@ export class HelperService {
   }
 
   public isComplete(proposal?: Proposal | null): boolean {
-    if (!proposal) {
+    if (!proposal || !proposal.settings?.endDate) {
       return false;
     }
 
