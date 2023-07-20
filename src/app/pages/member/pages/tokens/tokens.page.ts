@@ -131,14 +131,14 @@ export class TokensPage implements OnInit, OnDestroy {
       if (obj?.tab === 'staking') {
         this.handleFilterChange(FilterOptions.STAKING);
       }
-    });
 
-    this.data.member$?.pipe(untilDestroyed(this)).subscribe((obj) => {
-      if (obj) {
-        this.listen();
-      }
+      this.data.member$?.pipe(untilDestroyed(this)).subscribe((obj) => {
+        if (obj) {
+          this.listen();
+        }
+      });
+      this.handleNotMintedWarning();
     });
-    this.handleNotMintedWarning();
   }
 
   public handleFilterChange(filter: FilterOptions): void {
