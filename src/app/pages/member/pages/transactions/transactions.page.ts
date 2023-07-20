@@ -54,12 +54,12 @@ export class TransactionsPage implements OnInit, OnDestroy {
         this.exportTransactions();
         this.cd.markForCheck();
       }
-    });
 
-    this.data.member$?.pipe(untilDestroyed(this)).subscribe((obj) => {
-      if (obj) {
-        this.listen();
-      }
+      this.data.member$?.pipe(untilDestroyed(this)).subscribe((obj) => {
+        if (obj) {
+          this.listen();
+        }
+      });
     });
   }
 
