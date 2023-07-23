@@ -37,6 +37,8 @@ export class MemberSpacesComponent implements OnInit {
       this.spaceForm.controls.space.valueChanges
         .pipe(untilDestroyed(this))
         .subscribe(this.onSearchValueChange.bind(this));
+
+      this.onSearchValueChange();
     });
   }
 
