@@ -10,7 +10,7 @@ import {
   WenRequest,
 } from '@build-5/interfaces';
 import { TokenDistributionRepository, TokenRepository, TokenStatsRepository } from '@build-5/lib';
-import { Observable, of } from 'rxjs';
+import { Observable, firstValueFrom, lastValueFrom, of } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
 
 @Injectable({
@@ -89,6 +89,17 @@ export class TokenApi extends BaseApi<Token> {
       distributions.push(...actDistributions);
     } while (actDistributions.length === QUERY_MAX_LENGTH);
     return distributions;
+  };
+
+  public getAllTokens = async () => {
+    const tokens: Token[] = [];
+    let actTokens: Token[] = [];
+    do {
+      const last = tokens[tokens.length - 1]?.uid;
+      actTokens = await firstValueFrom(this.top(last));
+      tokens.push(...actTokens);
+    } while (actTokens.length === QUERY_MAX_LENGTH);
+    return tokens;
   };
 
   public stats(tokenId: string) {

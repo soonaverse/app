@@ -142,21 +142,18 @@ export class NewPage implements OnInit, OnDestroy {
       }
     });
 
-    this.subscriptions$.push(
-      this.tokenApi
-        .top(undefined, 1)
-        .pipe(
-          map((tokens) => {
-            return tokens?.filter((t) => {
+    this.tokenApi
+        .getAllTokens()
+        .then(
+          (tokens) => {
+            this.tokens$.next(tokens?.filter((t) => {
               return (
                 TEST_AVAILABLE_MINTABLE_NETWORKS.indexOf(<any>t.mintingData?.network) > -1 ||
                 t.status === TokenStatus.BASE
-              );
-            });
-          }),
-        )
-        .subscribe(this.tokens$),
-    );
+              ) && t.approved;
+            }))
+          }
+        );
   }
 
   public trackByUid(index: number, item: any): number {
