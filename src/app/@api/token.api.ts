@@ -96,7 +96,7 @@ export class TokenApi extends BaseApi<Token> {
     let actTokens: Token[] = [];
     do {
       const last = tokens[tokens.length - 1]?.uid;
-      actTokens = await firstValueFrom(this.top(last));
+      actTokens = await this.tokenRepo.getByField('approved', true, last);
       tokens.push(...actTokens);
     } while (actTokens.length === QUERY_MAX_LENGTH);
     return tokens;
