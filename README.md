@@ -3,7 +3,7 @@
 <p align="center">
   <img src="src/assets/static-home/images/Soonaverse-logo.svg" alt="angular-logo" width="120px" height="120px"/>
   <br>
-  <em>Soonaverse is a platform for communities to create and manage decentralized autonomous organizations (DAOs), NFTs, projects, companies, and markets, on the feeless infrastructure of the IOTA and SMR network./em>
+  <em>Soonaverse is a platform for communities to create and manage decentralized autonomous organizations (DAOs), NFTs, projects, companies, and markets, on the feeless infrastructure of the IOTA and SMR network.</em>
   <br>
 </p>
 
@@ -25,9 +25,6 @@
 <p align="center">
   <a href="https://twitter.com/soon_labs">
     <img src="https://img.shields.io/twitter/follow/soon_labs" alt="Follow on Twitter" />
-  </a>&nbsp;
-  <a href="https://www.npmjs.com/@angular/core">
-    <img src="https://img.shields.io/npm/v/@angular/core.svg?logo=npm&logoColor=fff&label=NPM+package&color=limegreen" alt="Angular on npm" />
   </a>&nbsp;
   <a href="https://discord.gg/x7sBB2SZCg">
     <img src="https://img.shields.io/discord/892481940953915433.svg?logo=discord&logoColor=fff&label=Discord&color=7389d8" alt="Discord conversation" />
