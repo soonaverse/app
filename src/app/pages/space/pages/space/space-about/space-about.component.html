@@ -276,7 +276,7 @@
         [nzSize]="(deviceService.isDesktop$ | async) ? 'default' : 32"
       >
       </nz-avatar>
-      <span [routerLink]="data.getMemberUrl ? data.getMemberUrl(g.uid) : ''"
+      <span [routerLink]="data.getMemberUrl(g.uid) ? data.getMemberUrl(g.uid) : ''"
         >@{{ g.name || g.uid | truncate : [16] }}</span
       >
     </div>
