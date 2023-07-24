@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  Member,
   PublicCollections,
   QUERY_MAX_LENGTH,
   Space,
@@ -72,14 +71,26 @@ export class SpaceApi extends BaseApi<Space> {
     return members;
   };
 
-  public listenMembers = (spaceId: string, lastValue?: string) =>
-    this.spaceMemberRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
+  public listenMembers = (spaceId: string, lastValue?: string, searchIds?: string[]) => {
+    const baseObs = searchIds?.length
+      ? this.spaceMemberRepo.getManyByIdLive(searchIds.slice(0, 100), spaceId)
+      : this.spaceMemberRepo.getAllLive(spaceId, lastValue);
+    return baseObs.pipe(switchMap(this.getMembers));
+  };
 
-  public listenBlockedMembers = (spaceId: string, lastValue?: string) =>
-    this.spaceBlockedRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
+  public listenBlockedMembers = (spaceId: string, lastValue?: string, searchIds?: string[]) => {
+    const baseObs = searchIds?.length
+      ? this.spaceBlockedRepo.getManyByIdLive(searchIds.slice(0, 100), spaceId)
+      : this.spaceBlockedRepo.getAllLive(spaceId, lastValue);
+    return baseObs.pipe(switchMap(this.getMembers));
+  };
 
-  public listenPendingMembers = (spaceId: string, lastValue?: string) =>
-    this.spaceKnockingRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
+  public listenPendingMembers = (spaceId: string, lastValue?: string, searchIds?: string[]) => {
+    const baseObs = searchIds?.length
+      ? this.spaceKnockingRepo.getManyByIdLive(searchIds.slice(0, 100), spaceId)
+      : this.spaceKnockingRepo.getAllLive(spaceId, lastValue);
+    return baseObs.pipe(switchMap(this.getMembers));
+  };
 
   private getMembers = async (spaceMembers: SpaceMember[]) => {
     const uids = spaceMembers.map((m) => m.uid);
