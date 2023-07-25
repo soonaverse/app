@@ -413,10 +413,14 @@ export class AuthService {
   }
 
   public monitorMember(address: EthAddress): void {
-    this.memberSubscription$ = this.memberApi.listen(address).subscribe(this.member$);
+    this.memberSubscription$ = this.memberApi.listen(address).subscribe((v) => {
+      this.member$.next(v);
+    });
     this.memberStakingSubscription$ = this.memberApi
       .soonDistributionStats(address)
-      .subscribe(this.memberSoonDistribution$);
+      .subscribe((v) => {
+        this.memberSoonDistribution$.next(v);
+      });
   }
 
   public toHex(stringToConvert: string) {
