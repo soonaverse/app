@@ -103,18 +103,16 @@ export class MembersPage implements OnInit, OnDestroy {
       this.overTenRecords = false;
       if (val && val.length > 0) {
         from(
-          this.algoliaService.searchClient
-            .initIndex(COL.MEMBER)
-            .search(val || '', { length: 5, offset: 0 }),
+          this.algoliaService.searchClient.initIndex(COL.MEMBER).search(val || '', {
+            facetFilters: [`spaces.${this.spaceId}.uid:${this.spaceId}`],
+            attributesToRetrieve: [],
+            length: 20,
+            offset: 0,
+          }),
         )
           .pipe(first())
           .subscribe((r) => {
-            const ids: string[] = r.hits.map((r) => {
-              const member = r as unknown as Member;
-              return member.uid;
-            });
-
-            // Top 10 records only supported
+            const ids = r.hits.map((r) => r.objectID);
             this.overTenRecords = ids.length > 10;
             this.onScroll(ids.slice(0, 10));
           });
