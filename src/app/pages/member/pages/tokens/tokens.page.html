@@ -356,7 +356,7 @@
                 </td>
                 <td class="right">{{ t.type | uppercase }}</td>
                 <td class="font-medium">{{ t.createdOn?.toDate() | date:'short' }}</td>
-                <td class="font-medium">{{ t.expiresAt?.toDate() | date:'short' }}</td>
+                <td class="font-medium">{{ t.expiresAt.toDate() | date:'short' }}</td>
                 <td class="right">
                   {{ (t.amount | formatToken: t.tokenRec.uid:true:false | async) + ' ' +
                   t.tokenRec.symbol }}
@@ -438,7 +438,7 @@
               </div>
               <div class="mt-0.5">
                 <span>{{ t.createdOn?.toDate() | date:'short' }}</span>
-                <span> - {{ t.expiresAt?.toDate() | date:'short' }}</span>
+                <span> - {{ t.expiresAt.toDate() | date:'short' }}</span>
               </div>
             </div>
 
