@@ -98,7 +98,7 @@ export class ActivityPage implements OnInit {
   public getTotalStaked(): Observable<number> {
     return this.auth.memberSoonDistribution$.pipe(
       map((v) => {
-        return v?.stakes?.[StakeType.DYNAMIC].amount || 0;
+        return v?.stakes?.[StakeType.DYNAMIC]?.amount || 0;
       }),
     );
   }
@@ -106,7 +106,7 @@ export class ActivityPage implements OnInit {
   public getTotalStakedValue(): Observable<number> {
     return this.auth.memberSoonDistribution$.pipe(
       map((v) => {
-        return v?.stakes?.[StakeType.DYNAMIC].value || 0;
+        return v?.stakes?.[StakeType.DYNAMIC]?.value || 0;
       }),
     );
   }
