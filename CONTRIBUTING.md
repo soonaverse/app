@@ -29,12 +29,12 @@ There are three categories of contribution:
 **Category 2 (up to 5000 SOON):**
 
 - Requires one approval on PR by code review committee member.
-- Requires one approval by SOON Committee Member (different to code review committee member).
+- Requires majority SOON Committee approval.
 
 **Category 3 (unrestricted):**
 
 - Requires one approval on PR by code review committee member.
-- Requires one approval by SOON Committee Member (different to code review committee member).
+- Requires majority SOON Committee approval.
 - Requires SOON vote through Soonaverse on-chain votting.
 
 Please note, contributor is responsible to notify and reach out to members for approval.
