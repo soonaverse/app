@@ -57,14 +57,14 @@ Soonaverse is governed through SOON token. SOON Tokens are used to reward effort
 
 ## Prerequisites
 
-Install [Node.js] which includes [Node Package Manager][npm]
+Install [Node.js](https://nodejs.org/en) which includes [Node Package Manager](https://www.npmjs.com)
 
 Soonaverse uses key libraries:
-- Angular
-- Tailwind CSS
-- Ng Zorro
-- Build-5/interfaces and build-5/lib
-- Algolia (for searches)
+- [Angular](https://angular.io/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Ng Zorro](https://ng.ant.design)
+- [Build-5/interfaces](https://www.npmjs.com/package/@build-5/interfaces) and [Build-5/lib](https://www.npmjs.com/package/@build-5/lib)
+- [Algolia](https://www.algolia.com/) (for searches)
 
 ## Setting Up a Project
 
