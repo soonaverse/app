@@ -54,9 +54,9 @@ Soonaverse is governed through SOON token. SOON Tokens are used to reward effort
 - @garrett1314
 
 # Design
-[WebApp Figma](https://www.figma.com/file/vYJByA2q3c13oAjJ3IHfk1/Soonaverse---WebApp?type=design&node-id=2736%3A37764&mode=design&t=FVgSq8fJghvHAVPS-1)
-[WebApp Dark Figma](https://www.figma.com/file/Qmor0eN2Iwq2GXMoFXB8t0/Soonaverse---WebApp-(Darkmode)?type=design&node-id=2730%3A33049&mode=design&t=KxGswtBYAYrizzcS-1)
-[Responsive Figma](https://www.figma.com/file/P341i2urVRKpZg6GdrrLg0/Soonaverse---Responsive?type=design&node-id=2730%3A33049&mode=design&t=OrwcreWX2tU8ep7M-1)
+- [WebApp Figma](https://www.figma.com/file/vYJByA2q3c13oAjJ3IHfk1/Soonaverse---WebApp?type=design&node-id=2736%3A37764&mode=design&t=FVgSq8fJghvHAVPS-1)
+- [WebApp Dark Figma](https://www.figma.com/file/Qmor0eN2Iwq2GXMoFXB8t0/Soonaverse---WebApp-(Darkmode)?type=design&node-id=2730%3A33049&mode=design&t=KxGswtBYAYrizzcS-1)
+- [Responsive Figma](https://www.figma.com/file/P341i2urVRKpZg6GdrrLg0/Soonaverse---Responsive?type=design&node-id=2730%3A33049&mode=design&t=OrwcreWX2tU8ep7M-1)
 
 # Development Setup
 
