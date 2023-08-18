@@ -4,6 +4,7 @@ import { AuthService } from '@components/auth/services/auth.service';
 import { NotificationService } from '@core/services/notification';
 import { PreviewImageService } from '@core/services/preview-image';
 import { UnitsService } from '@core/services/units';
+import { MAXIMUM_PRICE_PRECISION } from '@core/utils/token.utils';
 import {
   DEFAULT_NETWORK,
   NETWORK_DETAIL,
@@ -71,7 +72,7 @@ export class TokenCancelComponent {
         Number(this.tradeOrder?.price || 0),
       ),
       NETWORK_DETAIL[this.token?.mintingData?.network || DEFAULT_NETWORK].divideBy,
-      6,
+      MAXIMUM_PRICE_PRECISION,
     );
   }
 

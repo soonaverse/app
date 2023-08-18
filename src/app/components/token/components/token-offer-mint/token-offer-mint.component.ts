@@ -19,6 +19,7 @@ import { UnitsService } from '@core/services/units';
 import { StorageItem, getItem, setItem } from '@core/utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/token/services/helper.service';
+import { MAXIMUM_PRICE_PRECISION } from '@core/utils/token.utils';
 import {
   DEFAULT_NETWORK,
   NETWORK_DETAIL,
@@ -392,7 +393,7 @@ export class TokenOfferMintComponent implements OnInit, OnDestroy {
             NETWORK_DETAIL[this.token?.mintingData?.network || DEFAULT_NETWORK].decimals,
           ),
         ),
-        6,
+        MAXIMUM_PRICE_PRECISION,
       ),
     );
   }
@@ -407,7 +408,7 @@ export class TokenOfferMintComponent implements OnInit, OnDestroy {
         bigDecimal.divide(
           this.getTargetAmount(false),
           NETWORK_DETAIL[this.token?.mintingData?.network || DEFAULT_NETWORK].divideBy,
-          6,
+          MAXIMUM_PRICE_PRECISION,
         ),
         this.exchangeFee * 100 * 100,
       ),

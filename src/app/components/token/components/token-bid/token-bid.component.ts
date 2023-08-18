@@ -19,6 +19,7 @@ import { UnitsService } from '@core/services/units';
 import { StorageItem, getItem, setItem } from '@core/utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/token/services/helper.service';
+import { MAXIMUM_PRICE_PRECISION } from '@core/utils/token.utils';
 import {
   DEFAULT_NETWORK,
   DEFAULT_NETWORK_DECIMALS,
@@ -391,7 +392,7 @@ export class TokenBidComponent implements OnInit, OnDestroy {
             NETWORK_DETAIL[this.token?.mintingData?.network || DEFAULT_NETWORK].decimals,
           ),
         ),
-        6,
+        MAXIMUM_PRICE_PRECISION,
       ),
     );
   }

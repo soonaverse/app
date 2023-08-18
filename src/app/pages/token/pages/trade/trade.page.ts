@@ -22,6 +22,11 @@ import { SeoService } from '@core/services/seo';
 import { UnitsService } from '@core/services/units';
 import { StorageItem, getItem, setItem } from '@core/utils';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
+import {
+  MAXIMUM_ORDER_BOOK_ROWS,
+  MAXIMUM_PRICE_PRECISION,
+  ORDER_BOOK_OPTIONS,
+} from '@core/utils/token.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService } from '@pages/token/services/data.service';
 import { HelperService } from '@pages/token/services/helper.service';
@@ -102,9 +107,6 @@ export interface TransformedBidAskItem {
   amount: number;
   isOwner: boolean;
 }
-
-export const ORDER_BOOK_OPTIONS = [0.1, 0.01, 0.001];
-const MAXIMUM_ORDER_BOOK_ROWS = 9;
 
 @UntilDestroy()
 @Component({
@@ -378,7 +380,7 @@ export class TradePage implements OnInit, OnDestroy {
             }
           }
         }
-        this.priceControl.setValue(bigDecimal.round(result, 3));
+        this.priceControl.setValue(bigDecimal.round(result, MAXIMUM_PRICE_PRECISION));
         this.cd.markForCheck();
       });
   }
@@ -638,7 +640,11 @@ export class TradePage implements OnInit, OnDestroy {
       )
       .subscribe(([bids, asks]) => {
         this.priceControl.setValue(
-          bigDecimal.divide(bigDecimal.add(bids[0].price, asks[asks.length - 1].price), 2, 3),
+          bigDecimal.divide(
+            bigDecimal.add(bids[0].price, asks[asks.length - 1].price),
+            2,
+            MAXIMUM_PRICE_PRECISION,
+          ),
         );
       });
   }
@@ -649,8 +655,11 @@ export class TradePage implements OnInit, OnDestroy {
   ): boolean {
     if (!bids?.length || !asks?.length) return false;
     return (
-      bigDecimal.divide(bigDecimal.add(bids[0].price, asks[asks.length - 1].price), 2, 3) ===
-      bigDecimal.round(this.priceControl.value, 3)
+      bigDecimal.divide(
+        bigDecimal.add(bids[0].price, asks[asks.length - 1].price),
+        2,
+        MAXIMUM_PRICE_PRECISION,
+      ) === bigDecimal.round(this.priceControl.value, MAXIMUM_PRICE_PRECISION)
     );
   }
 
@@ -662,13 +671,16 @@ export class TradePage implements OnInit, OnDestroy {
         untilDestroyed(this),
       )
       .subscribe((bids) => {
-        this.priceControl.setValue(bigDecimal.round(bids[0].price, 3));
+        this.priceControl.setValue(bigDecimal.round(bids[0].price, MAXIMUM_PRICE_PRECISION));
       });
   }
 
   public isBidPrice(bids: TransformedBidAskItem[] | null): boolean {
     if (!bids?.length) return false;
-    return bigDecimal.round(bids[0].price, 3) === bigDecimal.round(this.priceControl.value, 3);
+    return (
+      bigDecimal.round(bids[0].price, MAXIMUM_PRICE_PRECISION) ===
+      bigDecimal.round(this.priceControl.value, MAXIMUM_PRICE_PRECISION)
+    );
   }
 
   public setAskPrice(): void {
@@ -679,32 +691,38 @@ export class TradePage implements OnInit, OnDestroy {
         untilDestroyed(this),
       )
       .subscribe((asks) => {
-        this.priceControl.setValue(bigDecimal.round(asks[asks.length - 1].price, 3));
+        this.priceControl.setValue(
+          bigDecimal.round(asks[asks.length - 1].price, MAXIMUM_PRICE_PRECISION),
+        );
       });
   }
 
   public isAskPrice(asks: TransformedBidAskItem[] | null): boolean {
     if (!asks?.length) return false;
     return (
-      bigDecimal.round(asks[asks.length - 1].price, 3) ===
-      bigDecimal.round(this.priceControl.value, 3)
+      bigDecimal.round(asks[asks.length - 1].price, MAXIMUM_PRICE_PRECISION) ===
+      bigDecimal.round(this.priceControl.value, MAXIMUM_PRICE_PRECISION)
     );
   }
 
   public set7dVwapPrice(): void {
-    this.priceControl.setValue(bigDecimal.round(this.listenAvgPrice7d$.getValue(), 3));
+    this.priceControl.setValue(
+      bigDecimal.round(this.listenAvgPrice7d$.getValue(), MAXIMUM_PRICE_PRECISION),
+    );
   }
 
   public is7dVwapPrice(): boolean {
     return (
       this.listenAvgPrice7d$.getValue() !== 0 &&
-      bigDecimal.round(this.listenAvgPrice7d$.getValue(), 3) ===
-        bigDecimal.round(this.priceControl.value, 3)
+      bigDecimal.round(this.listenAvgPrice7d$.getValue(), MAXIMUM_PRICE_PRECISION) ===
+        bigDecimal.round(this.priceControl.value, MAXIMUM_PRICE_PRECISION)
     );
   }
 
   public setCurrentPrice(): void {
-    this.priceControl.setValue(bigDecimal.round(this.listenAvgPrice$.getValue(), 3));
+    this.priceControl.setValue(
+      bigDecimal.round(this.listenAvgPrice$.getValue(), MAXIMUM_PRICE_PRECISION),
+    );
   }
 
   public setFavourite(): void {
@@ -745,7 +763,7 @@ export class TradePage implements OnInit, OnDestroy {
       item.amount / Math.pow(10, getDefDecimalIfNotSet(this.data.token$.value?.decimals)),
     );
     this.priceOption$.next(PriceOptionType.LIMIT);
-    this.priceControl.setValue(bigDecimal.round(item.price, 3));
+    this.priceControl.setValue(bigDecimal.round(item.price, MAXIMUM_PRICE_PRECISION));
   }
 
   public getDefaultNetworkDecimals(): number {

@@ -14,6 +14,7 @@ import { NotificationService } from '@core/services/notification';
 import { PreviewImageService } from '@core/services/preview-image';
 import { UnitsService } from '@core/services/units';
 import { UntilDestroy } from '@ngneat/until-destroy';
+import { MAXIMUM_PRICE_PRECISION } from '@core/utils/token.utils';
 import {
   DEFAULT_NETWORK,
   NETWORK_DETAIL,
@@ -119,7 +120,7 @@ export class TokenOfferComponent {
         bigDecimal.divide(
           this.getTargetAmount(false),
           NETWORK_DETAIL[this.token?.mintingData?.network || DEFAULT_NETWORK].divideBy,
-          6,
+          MAXIMUM_PRICE_PRECISION,
         ),
         this.exchangeFee * 100 * 100,
       ),
@@ -136,7 +137,7 @@ export class TokenOfferComponent {
             NETWORK_DETAIL[this.token?.mintingData?.network || DEFAULT_NETWORK].decimals,
           ),
         ),
-        6,
+        MAXIMUM_PRICE_PRECISION,
       ),
     );
   }
