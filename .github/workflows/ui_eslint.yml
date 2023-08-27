@@ -1,9 +1,6 @@
 name: UI |  ES Lint
 
-on:
-  pull_request:
-    paths:
-      - packages/ui/**
+on: push
 
 jobs:
   front_end_es_lint:
