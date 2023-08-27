@@ -18,8 +18,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
       - name: Lint
-        working-directory: packages/ui
         run: npm run lint
       - name: Prettier
-        working-directory: packages/ui
         run: npx prettier --check .
