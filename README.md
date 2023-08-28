@@ -87,6 +87,6 @@ You can switch between production / sandbox environment by either using environm
 
 Earn SOON when you contribute!!!
 
-We welcome all contributions. Please read our [CONTRIBUTING.md](https://github.com/soonaverse/app/blob/master/CONTRIBUTING.md) first. You can submit any ideas as [pull requests](https://github.com/soonaverse/app/pulls) or as [GitHub issues](https://github.com/soonaverse/app/issues).
+We welcome all contributions. Please read our [CONTRIBUTING.md](CONTRIBUTING.md) first. You can submit any ideas as [pull requests](https://github.com/soonaverse/app/pulls) or as [GitHub issues](https://github.com/soonaverse/app/issues).
 
 Thank you for supporting us with free open source licenses.
