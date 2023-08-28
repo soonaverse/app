@@ -50,6 +50,11 @@ export class NftSaleComponent {
 
   @Input()
   set nft(value: Nft | null | undefined) {
+    // If it's same NFT, we can ignore as we don't want to overwrite users value.
+    if (this._nft?.uid === value?.uid) {
+      return;
+    }
+
     this._nft = value;
     if (this._nft) {
       this.fileApi
