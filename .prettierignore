@@ -5,3 +5,7 @@ lib
 **/lib
 **/node_modules
 .angular
+.github
+CONTRIBUTING.md
+MANIFESTO.md
+README.md
