@@ -121,7 +121,13 @@ export class MemberPage implements OnInit, OnDestroy {
       this.memberApi.topSpaces(memberId).pipe(untilDestroyed(this)).subscribe(this.data.space$),
     );
     this.subscriptions$.push(
-      this.memberApi.listen(memberId).pipe(untilDestroyed(this)).subscribe(this.data.member$),
+      this.memberApi
+        .listen(memberId)
+        .pipe(untilDestroyed(this))
+        .subscribe((v) => {
+          // Only pass next stage.
+          this.data.member$.next(v);
+        }),
     );
 
     // Badges.

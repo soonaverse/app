@@ -317,28 +317,24 @@ export class DataService implements OnDestroy {
     );
   }
 
-  public isLoading(arr: any): boolean {
-    return arr === undefined;
-  }
+  public isLoading = (arr: unknown) => arr === undefined;
 
-  public isEmpty(arr: any): boolean {
-    return Array.isArray(arr) && arr.length === 0;
-  }
+  public isEmpty = (arr: unknown) => Array.isArray(arr) && !arr.length;
 
-  public listenMembers(spaceId: string, lastValue?: string): void {
+  public listenMembers(spaceId: string, lastValue?: string, searchIds?: string[]): void {
     this.subscriptions$.push(
       this.spaceApi
-        .listenMembers(spaceId, lastValue)
+        .listenMembers(spaceId, lastValue, searchIds)
         .subscribe(
           this.store.bind(this, this.members$, this.dataStoreMembers, this.dataStoreMembers.length),
         ),
     );
   }
 
-  public listenBlockedMembers(spaceId: string, lastValue?: string): void {
+  public listenBlockedMembers(spaceId: string, lastValue?: string, searchIds?: string[]): void {
     this.subscriptions$.push(
       this.spaceApi
-        .listenBlockedMembers(spaceId, lastValue)
+        .listenBlockedMembers(spaceId, lastValue, searchIds)
         .subscribe(
           this.store.bind(
             this,
@@ -350,10 +346,10 @@ export class DataService implements OnDestroy {
     );
   }
 
-  public listenPendingMembers(spaceId: string, lastValue?: any): void {
+  public listenPendingMembers(spaceId: string, lastValue?: string, searchIds?: string[]): void {
     this.subscriptions$.push(
       this.spaceApi
-        .listenPendingMembers(spaceId, lastValue)
+        .listenPendingMembers(spaceId, lastValue, searchIds)
         .subscribe(
           this.store.bind(
             this,
@@ -409,8 +405,8 @@ export class DataService implements OnDestroy {
     }
 
     // For initial load stream will not be defiend.
-    const lastValue = stream ? stream[stream.length - 1].createdOn : undefined;
-    handler.call(this, spaceId, lastValue);
+    const lastValue = stream ? stream[stream.length - 1].uid : undefined;
+    handler.call(this, spaceId, lastValue, searchIds);
   }
 
   public getPendingMembersCount(members?: Member[] | null): number {

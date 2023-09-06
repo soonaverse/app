@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  Member,
   PublicCollections,
   QUERY_MAX_LENGTH,
   Space,
@@ -61,14 +60,37 @@ export class SpaceApi extends BaseApi<Space> {
   public getMembersWithoutData = (spaceId: string, lastValue?: string) =>
     this.spaceMemberRepo.getAll(spaceId, lastValue);
 
-  public listenMembers = (spaceId: string, lastValue?: string) =>
-    this.spaceMemberRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
+  public getAllMembersWithoutData = async (spaceId: string) => {
+    const members: SpaceMember[] = [];
+    let actMembers: SpaceMember[] = [];
+    do {
+      const last = members[members.length - 1]?.uid;
+      actMembers = await this.getMembersWithoutData(spaceId, last);
+      members.push(...actMembers);
+    } while (members.length === QUERY_MAX_LENGTH);
+    return members;
+  };
 
-  public listenBlockedMembers = (spaceId: string, lastValue?: string) =>
-    this.spaceBlockedRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
+  public listenMembers = (spaceId: string, lastValue?: string, searchIds?: string[]) => {
+    const baseObs = searchIds?.length
+      ? this.spaceMemberRepo.getManyByIdLive(searchIds.slice(0, 100), spaceId)
+      : this.spaceMemberRepo.getAllLive(spaceId, lastValue);
+    return baseObs.pipe(switchMap(this.getMembers));
+  };
 
-  public listenPendingMembers = (spaceId: string, lastValue?: string) =>
-    this.spaceKnockingRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
+  public listenBlockedMembers = (spaceId: string, lastValue?: string, searchIds?: string[]) => {
+    const baseObs = searchIds?.length
+      ? this.spaceBlockedRepo.getManyByIdLive(searchIds.slice(0, 100), spaceId)
+      : this.spaceBlockedRepo.getAllLive(spaceId, lastValue);
+    return baseObs.pipe(switchMap(this.getMembers));
+  };
+
+  public listenPendingMembers = (spaceId: string, lastValue?: string, searchIds?: string[]) => {
+    const baseObs = searchIds?.length
+      ? this.spaceKnockingRepo.getManyByIdLive(searchIds.slice(0, 100), spaceId)
+      : this.spaceKnockingRepo.getAllLive(spaceId, lastValue);
+    return baseObs.pipe(switchMap(this.getMembers));
+  };
 
   private getMembers = async (spaceMembers: SpaceMember[]) => {
     const uids = spaceMembers.map((m) => m.uid);

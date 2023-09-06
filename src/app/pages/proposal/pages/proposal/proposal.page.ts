@@ -145,7 +145,7 @@ export class ProposalPage implements OnInit, OnDestroy {
 
         // Get badges to show.
         const awards: Award[] = [];
-        if (p.settings.awards?.length) {
+        if (p.settings?.awards?.length) {
           for (const a of p.settings.awards) {
             const award: Award | undefined = await firstValueFrom(this.awardApi.listen(a));
             if (award) {

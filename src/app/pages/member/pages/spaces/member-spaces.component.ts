@@ -5,6 +5,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService } from '@pages/member/services/data.service';
 import { HelperService } from '@pages/member/services/helper.service';
 import { Space } from '@build-5/interfaces';
+import { ActivatedRoute } from '@angular/router';
 
 @UntilDestroy()
 @Component({
@@ -23,6 +24,7 @@ export class MemberSpacesComponent implements OnInit {
     public data: DataService,
     public helper: HelperService,
     public deviceService: DeviceService,
+    private route: ActivatedRoute,
   ) {
     this.spaceForm = new FormGroup({
       space: new FormControl(''),
@@ -31,9 +33,13 @@ export class MemberSpacesComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.spaceForm.controls.space.valueChanges
-      .pipe(untilDestroyed(this))
-      .subscribe(this.onSearchValueChange.bind(this));
+    this.route.params.subscribe(() => {
+      this.spaceForm.controls.space.valueChanges
+        .pipe(untilDestroyed(this))
+        .subscribe(this.onSearchValueChange.bind(this));
+
+      this.onSearchValueChange();
+    });
   }
 
   public onSearchValueChange(): void {

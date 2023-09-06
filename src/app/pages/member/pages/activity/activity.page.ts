@@ -27,6 +27,7 @@ import dayjs from 'dayjs';
 import { BehaviorSubject, map, Observable } from 'rxjs';
 import { CacheService } from './../../../../@core/services/cache/cache.service';
 import { DataService, MemberAction } from './../../services/data.service';
+import { ActivatedRoute } from '@angular/router';
 
 @UntilDestroy()
 @Component({
@@ -56,6 +57,7 @@ export class ActivityPage implements OnInit {
     public helper: HelperService,
     public cache: CacheService,
     public deviceService: DeviceService,
+    private route: ActivatedRoute,
     public previewImageService: PreviewImageService,
     private cd: ChangeDetectorRef,
   ) {
@@ -63,17 +65,19 @@ export class ActivityPage implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.tokenApi
-      .listen(environment.production ? SOON_TOKEN : SOON_TOKEN_TEST)
-      .pipe(untilDestroyed(this))
-      .subscribe(this.token$);
+    this.route.params.subscribe(() => {
+      this.tokenApi
+        .listen(environment.production ? SOON_TOKEN : SOON_TOKEN_TEST)
+        .pipe(untilDestroyed(this))
+        .subscribe(this.token$);
 
-    let prev: string | undefined;
-    this.data.member$?.pipe(untilDestroyed(this)).subscribe((obj) => {
-      if (prev !== obj?.uid) {
-        this.data.refreshBadges();
-        prev = obj?.uid;
-      }
+      let prev: string | undefined;
+      this.data.member$?.pipe(untilDestroyed(this)).subscribe((obj) => {
+        if (prev !== obj?.uid) {
+          this.data.refreshBadges();
+          prev = obj?.uid;
+        }
+      });
     });
   }
 
@@ -94,7 +98,7 @@ export class ActivityPage implements OnInit {
   public getTotalStaked(): Observable<number> {
     return this.auth.memberSoonDistribution$.pipe(
       map((v) => {
-        return v?.stakes?.[StakeType.DYNAMIC].amount || 0;
+        return v?.stakes?.[StakeType.DYNAMIC]?.amount || 0;
       }),
     );
   }
@@ -102,7 +106,7 @@ export class ActivityPage implements OnInit {
   public getTotalStakedValue(): Observable<number> {
     return this.auth.memberSoonDistribution$.pipe(
       map((v) => {
-        return v?.stakes?.[StakeType.DYNAMIC].value || 0;
+        return v?.stakes?.[StakeType.DYNAMIC]?.value || 0;
       }),
     );
   }

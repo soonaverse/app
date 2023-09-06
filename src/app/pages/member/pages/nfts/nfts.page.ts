@@ -45,29 +45,29 @@ export class NFTsPage implements OnInit {
         this.isDepositNftVisible = true;
         this.cd.markForCheck();
       }
-    });
 
-    this.data.member$.pipe(untilDestroyed(this)).subscribe((m) => {
-      if (m) {
-        this.filterStorageService.memberNftsFitlers$.next({
-          sortBy: 'nft_soldOn_desc',
-          refinementList: {
-            ...this.filterStorageService.memberNftsFitlers$.value.refinementList,
-            owner: [m.uid],
-          },
-        });
+      this.data.member$.pipe(untilDestroyed(this)).subscribe((m) => {
+        if (m) {
+          this.filterStorageService.memberNftsFitlers$.next({
+            sortBy: 'nft_soldOn_desc',
+            refinementList: {
+              ...this.filterStorageService.memberNftsFitlers$.value.refinementList,
+              owner: [m.uid],
+            },
+          });
 
-        this.config = {
-          indexName: COL.NFT,
-          searchClient: this.algoliaService.searchClient,
-          initialUiState: {
-            nft: this.filterStorageService.memberNftsFitlers$.value,
-          },
-        };
+          this.config = {
+            indexName: COL.NFT,
+            searchClient: this.algoliaService.searchClient,
+            initialUiState: {
+              nft: this.filterStorageService.memberNftsFitlers$.value,
+            },
+          };
 
-        // Algolia change detection bug fix
-        setInterval(() => this.cd.markForCheck(), 200);
-      }
+          // Algolia change detection bug fix
+          setInterval(() => this.cd.markForCheck(), 200);
+        }
+      });
     });
   }
 

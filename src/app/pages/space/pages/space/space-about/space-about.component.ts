@@ -135,24 +135,16 @@ export class SpaceAboutComponent implements OnInit, OnDestroy {
     }
     this.exportingMembers = true;
 
-    const data: string[][] = [];
-    let members: SpaceMember[] = [];
-    do {
-      const last = data[data.length - 1]?.[0];
-      members = await this.spaceApi.getMembersWithoutData(space.uid, last);
-      data.push(...members.map((m) => [m.uid]));
-      if (members.length < QUERY_MAX_LENGTH) {
-        break;
-      }
-    } while (members.length);
+    const members = await this.spaceApi.getAllMembersWithoutData(space.uid);
 
-    this.exportingMembers = false;
     const fields = ['', 'address'];
-    const csv = Papa.unparse({ fields, data });
+    const csv = Papa.unparse({ fields, data: members.map((m) => [m.uid]) });
 
     const filteredSpaceName = space?.name?.toLowerCase().replace(/[^a-zA-Z0-9-_]/g, '');
     download(`data:text/csv;charset=utf-8${csv}`, `soonaverse_${filteredSpaceName}_members.csv`);
     this.cd.markForCheck();
+
+    this.exportingMembers = false;
   }
 
   public isSoonSpace(): Observable<boolean> {

@@ -45,7 +45,7 @@ export class ProposalStatusComponent implements OnInit {
   }
 
   public isComplete(): boolean {
-    if (!this.proposal) {
+    if (!this.proposal || !this.proposal.settings?.endDate) {
       return false;
     }
 

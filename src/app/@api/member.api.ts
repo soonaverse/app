@@ -33,7 +33,7 @@ import {
   TransactionRepository,
 } from '@build-5/lib';
 import dayjs from 'dayjs';
-import { Observable, combineLatest, map, switchMap } from 'rxjs';
+import { Observable, combineLatest, map, of, switchMap } from 'rxjs';
 import { BaseApi, SOON_ENV } from './base.api';
 
 export interface TokenDistributionWithAirdrops extends TokenDistribution {
@@ -91,17 +91,19 @@ export class MemberApi extends BaseApi<Member> {
   };
 
   public listenMultiple = (ids: EthAddress[]) =>
-    this.memberRepo
-      .getByFieldLive(
-        ids.map(() => 'uid'),
-        ids,
-      )
-      .pipe(
-        map((members) => {
-          members.sort((a, b) => (a.createdOn?.seconds || 0) - (b.createdOn?.seconds || 0));
-          return members;
-        }),
-      );
+    ids.length
+      ? this.memberRepo
+          .getByFieldLive(
+            ids.map(() => 'uid'),
+            ids,
+          )
+          .pipe(
+            map((members) => {
+              members.sort((a, b) => (a.createdOn?.seconds || 0) - (b.createdOn?.seconds || 0));
+              return members;
+            }),
+          )
+      : of([]);
 
   public topStakes = (memberId: EthAddress, lastValue?: string): Observable<StakeWithTokenRec[]> =>
     this.stakeRepo.getByMemberLive(memberId, lastValue).pipe(
@@ -192,15 +194,15 @@ export class MemberApi extends BaseApi<Member> {
   ): Observable<Transaction[]> {
     const orderBys = Array.isArray(orderBy) ? orderBy : [orderBy];
 
-    const all = this.transactionRepo
-      .getTopTransactionsLive(orderBys, lastValue)
+    const prevOwner = this.transactionRepo
+      .getTopTransactionsLive(orderBys, lastValue, undefined, memberId)
       .pipe(map((result) => result.filter((t) => t.member !== memberId)));
 
     const members = this.transactionRepo.getTopTransactionsLive(orderBys, lastValue, memberId);
 
-    return combineLatest([all, members]).pipe(
-      map(([notForMember, forMember]) =>
-        [...notForMember, ...forMember].sort((a, b) => {
+    return combineLatest([prevOwner, members]).pipe(
+      map((combined) =>
+        combined.flat().sort((a, b) => {
           const aTime = a.createdOn?.toDate().getTime() || 0;
           const bTime = b.createdOn?.toDate().getTime() || 0;
           return -aTime + bTime;
