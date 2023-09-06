@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/adjacent-overload-signatures */
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { MemberApi } from '@api/member.api';
 import { DeviceService } from '@core/services/device';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -71,8 +79,8 @@ export class MemberCardComponent implements AfterViewInit, OnDestroy {
 
   private aboutPointer(): void {
     const offset = (this.aboutMemberEleRef?.nativeElement.clientHeight || 0) / 3; // matching css value -webkit-line-clamp
-    this.aboutShowPointer = 
-      (this.aboutMemberEleRef?.nativeElement.scrollHeight || 0) - offset > 
+    this.aboutShowPointer =
+      (this.aboutMemberEleRef?.nativeElement.scrollHeight || 0) - offset >
       (this.aboutMemberEleRef?.nativeElement.clientHeight || 0);
   }
 }
