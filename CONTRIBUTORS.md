@@ -1,6 +1,6 @@
 # List of all contributors and SOON token reward
 
-This table provides complete history into each contributions and their SOON reward.
+This table provides complete history into each contributions and their SOON reward and it's continually updated with each change.
 
 User | PR | SOON Reward | SMR Address | Authorized By | Comments |
 ---- | -- | ----------- | ----------- | ------------- | -------- |
