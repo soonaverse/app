@@ -52,9 +52,15 @@
           {{ (createdOn || member.createdOn)?.toDate() | date : 'short' }}
         </span>
       </div>
-      <p
-        class="mt-2 mb-3 leading-5 whitespace-pre-line text-accent-secondary dark:text-accent-secondary-dark truncate-line-3 text-foregrounds-primary dark:text-foregrounds-primary-dark"
-        [ngClass]="fullWidth ? 'text-base' : 'text-xs'"
+      <p #aboutMember 
+        class="mt-2 mb-3 leading-5 whitespace-pre-line text-accent-secondary dark:text-accent-secondary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        (click)="isAboutExpanded = !isAboutExpanded"
+        [ngClass]="{ 
+          'text-base': fullWidth,
+          'text-xs': !fullWidth,
+          'truncate-line-3': !isAboutExpanded,
+          'cursor-pointer': aboutShowPointer
+        }"
       >
         {{ about !== undefined ? about : member.about }}
       </p>
