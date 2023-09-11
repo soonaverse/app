@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@env/environment';
 import {
-  EthAddress,
+  NetworkAddress,
   PublicCollections,
   BUILD5_PROD_ADDRESS_API,
   BUILD5_TEST_ADDRESS_API,
@@ -29,7 +29,7 @@ export class BaseApi<T> {
 
   public listen = (id: string) => this.repo.getByIdLive(id);
 
-  public listenMultiple = (ids: EthAddress[]) =>
+  public listenMultiple = (ids: NetworkAddress[]) =>
     ids.length ? this.repo.getManyByIdLive(ids) : of([]);
 
   public top = (lastValue?: string, limit?: number) => this.repo.getTopLive(lastValue, limit);

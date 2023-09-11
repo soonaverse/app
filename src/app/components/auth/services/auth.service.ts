@@ -12,7 +12,7 @@ import { undefinedToEmpty } from '@core/utils/manipulations.utils';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import detectEthereumProvider from '@metamask/detect-provider';
 import {
-  EthAddress,
+  NetworkAddress,
   Member,
   Network,
   StakeType,
@@ -412,7 +412,7 @@ export class AuthService {
     }
   }
 
-  public monitorMember(address: EthAddress): void {
+  public monitorMember(address: NetworkAddress): void {
     this.memberSubscription$ = this.memberApi.listen(address).subscribe((v) => {
       this.member$.next(v);
     });

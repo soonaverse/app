@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import {
-  EthAddress,
+  NetworkAddress,
   Member,
   Proposal,
   PublicCollections,
@@ -74,7 +74,7 @@ export class MemberApi extends BaseApi<Member> {
     super(PublicCollections.MEMBER, httpClient);
   }
 
-  public soonDistributionStats = (id: EthAddress) => {
+  public soonDistributionStats = (id: NetworkAddress) => {
     const tokenId = environment.production ? SOON_TOKEN : SOON_TOKEN_TEST;
     return this.tokenDistRepo.getByIdLive(tokenId, id.toLowerCase()).pipe(
       switchMap(async (distribution) => {
@@ -90,7 +90,7 @@ export class MemberApi extends BaseApi<Member> {
     ) as Observable<TokenDistributionWithAirdrops | undefined>;
   };
 
-  public listenMultiple = (ids: EthAddress[]) =>
+  public listenMultiple = (ids: NetworkAddress[]) =>
     ids.length
       ? this.memberRepo
           .getByFieldLive(
@@ -105,7 +105,10 @@ export class MemberApi extends BaseApi<Member> {
           )
       : of([]);
 
-  public topStakes = (memberId: EthAddress, lastValue?: string): Observable<StakeWithTokenRec[]> =>
+  public topStakes = (
+    memberId: NetworkAddress,
+    lastValue?: string,
+  ): Observable<StakeWithTokenRec[]> =>
     this.stakeRepo.getByMemberLive(memberId, lastValue).pipe(
       switchMap(async (stakes: Stake[]) => {
         const tokenIds = Array.from(new Set(stakes.map((s) => s.token)));
@@ -119,7 +122,7 @@ export class MemberApi extends BaseApi<Member> {
       }),
     );
 
-  public topTokens = (memberId: EthAddress): Observable<TokenWithMemberDistribution[]> =>
+  public topTokens = (memberId: NetworkAddress): Observable<TokenWithMemberDistribution[]> =>
     this.tokenDistRepo.getTopBySubColIdLive(memberId, [], []).pipe(
       switchMap(async (distributions) => {
         const promises = distributions.map(async (distribution) => {
@@ -138,7 +141,7 @@ export class MemberApi extends BaseApi<Member> {
     );
 
   public topSpaces = (
-    memberId: EthAddress,
+    memberId: NetworkAddress,
     orderBy = ['createdOn'],
     orderByDir = ['desc'],
     lastValue?: string,
@@ -146,20 +149,20 @@ export class MemberApi extends BaseApi<Member> {
   ) => this.spaceRepo.getTopByMember(memberId, orderBy, orderByDir, lastValue, limit);
 
   public pendingSpaces = (
-    memberId: EthAddress,
+    memberId: NetworkAddress,
     orderBy = ['createdOn'],
     orderByDir = ['desc'],
     lastValue?: string,
   ) => this.spaceRepo.getPendingSpacesByMemberLive(memberId, orderBy, orderByDir, lastValue);
 
-  public topAwardsPending = (memberId: EthAddress, lastValue?: string) =>
+  public topAwardsPending = (memberId: NetworkAddress, lastValue?: string) =>
     this.awardRepo.getTopByMemberLive(memberId, false, lastValue);
 
-  public topAwardsCompleted = (memberId: EthAddress, lastValue?: string) =>
+  public topAwardsCompleted = (memberId: NetworkAddress, lastValue?: string) =>
     this.awardRepo.getTopByMemberLive(memberId, true, lastValue);
 
   public topProposals = (
-    memberId: EthAddress,
+    memberId: NetworkAddress,
     orderBy = ['createdOn'],
     orderByDir = ['desc'],
     lastValue?: string,
@@ -211,7 +214,7 @@ export class MemberApi extends BaseApi<Member> {
     );
   }
 
-  public allSpacesAsMember = (memberId: EthAddress, lastValue?: string) =>
+  public allSpacesAsMember = (memberId: NetworkAddress, lastValue?: string) =>
     this.spaceMemberRepo.getTopBySubColIdLive(memberId, [], [], lastValue).pipe(
       switchMap(async (spaceMembers) => {
         const spacePromises = spaceMembers.map(
