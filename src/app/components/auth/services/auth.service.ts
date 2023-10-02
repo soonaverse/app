@@ -41,6 +41,7 @@ export interface MenuItem {
   icon: any;
   title: string;
   authSepeator: boolean;
+  highlight?: string;
   unAuthauthSepeator: boolean;
 }
 
@@ -106,9 +107,10 @@ export class AuthService {
     unAuthauthSepeator: false,
   };
   private poolMenuItem: MenuItem = {
-    route: [ROUTER_UTILS.config.pool.root],
+    route: [ROUTER_UTILS.config.farming.farming],
     icon: PoolIconComponent,
-    title: $localize`Pool`,
+    title: $localize`Farming`,
+    highlight: 'Earn $SOON',
     authSepeator: false,
     unAuthauthSepeator: false,
   };

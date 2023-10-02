@@ -66,7 +66,7 @@ const APP_ROUTES: Routes = [
     canLoad: [],
   },
   {
-    path: ROUTER_UTILS.config.pool.root,
+    path: ROUTER_UTILS.config.farming.farming,
     loadChildren: async () => (await import('@pages/pool/pool.module')).PoolModule,
     canLoad: [],
   },

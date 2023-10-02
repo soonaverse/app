@@ -13,13 +13,23 @@
     <a
       *ngIf="(deviceService.isNotBreakHeight$ | async) || (deviceService.isMobile$ | async)"
       nz-popover
+      [nzPopoverVisible]="!!item.highlight"
       nzPopoverPlacement="right"
       nz-menu-item
       class="flex item"
       [ngClass]="{ item__selected: isSelectedRoute(item.route) }"
       [routerLink]="item.route"
-      [nzPopoverContent]="item.title"
+      [nzPopoverContent]="item.highlight ? highlightTemplate : item.title"
+      [nzPopoverOverlayClassName]="item.highlight ? 'item__highlight' : ''"
     >
+      <ng-template #highlightTemplate>
+        <div class="text-lg">
+          ⬅ Farming | <span class="text-2xl">🚀</span>
+          {{ item.highlight }}
+          <span class="text-2xl">🚀</span>
+        </div>
+      </ng-template>
+
       <div class="ml-4 lg:ml-0">
         <ng-template [wenMenuItem]="item"></ng-template>
       </div>

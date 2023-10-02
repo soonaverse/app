@@ -32,8 +32,8 @@ export const ROUTER_UTILS = {
     swap: {
       root: 'swap',
     },
-    pool: {
-      root: 'pool',
+    farming: {
+      farming: 'farming',
     },
     soonStaking: {
       root: 'soon-staking',
