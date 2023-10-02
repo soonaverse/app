@@ -110,7 +110,7 @@ export class AuthService {
     route: [ROUTER_UTILS.config.farming.farming],
     icon: PoolIconComponent,
     title: $localize`Farming`,
-    highlight: 'Provide Liquidity - Earn $SOON',
+    highlight: 'Earn $SOON',
     authSepeator: false,
     unAuthauthSepeator: false,
   };
