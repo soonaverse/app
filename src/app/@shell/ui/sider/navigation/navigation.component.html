@@ -23,7 +23,7 @@
       [nzPopoverOverlayClassName]="item.highlight ? 'item__highlight' : ''"
     >
       <ng-template #highlightTemplate>
-        <div class="text-lg">
+        <div class="text-lg" *ngIf="(deviceService.isMobile$ | async) !== true">
           ⬅ Farming | <span class="text-2xl">🚀</span>
           {{ item.highlight }}
           <span class="text-2xl">🚀</span>
