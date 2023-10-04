@@ -93,41 +93,30 @@ export class WalletDeeplinkComponent {
     }
 
     // We want to round to maximum 6 digits.
-    if (this.network === Network.RMS || this.network === Network.SMR) {
-      const walletType = this.network === Network.SMR ? 'firefly' : 'firefly-alpha';
-      if (this.tokenId && this.tokenAmount) {
-        return this.sanitizer.bypassSecurityTrustUrl(
-          walletType +
-            '://wallet/sendConfirmation?address=' +
-            this.targetAddress +
-            '&assetId=' +
-            this.tokenId +
-            '&disableToggleGift=true&disableChangeExpiration=true' +
-            '&amount=' +
-            Number(this.tokenAmount).toFixed(0) +
-            '&tag=soonaverse&giftStorageDeposit=true' +
-            (this.surplus ? '&surplus=' + Number(this.targetAmount).toFixed(0) : ''),
-        );
-      } else {
-        return this.sanitizer.bypassSecurityTrustUrl(
-          walletType +
-            '://wallet/sendConfirmation?address=' +
-            this.targetAddress +
-            '&disableToggleGift=true&disableChangeExpiration=true' +
-            '&amount=' +
-            Number(this.targetAmount).toFixed(0) +
-            '&tag=soonaverse&giftStorageDeposit=true',
-        );
-      }
+    const walletType =
+      this.network === Network.SMR || this.network === Network.IOTA ? 'firefly' : 'firefly-alpha';
+    if (this.tokenId && this.tokenAmount) {
+      return this.sanitizer.bypassSecurityTrustUrl(
+        walletType +
+          '://wallet/sendConfirmation?address=' +
+          this.targetAddress +
+          '&assetId=' +
+          this.tokenId +
+          '&disableToggleGift=true&disableChangeExpiration=true' +
+          '&amount=' +
+          Number(this.tokenAmount).toFixed(0) +
+          '&tag=soonaverse&giftStorageDeposit=true' +
+          (this.surplus ? '&surplus=' + Number(this.targetAmount).toFixed(0) : ''),
+      );
     } else {
       return this.sanitizer.bypassSecurityTrustUrl(
-        'iota://wallet/send/' +
+        walletType +
+          '://wallet/sendConfirmation?address=' +
           this.targetAddress +
-          '?amount=' +
-          +(Number(this.targetAmount) / NETWORK_DETAIL[this.network || DEFAULT_NETWORK].divideBy)
-            .toFixed(6)
-            .replace(/,/g, '.') +
-          '&unit=Mi',
+          '&disableToggleGift=true&disableChangeExpiration=true' +
+          '&amount=' +
+          Number(this.targetAmount).toFixed(0) +
+          '&tag=soonaverse&giftStorageDeposit=true',
       );
     }
   }

@@ -39,13 +39,13 @@ export class HelperService {
     } else if (net === Network.RMS) {
       from = 'RMS';
     } else {
-      from = 'MIOTA';
+      from = 'IOTA';
     }
     return from;
   }
 
   public getPair(token?: Token | null): string {
-    return (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol + '/' + this.getPairFrom(token);
+    return token?.symbol + '/' + this.getPairFrom(token);
   }
 
   public isBase(token?: Token | null): boolean {
@@ -119,7 +119,7 @@ export class HelperService {
     if (token?.mintingData?.network === Network.RMS) {
       return 'https://explorer.shimmer.network/testnet/foundry/' + token.mintingData.tokenId;
     } else if (token?.mintingData?.network === Network.IOTA) {
-      return 'https://thetangle.org/search/' + token.mintingData.blockId;
+      return 'https://explorer.iota.org/mainnet/block/' + token.mintingData.blockId;
     } else if (token?.mintingData?.network === Network.SMR) {
       return 'https://explorer.shimmer.network/shimmer/foundry/' + token.mintingData.tokenId;
     } else if (token?.mintingData?.network === Network.ATOI) {

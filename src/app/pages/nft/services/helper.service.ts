@@ -259,7 +259,7 @@ export class HelperService {
     if (rec?.mintingData?.network === Network.RMS) {
       return 'https://explorer.shimmer.network/testnet/block/' + rec.mintingData.blockId;
     } else if (rec?.mintingData?.network === Network.IOTA) {
-      return 'https://thetangle.org/search/' + rec.mintingData.blockId;
+      return 'https://explorer.iota.org/mainnet/block/' + rec.mintingData.blockId;
     } else if (rec?.mintingData?.network === Network.SMR) {
       return 'https://explorer.shimmer.network/shimmer/block/' + rec.mintingData.blockId;
     } else if (rec?.mintingData?.network === Network.ATOI) {

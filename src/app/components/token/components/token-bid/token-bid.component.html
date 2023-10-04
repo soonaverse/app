@@ -18,7 +18,7 @@
     </nz-avatar>
     <div class="ml-4 text-lg font-bold">{{ token?.name }}</div>
     <div class="ml-2 font-medium">
-      {{ '(' + (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol + ')' }}
+      {{ '(' + token?.symbol + ')' }}
     </div>
   </div>
 
@@ -39,7 +39,7 @@
           | formatToken : token?.uid : true : false
           | async
       }}
-      {{ (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol }}
+      {{ token?.symbol }}
     </div>
   </div>
 

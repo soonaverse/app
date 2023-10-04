@@ -219,7 +219,7 @@ export class AwardPage implements OnInit, OnDestroy {
     if (award?.network === Network.RMS) {
       return 'https://explorer.shimmer.network/testnet/block/' + award.collectionBlockId;
     } else if (award?.network === Network.IOTA) {
-      return 'https://thetangle.org/search/' + award.collectionBlockId;
+      return 'https://explorer.iota.org/mainnet/block/' + award.collectionBlockId;
     } else if (award?.network === Network.SMR) {
       return 'https://explorer.shimmer.network/shimmer/block/' + award.collectionBlockId;
     } else if (award?.network === Network.ATOI) {
