@@ -94,7 +94,7 @@ export class WalletDeeplinkComponent {
 
     // We want to round to maximum 6 digits.
     const walletType =
-      this.network === Network.SMR || this.network === Network.IOTA ? 'firefly' : 'firefly-alpha';
+      this.network === Network.RMS ? 'firefly-beta' : 'firefly';
     if (this.tokenId && this.tokenAmount) {
       return this.sanitizer.bypassSecurityTrustUrl(
         walletType +
