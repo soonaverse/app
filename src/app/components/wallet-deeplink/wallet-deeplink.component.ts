@@ -161,10 +161,7 @@ export class WalletDeeplinkComponent {
         'tanglepay://send/' +
           this.targetAddress +
           '?value=' +
-          +(Number(this.targetAmount) / NETWORK_DETAIL[this.network || DEFAULT_NETWORK].divideBy)
-            .toFixed(6)
-            .replace(/,/g, '.') +
-          '&unit=Mi' +
+          Number(this.targetAmount).toFixed(0) +
           '&tag=' +
           WEN_NAME.toLowerCase(),
       );
