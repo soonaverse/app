@@ -105,9 +105,9 @@ export class WalletDeeplinkComponent {
         disableToggleGift: true,
         disableChangeExpiration: true,
         disableChangeTimelock: true
-      }
+      };
       const searchParametersArray: (string | undefined)[] = Object.entries(parameters).map(([key, value]) => { return value ? `${key}=${value}` : undefined});
-      const searchParametersString = searchParametersArray.filter(x => x !== undefined).flat().join('&')
+      const searchParametersString = searchParametersArray.filter(x => x !== undefined).flat().join('&');
 
       return this.sanitizer.bypassSecurityTrustUrl(
         `bloom://wallet/sendTransaction?${searchParametersString}`
