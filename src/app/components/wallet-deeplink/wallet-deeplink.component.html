@@ -1,4 +1,15 @@
 <div class="flex flex-col items-center justify-center w-full lg:flex-row lg:w-auto">
+    <a
+    nz-button
+    nzSize="large"
+    [disabled]="!bloomDeepLink"
+    [href]="bloomDeepLink"
+    class="deep-link"
+  >
+    <div class="flex items-center">
+      <img src="/assets/logos/bloom.png" alt="Bloom logo" class="w-32" />
+    </div>
+  </a>
   <a
     nz-button
     nzSize="large"
