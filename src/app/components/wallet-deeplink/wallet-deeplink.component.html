@@ -1,10 +1,10 @@
 <div class="flex flex-col items-center justify-center w-full lg:flex-row lg:w-auto">
-    <a
+  <a
     nz-button
-    nzSize="large"
     *ngIf="bloomDeepLink"
     [href]="bloomDeepLink"
     class="deep-link"
+    nzSize="large"
   >
     <div class="flex items-center">
       <img src="/assets/logos/bloom.png" alt="Bloom logo" class="w-32" />
@@ -12,10 +12,10 @@
   </a>
   <a
     nz-button
-    nzSize="large"
+    *ngIf="fireflyDeepLink"
     [href]="fireflyDeepLink"
-    [disabled]="!fireflyDeepLink"
     class="deep-link"
+    nzSize="large"
   >
     <div class="flex items-center">
       <img src="/assets/logos/firefly.svg" alt="Firefly logo" class="mr-2" />
@@ -25,10 +25,10 @@
   <a
     nz-button
     *ngIf="showTanglePay"
-    nzSize="large"
     [disabled]="!tanglePayDeepLink"
     [href]="tanglePayDeepLink"
     class="deep-link"
+    nzSize="large"
   >
     <div class="flex items-center">
       <img src="/assets/logos/tanglepay.png" alt="Tanglepay logo" class="w-32" />
