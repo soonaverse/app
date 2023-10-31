@@ -35,9 +35,8 @@
         <td>
           {{ helper.findAnswerText((data.proposal$ | async)?.questions, t.payload.values||[]) }} ({{
           (data.proposal$ | async)?.type === proposalTypes.NATIVE ? (t.payload.weight | formatToken:
-          (data.token$ | async)?.uid: false: false: 2 | async) + ' ' + ((data.token$ |
-          async)?.symbol === 'IOTA' ? 'M' : '') + (data.token$ | async)?.symbol : t.payload.weight
-          || 0 }})
+          (data.token$ | async)?.uid: false: false: 2 | async) + ' ' + (data.token$ | async)?.symbol
+          : t.payload.weight || 0 }})
         </td>
         <td *ngIf="(data.proposal$ | async)?.type === proposalTypes.NATIVE">
           {{ t.payload.outputConsumedOn ? (t.payload.outputConsumedOn.toDate() | date: 'medium') :

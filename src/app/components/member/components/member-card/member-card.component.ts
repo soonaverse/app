@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/adjacent-overload-signatures */
-import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { MemberApi } from '@api/member.api';
 import { DeviceService } from '@core/services/device';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -14,7 +22,7 @@ import { ROUTER_UTILS } from './../../../../@core/utils/router.utils';
   styleUrls: ['./member-card.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MemberCardComponent implements OnDestroy {
+export class MemberCardComponent implements AfterViewInit, OnDestroy {
   @Input() member?: Member;
   @Input() fullWidth?: boolean;
   @Input() allowMobileContent?: boolean;
@@ -28,6 +36,9 @@ export class MemberCardComponent implements OnDestroy {
   public totalVisibleBadges = 6;
   public path = ROUTER_UTILS.config.member.root;
   public isReputationVisible = false;
+  public isAboutExpanded = false;
+  public aboutShowPointer = false;
+  @ViewChild('aboutMember') aboutMemberEleRef?: ElementRef<HTMLElement>;
 
   constructor(private memberApi: MemberApi, public deviceService: DeviceService) {
     // none.
@@ -58,7 +69,18 @@ export class MemberCardComponent implements OnDestroy {
     return FILE_SIZES;
   }
 
+  public ngAfterViewInit(): void {
+    this.aboutPointer();
+  }
+
   public ngOnDestroy(): void {
     this.badges$.next(undefined);
+  }
+
+  private aboutPointer(): void {
+    const offset = (this.aboutMemberEleRef?.nativeElement.clientHeight || 0) / 3; // matching css value -webkit-line-clamp
+    this.aboutShowPointer =
+      (this.aboutMemberEleRef?.nativeElement.scrollHeight || 0) - offset >
+      (this.aboutMemberEleRef?.nativeElement.clientHeight || 0);
   }
 }

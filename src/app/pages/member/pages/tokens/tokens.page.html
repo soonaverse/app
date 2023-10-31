@@ -88,7 +88,7 @@
                     <td class="font-medium" i18n>Owned</td>
                     <td class="font-medium">
                       {{ (t.distribution.tokenOwned | formatToken: t.uid:false:false | async) + ' '
-                      + (t?.symbol === 'IOTA' ? 'M' : '') + t.symbol }}
+                      + t.symbol }}
                     </td>
                     <td class="right"></td>
                   </tr>
@@ -124,8 +124,8 @@
                         </div>
                       </td>
                       <td class="font-medium">
-                        {{ (drop.count | formatToken: t.uid: false: false | async) + ' ' +
-                        (t?.symbol === 'IOTA' ? 'M' : '') + t.symbol }}
+                        {{ (drop.count | formatToken: t.uid: false: false | async) + ' ' + t.symbol
+                        }}
                       </td>
                       <td class="right">
                         <button
@@ -176,8 +176,7 @@
                     <td class="font-medium">
                       {{ ( (!t.distribution.mintedClaimedOn ? (t.distribution.tokenOwned || 0) : 0)
                       + (t.distribution.tokenDrops?.[0]?.count || 0) | formatToken:
-                      t?.uid:false:false | async) + ' ' + (t?.symbol === 'IOTA' ? 'M' : '') +
-                      t.symbol }}
+                      t?.uid:false:false | async) + ' ' + t.symbol }}
                     </td>
                     <td class="right">
                       <button

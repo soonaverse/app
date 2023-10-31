@@ -7,13 +7,7 @@
       ? {
           title: tokenInfoLabels[4],
           type: descriptionItemTypes.DEFAULT_NO_TRUNCATE,
-          value:
-            '1 ' +
-            ((token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol) +
-            ' = ' +
-            token?.pricePerToken +
-            ' ' +
-            unitsService.label()
+          value: '1 ' + token?.symbol + ' = ' + token?.pricePerToken + ' ' + unitsService.label()
         }
       : null,
     !helper.isMinted(token)

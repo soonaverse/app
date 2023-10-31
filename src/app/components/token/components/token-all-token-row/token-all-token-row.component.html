@@ -26,7 +26,7 @@
         </nz-avatar>
         <div class="flex items-center ml-3 lg:block">
           <div class="text-sm font-bold lg:text-base">
-            {{ (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol }}
+            {{ token?.symbol }}
           </div>
           <div class="wen-card-highlight-title lg:text-sm lg:ml-0">{{ token?.name }}</div>
         </div>
@@ -152,9 +152,7 @@
       <div
         class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-full whitespace-nowrap"
       >
-        <ng-container i18n>24h Volume</ng-container> ({{
-          (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol
-        }})
+        <ng-container i18n>24h Volume</ng-container> ({{ token?.symbol }})
       </div>
       <div class="mt-0.5 lg:w-full whitespace-nowrap">
         {{

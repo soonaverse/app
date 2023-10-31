@@ -9,6 +9,16 @@
   <div
     class="py-2 network"
     [ngClass]="{
+      network__selected: selectedNetwork === networkTypes.IOTA,
+      network__disabled: !isNetworkEnabled(networkTypes.IOTA)
+    }"
+    (click)="selectNetwork.next(networkTypes.IOTA)"
+  >
+    <div class="text-lg font-semibold" i18n>IOTA</div>
+  </div>
+  <div
+    class="py-2 network"
+    [ngClass]="{
       network__selected: selectedNetwork === networkTypes.SMR,
       network__disabled: !isNetworkEnabled(networkTypes.SMR)
     }"
@@ -32,34 +42,6 @@
       i18n
     >
       Testnet
-    </div>
-  </div>
-  <div
-    class="py-2 network"
-    [ngClass]="{
-      network__selected: selectedNetwork === networkTypes.IOTA,
-      network__disabled: !isNetworkEnabled(networkTypes.IOTA)
-    }"
-    (click)="selectNetwork.next(networkTypes.IOTA)"
-  >
-    <div class="text-lg font-semibold" i18n>IOTA</div>
-  </div>
-  <div
-    *ngIf="!environment.production"
-    class="py-2 network"
-    [ngClass]="{
-      network__selected: selectedNetwork === networkTypes.ATOI,
-      network__disabled: !isNetworkEnabled(networkTypes.ATOI)
-    }"
-    (click)="selectNetwork.next(networkTypes.ATOI)"
-  >
-    <div class="text-lg font-semibold" i18n>IOTA</div>
-    <div class="w-px h-5 bg-[#66DDCA] ml-1.5 mr-1"></div>
-    <div
-      class="font-medium -translate-y-1 text-xxs text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
-      i18n
-    >
-      Devnet
     </div>
   </div>
 </div>

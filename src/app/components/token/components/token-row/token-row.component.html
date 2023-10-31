@@ -145,9 +145,7 @@
         <div
           class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-full lg:text-right whitespace-nowrap"
         >
-          <ng-container i18n>Volume 24h</ng-container> ({{
-            (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol
-          }})
+          <ng-container i18n>Volume 24h</ng-container> ({{ token?.symbol }})
         </div>
         <div class="mt-0.5 lg:w-full lg:text-rights whitespace-nowrap">
           {{ listenVolume24h$ | async | formatToken : undefined : true : false | async }}

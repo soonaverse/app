@@ -28,7 +28,7 @@
         }"
       ></wen-icon-favourites>
       <div class="mt-1 ml-1.5">
-        <span class="font-bold">{{ (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol }}</span
+        <span class="font-bold">{{ token?.symbol }}</span
         ><span class="font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
           >/{{ helper.getPairFrom(token) }}</span
         >
@@ -141,9 +141,7 @@
         <div
           class="text-xs text-foregrounds-secondary dark:text-foregrounds-secondary-dark lg:w-full lg:text-right whitespace-nowrap"
         >
-          <ng-container i18n>24h Volume</ng-container> ({{
-            (token?.symbol === 'IOTA' ? 'M' : '') + token?.symbol
-          }})
+          <ng-container i18n>24h Volume</ng-container> ({{ token?.symbol }})
         </div>
         <div class="mt-0.5 lg:w-full lg:text-rights whitespace-nowrap">
           {{

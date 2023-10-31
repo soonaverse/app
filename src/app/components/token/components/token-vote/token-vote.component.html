@@ -91,7 +91,6 @@
       {{
         (this.amountControl.value | formatToken : token?.uid : true : false | async) +
           ' ' +
-          (token?.symbol === 'IOTA' ? 'M' : '') +
           token?.symbol
       }}
     </div>
@@ -105,12 +104,7 @@
       Total staked tokens
     </div>
     <div class="font-bold whitespace-nowrap">
-      {{
-        (totalStaked | formatToken : token?.uid : true : false | async) +
-          ' ' +
-          (token?.symbol === 'IOTA' ? 'M' : '') +
-          token?.symbol
-      }}
+      {{ (totalStaked | formatToken : token?.uid : true : false | async) + ' ' + token?.symbol }}
     </div>
   </div>
 
@@ -131,12 +125,7 @@
       Your total voting weight
     </div>
     <div class="font-bold whitespace-nowrap">
-      {{
-        (getWeight() | formatToken : token?.uid : true : false | async) +
-          ' ' +
-          (token?.symbol === 'IOTA' ? 'M' : '') +
-          token?.symbol
-      }}
+      {{ (getWeight() | formatToken : token?.uid : true : false | async) + ' ' + token?.symbol }}
     </div>
   </div>
 

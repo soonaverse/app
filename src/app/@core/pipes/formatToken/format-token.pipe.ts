@@ -19,7 +19,7 @@ export interface ConvertValue {
 export class FormatTokenPipe implements PipeTransform {
   public constructor(private cache: CacheService) {}
   public async transformTest(
-    _value: number | null | undefined | ConvertValue,
+    _value: any,
     _tokenUidOrNetwork?: string | null,
     _removeZeroes = false,
     _showUnit = true,
@@ -29,7 +29,7 @@ export class FormatTokenPipe implements PipeTransform {
   }
 
   public async transform(
-    value: string | number | null | undefined | ConvertValue,
+    value: any,
     tokenUidOrNetwork?: string | null,
     removeZeroes = false,
     showUnit = true,
