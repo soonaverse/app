@@ -5,5 +5,5 @@ export const environment = {
     key: 'ed51a01fc204688339e89ac8e9d53028',
   },
   soonaversePlaceholder: 'https://soonaverse.com/favicon.ico',
-  build5Token: ''
+  build5Token: '',
 };
