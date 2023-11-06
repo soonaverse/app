@@ -25,6 +25,7 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { BehaviorSubject, firstValueFrom, skip, Subscription } from 'rxjs';
 import { MemberApi, TokenDistributionWithAirdrops } from './../../../@api/member.api';
 import { removeItem } from './../../../@core/utils/local-storage.utils';
+import { environment } from '@env/environment';
 const tanglePay = (window as any).iota;
 
 export interface MetamaskSignature {
@@ -206,7 +207,7 @@ export class AuthService {
   public async sign(params: any = {}, cb: SignCallback): Promise<WenRequest | undefined> {
     this.showWalletPopup$.next(WalletStatus.ACTIVE);
     // We support either resign with metamask or reuse token.
-    let sc: WenRequest | undefined | false = undefined;
+    let sc: any | undefined | false = undefined;
     const customToken: any = getItem(StorageItem.CustomToken);
     const wallet = customToken.wallet || Wallets.Metamask;
     // check it's not expired.
@@ -214,6 +215,7 @@ export class AuthService {
       sc = {
         address: customToken.address,
         customToken: customToken.value,
+        projectApiKey: environment.build5Token,
         body: params,
       };
     } else if (customToken) {
@@ -271,7 +273,7 @@ export class AuthService {
     return true;
   }
 
-  private async signWithMetamask(params: any = {}): Promise<WenRequest | undefined | false> {
+  private async signWithMetamask(params: any = {}): Promise<any | undefined | false> {
     const provider: any = await detectEthereumProvider();
     if (provider) {
       try {
@@ -319,6 +321,7 @@ export class AuthService {
         return {
           address: provider.selectedAddress,
           signature: signature,
+          projectApiKey: environment.build5Token,
           body: params,
         };
       } catch (e) {
@@ -389,9 +392,10 @@ export class AuthService {
           },
         });
 
-        const returnObj: WenRequest = {
+        const returnObj: any = {
           address: currentAddress,
           signature: signature,
+          projectApiKey: environment.build5Token,
           body: params,
         };
 
