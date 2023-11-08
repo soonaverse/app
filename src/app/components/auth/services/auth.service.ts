@@ -16,7 +16,6 @@ import {
   Member,
   Network,
   StakeType,
-  // tiers,
   TOKEN_EXPIRY_HOURS,
   WenRequest,
 } from '@build-5/interfaces';
@@ -144,13 +143,13 @@ export class AuthService {
 
     this.memberSoonDistribution$.subscribe((v) => {
       if (v && (v?.stakes?.[StakeType.DYNAMIC]?.value || 0) > 0) {
-        // let l = -1;
-        // tiers.forEach((a) => {
-        //   if ((v?.stakes?.[StakeType.DYNAMIC]?.value || 0) >= a) {
-        //     l++;
-        //   }
-        // });
-        // this.memberLevel$.next(l);
+        let l = -1;
+        environment.tiers.forEach((a) => {
+          if ((v?.stakes?.[StakeType.DYNAMIC]?.value || 0) >= a) {
+            l++;
+          }
+        });
+        this.memberLevel$.next(l);
       } else {
         this.memberLevel$.next(0);
       }

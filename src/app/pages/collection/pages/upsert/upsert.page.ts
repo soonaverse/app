@@ -255,7 +255,7 @@ export class UpsertPage implements OnInit, OnDestroy {
 
               // Load selected options for award/collections
               o.accessAwards?.forEach(async (a) => {
-                const award = await firstValueFrom(this.awardApi.listen(a));
+                const award: Award = await firstValueFrom(this.awardApi.listen(a));
                 if (award) {
                   this.filteredAwards$.next([
                     ...(this.filteredAwards$.value || []),
@@ -274,7 +274,7 @@ export class UpsertPage implements OnInit, OnDestroy {
               });
 
               o.accessCollections?.forEach(async (a) => {
-                const collection = await firstValueFrom(this.collectionApi.listen(a));
+                const collection: any = await firstValueFrom(this.collectionApi.listen(a));
                 if (collection) {
                   this.filteredCollections$.next([
                     ...(this.filteredCollections$.value || []),

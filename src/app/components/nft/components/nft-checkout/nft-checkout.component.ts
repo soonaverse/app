@@ -33,7 +33,7 @@ import {
   Timestamp,
   Transaction,
   TransactionType,
-  TRANSACTION_AUTO_EXPIRY_MS,
+  TRANSACTION_AUTO_EXPIRY_MS
 } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, firstValueFrom, interval, Subscription, take } from 'rxjs';
@@ -230,9 +230,9 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
         if (val.payload.nft) {
           firstValueFrom(this.nftApi.listen(val.payload.nft)).then((obj) => {
             if (obj) {
-              this.purchasedNft = obj;
+              this.purchasedNft = <Nft>obj;
               this.fileApi
-                .getMetadata(this.purchasedNft.media)
+                .getMetadata(this.purchasedNft?.media)
                 .pipe(take(1), untilDestroyed(this))
                 .subscribe((o) => {
                   this.mediaType = o;

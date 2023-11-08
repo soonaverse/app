@@ -64,7 +64,7 @@ export class TokenTradingPairRowComponent implements OnInit, OnDestroy {
       this.tokenApi
         .listen(this.tokenId)
         .pipe(untilDestroyed(this))
-        .subscribe((token) => {
+        .subscribe((token: Token) => {
           if (token) {
             this.token = token;
             this.listenToStats(this.token.uid, [token.status || TokenStatus.PRE_MINTED]);
