@@ -47,6 +47,7 @@ export class FileApi {
     formData.append('file', <Blob>item.postFile);
     formData.append('member', memberId);
     formData.append('uid', item.file.uid);
+    formData.append('projectApiKey', environment.build5Token);
     const origin = environment.production ? BUILD5_PROD_ADDRESS_API : BUILD5_TEST_ADDRESS_API;
     return this.httpClient
       .post(origin + WEN_FUNC.uploadFile, formData)
