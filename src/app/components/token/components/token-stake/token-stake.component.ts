@@ -44,7 +44,7 @@ import {
   TransactionType,
   calcStakedMultiplier,
   getDefDecimalIfNotSet,
-  tiers,
+  // tiers,
 } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, Subscription, interval, merge } from 'rxjs';
@@ -153,21 +153,21 @@ export class TokenStakeComponent implements OnInit, OnDestroy {
           const val =
             calcStakedMultiplier(this.weekControl.value) * (this.amountControl.value || 0);
           this.stakeControl.setValue(val.toFixed(2));
-          const newTotal =
-            (this.auth.memberSoonDistribution$.value?.stakes?.[StakeType.DYNAMIC]?.value || 0) +
-            Math.pow(10, getDefDecimalIfNotSet(this.token?.decimals)) * val;
-          let l = 0;
-          tiers.forEach((a) => {
-            if (newTotal >= a) {
-              l++;
-            }
-          });
+          // const newTotal =
+          //   (this.auth.memberSoonDistribution$.value?.stakes?.[StakeType.DYNAMIC]?.value || 0) +
+          //   Math.pow(10, getDefDecimalIfNotSet(this.token?.decimals)) * val;
+          // let l = 0;
+          // tiers.forEach((a) => {
+          //   if (newTotal >= a) {
+          //     l++;
+          //   }
+          // });
 
-          if (l > tiers.length - 1) {
-            l = tiers.length - 1;
-          }
+          // if (l > tiers.length - 1) {
+          //   l = tiers.length - 1;
+          // }
 
-          this.levelControl.setValue(l);
+          // this.levelControl.setValue(l);
           this.multiplierControl.setValue(calcStakedMultiplier(this.weekControl.value));
           if (this.tokenStats && this.rewards) {
             this.earnControl.setValue(

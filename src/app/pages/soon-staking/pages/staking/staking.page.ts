@@ -30,7 +30,7 @@ import {
   TokenStats,
   calcStakedMultiplier,
   getDefDecimalIfNotSet,
-  tiers,
+  // tiers,
 } from '@build-5/interfaces';
 import { BehaviorSubject, Observable, Subscription, map, merge, of } from 'rxjs';
 
@@ -119,21 +119,21 @@ export class StakingPage implements OnInit, OnDestroy {
     if ((this.amountControl.value || 0) > 0 && (this.weekControl.value || 0) > 0) {
       const val = calcStakedMultiplier(this.weekControl.value) * (this.amountControl.value || 0);
       this.stakeControl.setValue(val.toFixed(2));
-      const newTotal =
-        (this.auth.memberSoonDistribution$.value?.stakes?.[StakeType.DYNAMIC]?.value || 0) +
-        Math.pow(10, getDefDecimalIfNotSet(this.token$.value?.decimals)) * val;
-      let l = -1;
-      tiers.forEach((a) => {
-        if (newTotal >= a) {
-          l++;
-        }
-      });
+      // const newTotal =
+      //   (this.auth.memberSoonDistribution$.value?.stakes?.[StakeType.DYNAMIC]?.value || 0) +
+      //   Math.pow(10, getDefDecimalIfNotSet(this.token$.value?.decimals)) * val;
+      // let l = -1;
+      // tiers.forEach((a) => {
+      //   if (newTotal >= a) {
+      //     l++;
+      //   }
+      // });
 
-      if (l > tiers.length) {
-        l = tiers.length;
-      }
+      // if (l > tiers.length) {
+      //   l = tiers.length;
+      // }
 
-      this.levelControl.setValue(l);
+      // this.levelControl.setValue(l);
       this.multiplierControl.setValue(calcStakedMultiplier(this.weekControl.value));
       if (this.tokenStats$.value && this.stakeRewards$.value) {
         this.earnControl.setValue(
@@ -206,11 +206,11 @@ export class StakingPage implements OnInit, OnDestroy {
       key: '1',
       category: 'Requirements',
       category_extra: 'Staked value', // auth.memberLevel$ | async
-      level0: tiers[0].toString(),
-      level1: tiers[1].toString(),
-      level2: tiers[2].toString(),
-      level3: tiers[3].toString(),
-      level4: tiers[4].toString(),
+      level0: '0', // tiers[0].toString(),
+      level1: '0', // tiers[1].toString(),
+      level2: '0', // tiers[2].toString(),
+      level3: '0', // tiers[3].toString(),
+      level4: '0', // tiers[4].toString(),
     },
     {
       key: '2',

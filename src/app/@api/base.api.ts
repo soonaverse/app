@@ -1,14 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@env/environment';
 import {
-  EthAddress,
+  NetworkAddress,
   PublicCollections,
   BUILD5_PROD_ADDRESS_API,
   BUILD5_TEST_ADDRESS_API,
   WEN_FUNC,
+  WenRequest,
 } from '@build-5/interfaces';
-import { Build5Env } from '@build-5/lib';
-import { CrudRepository } from '@build-5/lib/lib/repositories/CrudRepository';
+import { Build5Env, CrudRepository } from '@build-5/lib';
 import { Observable, map, of } from 'rxjs';
 
 export const DEFAULT_LIST_SIZE = 50;
@@ -29,12 +29,12 @@ export class BaseApi<T> {
 
   public listen = (id: string) => this.repo.getByIdLive(id);
 
-  public listenMultiple = (ids: EthAddress[]) =>
+  public listenMultiple = (ids: NetworkAddress[]) =>
     ids.length ? this.repo.getManyByIdLive(ids) : of([]);
 
   public top = (lastValue?: string, limit?: number) => this.repo.getTopLive(lastValue, limit);
 
-  protected request<T>(func: WEN_FUNC, req: any): Observable<T | undefined> {
+  protected request<T>(func: WEN_FUNC, req: WenRequest): Observable<T | undefined> {
     const origin = environment.production ? BUILD5_PROD_ADDRESS_API : BUILD5_TEST_ADDRESS_API;
     return this.httpClient.post(origin + func, { data: req }).pipe(map((b: any) => b.data));
   }
