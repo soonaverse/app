@@ -50,7 +50,7 @@ export class TokenInfoDescriptionComponent {
     const distributions = await this.tokenApi.getAllDistributions(this.token?.uid);
     const fields = [
       '',
-      'ethAddress',
+      'NetworkAddress',
       'tokenOwned',
       'unclaimedTokens',
       'tokenClaimed',

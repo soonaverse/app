@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  EthAddress,
+  NetworkAddress,
   PublicCollections,
   Transaction,
   WEN_FUNC,
@@ -33,7 +33,7 @@ export class OrderApi extends BaseApi<Transaction> {
   public openBid = (req: WenRequest): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.openBid, req);
 
-  public listenMultiple = (ids: EthAddress[]) =>
+  public listenMultiple = (ids: NetworkAddress[]) =>
     ids.length
       ? this.transactionRepo.getByFieldLive(
           ids.map(() => 'uid'),

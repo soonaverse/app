@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  EthAddress,
+  NetworkAddress,
   Member,
   Proposal,
   PublicCollections,
@@ -53,7 +53,7 @@ export class ProposalApi extends BaseApi<Proposal> {
     super(PublicCollections.PROPOSAL, httpClient);
   }
 
-  public listen = (id: EthAddress) => this.proposalRepo.getByIdLive(id);
+  public listen = (id: NetworkAddress) => this.proposalRepo.getByIdLive(id);
 
   public lastActive = (lastValue?: string) => this.proposalRepo.getActiveLive(lastValue);
 

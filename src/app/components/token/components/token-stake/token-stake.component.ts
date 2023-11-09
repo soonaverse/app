@@ -44,7 +44,6 @@ import {
   TransactionType,
   calcStakedMultiplier,
   getDefDecimalIfNotSet,
-  tiers,
 } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, Subscription, interval, merge } from 'rxjs';
@@ -157,14 +156,14 @@ export class TokenStakeComponent implements OnInit, OnDestroy {
             (this.auth.memberSoonDistribution$.value?.stakes?.[StakeType.DYNAMIC]?.value || 0) +
             Math.pow(10, getDefDecimalIfNotSet(this.token?.decimals)) * val;
           let l = 0;
-          tiers.forEach((a) => {
+          environment.tiers.forEach((a) => {
             if (newTotal >= a) {
               l++;
             }
           });
 
-          if (l > tiers.length - 1) {
-            l = tiers.length - 1;
+          if (l > environment.tiers.length - 1) {
+            l = environment.tiers.length - 1;
           }
 
           this.levelControl.setValue(l);

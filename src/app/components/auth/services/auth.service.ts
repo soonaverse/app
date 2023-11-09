@@ -12,11 +12,10 @@ import { undefinedToEmpty } from '@core/utils/manipulations.utils';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import detectEthereumProvider from '@metamask/detect-provider';
 import {
-  EthAddress,
+  NetworkAddress,
   Member,
   Network,
   StakeType,
-  tiers,
   TOKEN_EXPIRY_HOURS,
   WenRequest,
 } from '@build-5/interfaces';
@@ -145,12 +144,11 @@ export class AuthService {
     this.memberSoonDistribution$.subscribe((v) => {
       if (v && (v?.stakes?.[StakeType.DYNAMIC]?.value || 0) > 0) {
         let l = -1;
-        tiers.forEach((a) => {
+        environment.tiers.forEach((a) => {
           if ((v?.stakes?.[StakeType.DYNAMIC]?.value || 0) >= a) {
             l++;
           }
         });
-
         this.memberLevel$.next(l);
       } else {
         this.memberLevel$.next(0);
@@ -418,7 +416,7 @@ export class AuthService {
     }
   }
 
-  public monitorMember(address: EthAddress): void {
+  public monitorMember(address: NetworkAddress): void {
     this.memberSubscription$ = this.memberApi.listen(address).subscribe((v) => {
       this.member$.next(v);
     });
