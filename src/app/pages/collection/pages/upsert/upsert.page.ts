@@ -255,7 +255,7 @@ export class UpsertPage implements OnInit, OnDestroy {
 
               // Load selected options for award/collections
               o.accessAwards?.forEach(async (a) => {
-                const award: Award = await firstValueFrom(this.awardApi.listen(a));
+                const award: any = await firstValueFrom(this.awardApi.listen(a));
                 if (award) {
                   this.filteredAwards$.next([
                     ...(this.filteredAwards$.value || []),
