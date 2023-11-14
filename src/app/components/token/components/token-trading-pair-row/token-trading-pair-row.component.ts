@@ -34,7 +34,7 @@ export class TokenTradingPairRowComponent implements OnInit, OnDestroy {
   @Input() tableMode = false;
   @Output() wenOnFavouriteClick = new EventEmitter<void>();
   @Output() wenOnClick = new EventEmitter<void>();
-  public token?: Token;
+  public token?: any;
   public path = ROUTER_UTILS.config.token.root;
   public tradePath = ROUTER_UTILS.config.token.trade;
   public listenAvgPrice$: BehaviorSubject<number | undefined> = new BehaviorSubject<
@@ -64,7 +64,7 @@ export class TokenTradingPairRowComponent implements OnInit, OnDestroy {
       this.tokenApi
         .listen(this.tokenId)
         .pipe(untilDestroyed(this))
-        .subscribe((token) => {
+        .subscribe((token: any) => {
           if (token) {
             this.token = token;
             this.listenToStats(this.token.uid, [token.status || TokenStatus.PRE_MINTED]);

@@ -92,7 +92,7 @@ export class TokensPage implements OnInit {
     this.tokenApi
       .listenMultiple(HIGHLIGHT_TOKENS)
       .pipe(
-        filter((r) => r.every((token) => token)),
+        filter((r: any) => r.every((token) => token)),
         untilDestroyed(this),
       )
       .subscribe((r) => {

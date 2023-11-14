@@ -71,6 +71,7 @@ export class WalletDeeplinkComponent {
 
   @Input() public showTanglePay = true;
 
+  public bloomDeepLink?: SafeUrl;
   public fireflyDeepLink?: SafeUrl;
   public tanglePayDeepLink?: SafeUrl;
   private _targetAddress?: string;
@@ -83,8 +84,43 @@ export class WalletDeeplinkComponent {
   constructor(private sanitizer: DomSanitizer, private cd: ChangeDetectorRef) {}
 
   private setLinks(): void {
+    this.bloomDeepLink = this.getBloomDeepLink();
     this.fireflyDeepLink = this.getFireflyDeepLink();
     this.tanglePayDeepLink = this.getTanglePayDeepLink();
+  }
+
+  private getBloomDeepLink(): SafeUrl {
+    if (!this._network || this._network === Network.IOTA || this._network === Network.ATOI) {
+      // TODO: IOTA network support in Bloom
+      return '';
+    } else {
+      // Shimmer Network
+      const parameters = {
+        address: this.targetAddress,
+        baseCoinAmount:
+          this.tokenId && this.surplus ? Number(this.targetAmount).toFixed(0) : undefined,
+        tokenId: this.tokenId,
+        tokenAmount: this.tokenId ? this.tokenAmount : undefined,
+        tag: WEN_NAME.toLowerCase(),
+        giftStorageDeposit: true,
+        disableToggleGift: true,
+        disableChangeExpiration: true,
+        disableChangeTimelock: true,
+      };
+      const searchParametersArray: (string | undefined)[] = Object.entries(parameters).map(
+        ([key, value]) => {
+          return value ? `${key}=${value}` : undefined;
+        },
+      );
+      const searchParametersString = searchParametersArray
+        .filter((x) => x !== undefined)
+        .flat()
+        .join('&');
+
+      return this.sanitizer.bypassSecurityTrustUrl(
+        `bloom://wallet/sendTransaction?${searchParametersString}`,
+      );
+    }
   }
 
   private getFireflyDeepLink(): SafeUrl {

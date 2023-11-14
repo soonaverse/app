@@ -57,10 +57,12 @@ export class TokenAllTokenRowComponent implements OnInit, OnDestroy {
       this.tokenApi
         .listen(this.tokenId)
         .pipe(untilDestroyed(this))
-        .subscribe((token) => {
+        .subscribe((token: any) => {
           if (token) {
             this.token = token;
-            this.listenToStats(this.token.uid);
+            if (this.token?.uid) {
+              this.listenToStats(this.token.uid);
+            }
             this.cd.markForCheck();
           }
         });

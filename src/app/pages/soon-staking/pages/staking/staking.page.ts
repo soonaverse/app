@@ -30,7 +30,6 @@ import {
   TokenStats,
   calcStakedMultiplier,
   getDefDecimalIfNotSet,
-  tiers,
 } from '@build-5/interfaces';
 import { BehaviorSubject, Observable, Subscription, map, merge, of } from 'rxjs';
 
@@ -123,14 +122,14 @@ export class StakingPage implements OnInit, OnDestroy {
         (this.auth.memberSoonDistribution$.value?.stakes?.[StakeType.DYNAMIC]?.value || 0) +
         Math.pow(10, getDefDecimalIfNotSet(this.token$.value?.decimals)) * val;
       let l = -1;
-      tiers.forEach((a) => {
+      environment.tiers.forEach((a) => {
         if (newTotal >= a) {
           l++;
         }
       });
 
-      if (l > tiers.length) {
-        l = tiers.length;
+      if (l > environment.tiers.length) {
+        l = environment.tiers.length;
       }
 
       this.levelControl.setValue(l);
@@ -206,11 +205,11 @@ export class StakingPage implements OnInit, OnDestroy {
       key: '1',
       category: 'Requirements',
       category_extra: 'Staked value', // auth.memberLevel$ | async
-      level0: tiers[0].toString(),
-      level1: tiers[1].toString(),
-      level2: tiers[2].toString(),
-      level3: tiers[3].toString(),
-      level4: tiers[4].toString(),
+      level0: environment.tiers[0].toString(),
+      level1: environment.tiers[1].toString(),
+      level2: environment.tiers[2].toString(),
+      level3: environment.tiers[3].toString(),
+      level4: environment.tiers[4].toString(),
     },
     {
       key: '2',

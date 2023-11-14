@@ -126,7 +126,7 @@ export class NewPage implements OnInit, OnDestroy {
         filter((space) => !!space),
         untilDestroyed(this),
       )
-      .subscribe((space) => {
+      .subscribe((space: any) => {
         this.spaceControl.setValue(space?.uid);
 
         this.seo.setTags(
