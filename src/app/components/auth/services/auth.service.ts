@@ -399,7 +399,7 @@ export class AuthService {
 
         // Add public key if it's provided for non ETH address.
         if (publicKey && network) {
-          returnObj.publicKey = {
+          returnObj.legacyPublicKey = {
             hex: publicKey,
             network: network,
           };
