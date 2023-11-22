@@ -479,7 +479,7 @@ export class UpsertPage implements OnInit, OnDestroy {
   public getSpaceListOptions(list?: Space[] | null): SelectSpaceOption[] {
     return (list || [])
       .filter((o) => {
-        return !!(o.validatedAddress || {})[DEFAULT_NETWORK];
+        return !!(o?.validatedAddress || {})[DEFAULT_NETWORK];
       })
       .map((o) => ({
         label: o.name || o.uid,
