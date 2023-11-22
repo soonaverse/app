@@ -272,9 +272,11 @@ export class TradePage implements OnInit, OnDestroy {
               o === 'image' ? t.overviewGraphics : undefined,
             );
           });
-        this.subscriptions$.push(
-          this.spaceApi.listen(t.space).pipe(untilDestroyed(this)).subscribe(this.data.space$),
-        );
+        if (t.space) {
+          this.subscriptions$.push(
+            this.spaceApi.listen(t.space).pipe(untilDestroyed(this)).subscribe(this.data.space$),
+          );
+        }
         this.listenToMemberSubs(this.auth.member$.value);
         this.isFavourite = ((getItem(StorageItem.FavouriteTokens) as string[]) || []).includes(
           t.uid,

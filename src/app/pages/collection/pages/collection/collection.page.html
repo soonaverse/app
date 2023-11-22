@@ -71,18 +71,6 @@
       <div class="w-full mt-10 mb-4 space-y-4" *ngIf="(deviceService.isMobile$ | async)">
         <button
           nz-button
-          nzType="primary"
-          (click)="approve()"
-          *ngIf="data.isPending(data.collection$ | async) && (data.isGuardianWithinSpace$ | async)"
-          nzBlock
-          nzSize="large"
-          i18n
-        >
-          Publish Collection
-        </button>
-
-        <button
-          nz-button
           class="wen-secondary"
           (click)="edit()"
           *ngIf="(data.creator$ | async)?.uid === (auth.member$ | async)?.uid && !(data.collection$ | async)?.mintingData"
@@ -289,18 +277,6 @@
       style="max-width: 450px"
       *ngIf="(deviceService.isDesktop$ | async)"
     >
-      <button
-        nz-button
-        nzType="primary"
-        (click)="approve()"
-        *ngIf="data.isPending(data.collection$ | async) && (data.isGuardianWithinSpace$ | async)"
-        nzBlock
-        nzSize="large"
-        i18n
-      >
-        Publish Collection
-      </button>
-
       <button
         nz-button
         class="wen-secondary"
