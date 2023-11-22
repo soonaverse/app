@@ -200,25 +200,6 @@ export class CollectionPage implements OnInit, OnDestroy {
     return CollectionType;
   }
 
-  public async approve(): Promise<void> {
-    if (!this.data.collection$.value?.uid) {
-      return;
-    }
-
-    await this.auth.sign(
-      {
-        uid: this.data.collection$.value.uid,
-      },
-      (sc, finish) => {
-        this.notification
-          .processRequest(this.collectionApi.approve(sc), 'Approved.', finish)
-          .subscribe(() => {
-            // none.
-          });
-      },
-    );
-  }
-
   public async reject(): Promise<void> {
     if (!this.data.collection$.value?.uid) {
       return;
