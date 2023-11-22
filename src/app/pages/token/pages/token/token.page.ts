@@ -101,9 +101,11 @@ export class TokenPage implements OnInit, OnDestroy {
               o === 'image' ? t.overviewGraphics : undefined,
             );
           });
-        this.subscriptions$.push(
-          this.spaceApi.listen(t.space).pipe(untilDestroyed(this)).subscribe(this.data.space$),
-        );
+        if (t.space) {
+          this.subscriptions$.push(
+            this.spaceApi.listen(t.space).pipe(untilDestroyed(this)).subscribe(this.data.space$),
+          );
+        }
         this.subscriptions$.push(
           this.tokenApi
             .getDistributionsLive(t.uid)
@@ -218,10 +220,12 @@ export class TokenPage implements OnInit, OnDestroy {
       this.memberDistributionSub$ = this.tokenApi
         .getMembersDistribution(this.data.token$.value?.uid, member.uid)
         .subscribe(this.data.memberDistribution$);
-      this.guardiansSubscription$ = this.spaceApi
-        .isGuardianWithinSpace(this.data.token$.value?.space, member?.uid)
-        .pipe(untilDestroyed(this))
-        .subscribe(this.isGuardianWithinSpace$);
+      if (this.data.token$.value?.space) {
+        this.guardiansSubscription$ = this.spaceApi
+          .isGuardianWithinSpace(this.data.token$.value?.space, member?.uid)
+          .pipe(untilDestroyed(this))
+          .subscribe(this.isGuardianWithinSpace$);
+      }
     } else {
       this.data.memberDistribution$?.next(undefined);
     }

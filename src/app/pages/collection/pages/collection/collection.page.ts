@@ -115,7 +115,7 @@ export class CollectionPage implements OnInit, OnDestroy {
           this.guardiansSubscription$.unsubscribe();
         }
 
-        if (this.auth.member$.value?.uid) {
+        if (this.auth.member$.value?.uid && obj.space) {
           this.guardiansSubscription$ = this.spaceApi
             .isGuardianWithinSpace(obj.space, this.auth.member$.value.uid)
             .pipe(untilDestroyed(this))
@@ -141,9 +141,11 @@ export class CollectionPage implements OnInit, OnDestroy {
 
     this.data.collection$.pipe(skip(1), first()).subscribe(async (p) => {
       if (p) {
-        this.subscriptions$.push(
-          this.spaceApi.listen(p.space).pipe(untilDestroyed(this)).subscribe(this.data.space$),
-        );
+        if (p.space) {
+          this.subscriptions$.push(
+            this.spaceApi.listen(p.space).pipe(untilDestroyed(this)).subscribe(this.data.space$),
+          );
+        }
         if (p.royaltiesSpace) {
           this.subscriptions$.push(
             this.spaceApi
