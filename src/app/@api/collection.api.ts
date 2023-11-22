@@ -56,9 +56,6 @@ export class CollectionApi extends BaseApi<Collection> {
   public update = (req: WenRequest): Observable<Collection | undefined> =>
     this.request(WEN_FUNC.updateCollection, req);
 
-  public approve = (req: WenRequest): Observable<Collection | undefined> =>
-    this.request(WEN_FUNC.approveCollection, req);
-
   public reject = (req: WenRequest): Observable<Collection | undefined> =>
     this.request(WEN_FUNC.rejectCollection, req);
 }
