@@ -16,6 +16,8 @@ import {
   Transaction,
   WEN_FUNC,
   WenRequest,
+  BUILD5_PROD_ADDRESS_API,
+  BUILD5_TEST_ADDRESS_API,
 } from '@build-5/interfaces';
 import {
   AirdropRepository,
@@ -226,14 +228,20 @@ export class MemberApi extends BaseApi<Member> {
 
   public createIfNotExists = (address: string): Observable<Member | undefined> =>
     this.request(WEN_FUNC.createMember, {
-      address: '',
+      address: address,
       projectApiKey: environment.build5Token,
-      body: address,
+      body: {
+        address,
+      },
     });
 
   public updateMember = (req: WenRequest): Observable<Member | undefined> =>
     this.request(WEN_FUNC.updateMember, req);
 
-  public generateAuthToken = (req: WenRequest): Observable<string | undefined> =>
-    this.request(WEN_FUNC.generateCustomToken, req);
+  public generateAuthToken = (req: WenRequest): Observable<string | undefined> => {
+    const origin = environment.production ? BUILD5_PROD_ADDRESS_API : BUILD5_TEST_ADDRESS_API;
+    return <any>this.httpClient.post(origin + WEN_FUNC.generateCustomToken, req, {
+      responseType: 'text',
+    });
+  };
 }
