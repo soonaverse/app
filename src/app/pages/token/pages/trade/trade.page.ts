@@ -547,10 +547,10 @@ export class TradePage implements OnInit, OnDestroy {
     return FILE_SIZES;
   }
 
-  public getShareUrl(token?: Token | null): string {
+  public getShareUrl(): string {
     return (
       'https://twitter.com/share?text=Check out token&url=' +
-      (token?.wenUrl || window?.location.href) +
+      window?.location.href +
       '&hashtags=soonaverse'
     );
   }

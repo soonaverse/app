@@ -57,7 +57,7 @@
           <div *ngIf="deviceService.isDesktop$ | async" class="font-medium" i18n>Token Info</div>
         </a>
 
-        <a class="flex items-center" [href]="getShareUrl(data.token$ | async)" target="_blank">
+        <a class="flex items-center" [href]="getShareUrl()" target="_blank">
           <wen-icon-share
             class="lg:text-icons-secondary lg:dark:text-icons-secondary-dark mr-2.5"
           ></wen-icon-share>
@@ -621,7 +621,7 @@
         ></wen-icon-info>
       </a>
 
-      <a class="flex items-center" [href]="getShareUrl(data.token$ | async)" target="_blank">
+      <a class="flex items-center" [href]="getShareUrl()" target="_blank">
         <wen-icon-share
           class="lg:text-icons-secondary lg:dark:text-icons-secondary-dark mr-2.5"
           nz-tooltip

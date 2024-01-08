@@ -2,27 +2,28 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   MIN_AMOUNT_TO_TRANSFER,
-  PublicCollections,
+  Dataset,
   StakeReward,
   StakeRewardStatus,
   StakeType,
   TokenStats,
   WEN_FUNC,
-  WenRequest,
+  Build5Request,
+  TokenStakeRewardRequest,
+  TokenStakeRewardsRemoveRequest,
 } from '@build-5/interfaces';
-import { StakeRewardRepository } from '@build-5/lib';
 import dayjs from 'dayjs';
 import { Observable } from 'rxjs';
-import { BaseApi, SOON_ENV } from './base.api';
+import { BaseApi } from './base.api';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StakeRewardApi extends BaseApi<StakeReward> {
-  private stakeRewardRepo = new StakeRewardRepository(SOON_ENV);
+  private stakeRewardDataset = this.project.dataset(Dataset.STAKE_REWARD);
 
   constructor(protected httpClient: HttpClient) {
-    super(PublicCollections.STAKE_REWARD, httpClient);
+    super(Dataset.STAKE_REWARD, httpClient);
   }
 
   /**
@@ -61,11 +62,13 @@ export class StakeRewardApi extends BaseApi<StakeReward> {
   }
 
   public token = (token: string, lastValue?: string) =>
-    this.stakeRewardRepo.getByTokenLive(token, lastValue);
+    this.stakeRewardDataset.getByTokenLive(token, lastValue);
 
-  public submit = (req: WenRequest): Observable<StakeReward[] | undefined> =>
-    this.request(WEN_FUNC.stakeReward, req);
+  public submit = (
+    req: Build5Request<TokenStakeRewardRequest>,
+  ): Observable<StakeReward[] | undefined> => this.request(WEN_FUNC.stakeReward, req);
 
-  public remove = (req: WenRequest): Observable<StakeReward[] | undefined> =>
-    this.request(WEN_FUNC.removeStakeReward, req);
+  public remove = (
+    req: Build5Request<TokenStakeRewardsRemoveRequest>,
+  ): Observable<StakeReward[] | undefined> => this.request(WEN_FUNC.removeStakeReward, req);
 }

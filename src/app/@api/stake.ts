@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { PublicCollections, Stake } from '@build-5/interfaces';
+import { Dataset, Stake } from '@build-5/interfaces';
 import { BaseApi } from './base.api';
 
 @Injectable({
@@ -8,6 +8,6 @@ import { BaseApi } from './base.api';
 })
 export class StakeApi extends BaseApi<Stake> {
   constructor(protected httpClient: HttpClient) {
-    super(PublicCollections.STAKE, httpClient);
+    super(Dataset.STAKE, httpClient);
   }
 }
