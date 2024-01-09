@@ -110,7 +110,7 @@ export class HelperService {
     return type === ProposalType.NATIVE;
   }
 
-  public getShareUrl(proposal?: Proposal | null): string {
-    return proposal?.wenUrl || window?.location.href;
+  public getShareUrl(): string {
+    return window?.location.href;
   }
 }

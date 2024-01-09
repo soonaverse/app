@@ -2,40 +2,45 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   NetworkAddress,
-  PublicCollections,
+  Dataset,
   Transaction,
   WEN_FUNC,
-  WenRequest,
+  Build5Request,
+  NftPurchaseRequest,
+  OrderTokenRequest,
+  AddressValidationRequest,
+  NftBidRequest,
 } from '@build-5/interfaces';
-import { TransactionRepository } from '@build-5/lib';
 import { Observable, of } from 'rxjs';
-import { BaseApi, SOON_ENV } from './base.api';
+import { BaseApi } from './base.api';
 
 @Injectable({
   providedIn: 'root',
 })
 export class OrderApi extends BaseApi<Transaction> {
-  private transactionRepo = new TransactionRepository(SOON_ENV);
+  private transactionDataset = this.project.dataset(Dataset.TRANSACTION);
 
   constructor(protected httpClient: HttpClient) {
-    super(PublicCollections.TRANSACTION, httpClient);
+    super(Dataset.TRANSACTION, httpClient);
   }
 
-  public orderNft = (req: WenRequest): Observable<Transaction | undefined> =>
+  public orderNft = (req: Build5Request<NftPurchaseRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.orderNft, req);
 
-  public orderToken = (req: WenRequest): Observable<Transaction | undefined> =>
-    this.request(WEN_FUNC.orderToken, req);
+  public orderToken = (
+    req: Build5Request<OrderTokenRequest>,
+  ): Observable<Transaction | undefined> => this.request(WEN_FUNC.orderToken, req);
 
-  public validateAddress = (req: WenRequest): Observable<Transaction | undefined> =>
-    this.request(WEN_FUNC.validateAddress, req);
+  public validateAddress = (
+    req: Build5Request<AddressValidationRequest>,
+  ): Observable<Transaction | undefined> => this.request(WEN_FUNC.validateAddress, req);
 
-  public openBid = (req: WenRequest): Observable<Transaction | undefined> =>
+  public openBid = (req: Build5Request<NftBidRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.openBid, req);
 
   public listenMultiple = (ids: NetworkAddress[]) =>
     ids.length
-      ? this.transactionRepo.getByFieldLive(
+      ? this.transactionDataset.getByFieldLive(
           ids.map(() => 'uid'),
           ids,
         )

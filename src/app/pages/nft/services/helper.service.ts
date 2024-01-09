@@ -149,8 +149,8 @@ export class HelperService {
     return '';
   }
 
-  public getShareUrl(nft?: Nft | null): string {
-    return nft?.wenUrl || window?.location.href;
+  public getShareUrl(): string {
+    return window?.location.href;
   }
 
   public isLocked(nft?: Nft | null, col?: Collection | null, exceptMember = false): boolean {

@@ -64,9 +64,9 @@ export class HelperService {
     });
   }
 
-  public getShareUrl(col?: Collection | null): string {
+  public getShareUrl(): string {
     const text = $localize`Check out collection`;
-    const url: string = col?.wenUrl || window?.location.href;
+    const url: string = window?.location.href;
     return 'https://twitter.com/share?text= ' + text + ' &url=' + url + '&hashtags=soonaverse';
   }
 
