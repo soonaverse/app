@@ -17,7 +17,7 @@ import {
   Network,
   StakeType,
   TOKEN_EXPIRY_HOURS,
-  WenRequest,
+  Build5Request,
 } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
@@ -29,7 +29,7 @@ const tanglePay = (window as any).iota;
 
 export interface MetamaskSignature {
   address: string;
-  req: WenRequest;
+  req: Build5Request<any>;
 }
 
 export interface SignCallback {
@@ -202,7 +202,7 @@ export class AuthService {
     return customToken && customToken.expiresOn && dayjs(customToken.expiresOn).isAfter(dayjs());
   }
 
-  public async sign(params: any = {}, cb: SignCallback): Promise<WenRequest | undefined> {
+  public async sign(params: any = {}, cb: SignCallback): Promise<Build5Request<any> | undefined> {
     this.showWalletPopup$.next(WalletStatus.ACTIVE);
     // We support either resign with metamask or reuse token.
     let sc: any | undefined | false = undefined;
@@ -332,7 +332,9 @@ export class AuthService {
     }
   }
 
-  private async signWithTanglePay(params: any = {}): Promise<WenRequest | undefined | false> {
+  private async signWithTanglePay(
+    params: any = {},
+  ): Promise<Build5Request<any> | undefined | false> {
     let currentAddress: string | undefined = undefined;
     if (tanglePay.isTanglePay) {
       try {
@@ -438,7 +440,7 @@ export class AuthService {
 
   public async signIn(wallet: Wallets = Wallets.Metamask): Promise<boolean> {
     this.showWalletPopup$.next(WalletStatus.ACTIVE);
-    let sc: WenRequest | undefined | false;
+    let sc: Build5Request<any> | undefined | false;
     if (wallet === Wallets.Metamask) {
       sc = await this.signWithMetamask({});
     } else if (wallet === Wallets.TanglePay) {

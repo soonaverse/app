@@ -1,64 +1,80 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  PublicCollections,
+  Build5Request,
+  Dataset,
   QUERY_MAX_LENGTH,
   Space,
+  SpaceClaimRequest,
+  SpaceCreateRequest,
+  SpaceJoinRequest,
+  SpaceLeaveRequest,
   SpaceMember,
+  SpaceMemberUpsertRequest,
+  SpaceUpdateRequest,
+  Subset,
   WEN_FUNC,
-  WenRequest,
 } from '@build-5/interfaces';
-import {
-  MemberRepository,
-  SpaceBlockedMemberRepository,
-  SpaceGuardianRepository,
-  SpaceKnockingMemberRepository,
-  SpaceMemberRepository,
-} from '@build-5/lib';
 import { Observable, map, of, switchMap } from 'rxjs';
-import { BaseApi, SOON_ENV } from './base.api';
+import { BaseApi } from './base.api';
 import { chunkArray } from '@core/utils/common.utils';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SpaceApi extends BaseApi<Space> {
-  private memberRepo = new MemberRepository(SOON_ENV);
-  private spaceMemberRepo = new SpaceMemberRepository(SOON_ENV);
-  private spaceGuardianRepo = new SpaceGuardianRepository(SOON_ENV);
-  private spaceBlockedRepo = new SpaceBlockedMemberRepository(SOON_ENV);
-  private spaceKnockingRepo = new SpaceKnockingMemberRepository(SOON_ENV);
+  private memberDataset = this.project.dataset(Dataset.MEMBER);
+  private spaceDataset = this.project.dataset(Dataset.SPACE);
 
   constructor(protected httpClient: HttpClient) {
-    super(PublicCollections.SPACE, httpClient);
+    super(Dataset.SPACE, httpClient);
   }
 
   public isMemberWithinSpace(spaceId: string, memberId: string): Observable<boolean> {
     if (!spaceId || !memberId) {
       return of(false);
     }
-    return this.spaceMemberRepo.getByIdLive(spaceId, memberId).pipe(map((member) => !!member));
+    return this.spaceDataset
+      .id(spaceId)
+      .subset(Subset.MEMBERS)
+      .subsetId(memberId)
+      .getLive()
+      .pipe(map((member) => !!member));
   }
 
   public isGuardianWithinSpace(spaceId: string, memberId: string): Observable<boolean> {
     if (!spaceId || !memberId) {
       return of(false);
     }
-    return this.spaceGuardianRepo.getByIdLive(spaceId, memberId).pipe(map((member) => !!member));
+    return this.spaceDataset
+      .id(spaceId)
+      .subset(Subset.GUARDIANS)
+      .subsetId(memberId)
+      .getLive()
+      .pipe(map((member) => !!member));
   }
 
   public isPendingMemberWithinSpace(spaceId: string, memberId: string): Observable<boolean> {
     if (!spaceId || !memberId) {
       return of(false);
     }
-    return this.spaceKnockingRepo.getByIdLive(spaceId, memberId).pipe(map((member) => !!member));
+    return this.spaceDataset
+      .id(spaceId)
+      .subset(Subset.KNOCKING_MEMBERS)
+      .subsetId(memberId)
+      .getLive()
+      .pipe(map((member) => !!member));
   }
 
   public listenGuardians = (spaceId: string, lastValue?: string) =>
-    this.spaceGuardianRepo.getAllLive(spaceId, lastValue).pipe(switchMap(this.getMembers));
+    this.spaceDataset
+      .id(spaceId)
+      .subset(Subset.GUARDIANS)
+      .getAllLive(lastValue)
+      .pipe(switchMap(this.getMembers));
 
   public getMembersWithoutData = (spaceId: string, lastValue?: string) =>
-    this.spaceMemberRepo.getAll(spaceId, lastValue);
+    this.spaceDataset.id(spaceId).subset(Subset.MEMBERS).getAll(lastValue);
 
   public getAllMembersWithoutData = async (spaceId: string) => {
     const members: SpaceMember[] = [];
@@ -73,66 +89,77 @@ export class SpaceApi extends BaseApi<Space> {
 
   public listenMembers = (spaceId: string, lastValue?: string, searchIds?: string[]) => {
     const baseObs = searchIds?.length
-      ? this.spaceMemberRepo.getManyByIdLive(searchIds.slice(0, 100), spaceId)
-      : this.spaceMemberRepo.getAllLive(spaceId, lastValue);
+      ? this.spaceDataset
+          .id(spaceId)
+          .subset(Subset.MEMBERS)
+          .getManyByIdLive(searchIds.slice(0, 100))
+      : this.spaceDataset.id(spaceId).subset(Subset.MEMBERS).getAllLive(lastValue);
     return baseObs.pipe(switchMap(this.getMembers));
   };
 
   public listenBlockedMembers = (spaceId: string, lastValue?: string, searchIds?: string[]) => {
+    const subset = this.spaceDataset.id(spaceId).subset(Subset.BLOCKED_MEMBERS);
     const baseObs = searchIds?.length
-      ? this.spaceBlockedRepo.getManyByIdLive(searchIds.slice(0, 100), spaceId)
-      : this.spaceBlockedRepo.getAllLive(spaceId, lastValue);
+      ? subset.getManyByIdLive(searchIds.slice(0, 100))
+      : subset.getAllLive(lastValue);
     return baseObs.pipe(switchMap(this.getMembers));
   };
 
   public listenPendingMembers = (spaceId: string, lastValue?: string, searchIds?: string[]) => {
+    const subset = this.spaceDataset.id(spaceId).subset(Subset.KNOCKING_MEMBERS);
     const baseObs = searchIds?.length
-      ? this.spaceKnockingRepo.getManyByIdLive(searchIds.slice(0, 100), spaceId)
-      : this.spaceKnockingRepo.getAllLive(spaceId, lastValue);
+      ? subset.getManyByIdLive(searchIds.slice(0, 100))
+      : subset.getAllLive(lastValue);
     return baseObs.pipe(switchMap(this.getMembers));
   };
 
   private getMembers = async (spaceMembers: SpaceMember[]) => {
     const uids = spaceMembers.map((m) => m.uid);
     const promises = chunkArray(uids, QUERY_MAX_LENGTH).map((chunk) =>
-      this.memberRepo.getManyById(chunk),
+      this.memberDataset.getManyById(chunk),
     );
     return (await Promise.all(promises)).flat();
   };
 
-  public create = (req: WenRequest): Observable<Space | undefined> =>
+  public create = (req: Build5Request<SpaceCreateRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.createSpace, req);
 
-  public save = (req: WenRequest): Observable<Space | undefined> =>
+  public save = (req: Build5Request<SpaceUpdateRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.updateSpace, req);
 
-  public join = (req: WenRequest): Observable<Space | undefined> =>
+  public join = (req: Build5Request<SpaceJoinRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.joinSpace, req);
 
-  public leave = (req: WenRequest): Observable<Space | undefined> =>
+  public leave = (req: Build5Request<SpaceLeaveRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.leaveSpace, req);
 
-  public setGuardian = (req: WenRequest): Observable<Space | undefined> =>
-    this.request(WEN_FUNC.addGuardianSpace, req);
+  public setGuardian = (
+    req: Build5Request<SpaceMemberUpsertRequest>,
+  ): Observable<Space | undefined> => this.request(WEN_FUNC.addGuardianSpace, req);
 
-  public claimSpace = (req: WenRequest): Observable<Space | undefined> =>
+  public claimSpace = (req: Build5Request<SpaceClaimRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.claimSpace, req);
 
-  public removeGuardian = (req: WenRequest): Observable<Space | undefined> =>
-    this.request(WEN_FUNC.removeGuardianSpace, req);
+  public removeGuardian = (
+    req: Build5Request<SpaceMemberUpsertRequest>,
+  ): Observable<Space | undefined> => this.request(WEN_FUNC.removeGuardianSpace, req);
 
-  public blockMember = (req: WenRequest): Observable<Space | undefined> =>
-    this.request(WEN_FUNC.blockMemberSpace, req);
+  public blockMember = (
+    req: Build5Request<SpaceMemberUpsertRequest>,
+  ): Observable<Space | undefined> => this.request(WEN_FUNC.blockMemberSpace, req);
 
-  public unblockMember = (req: WenRequest): Observable<Space | undefined> =>
-    this.request(WEN_FUNC.unblockMemberSpace, req);
+  public unblockMember = (
+    req: Build5Request<SpaceMemberUpsertRequest>,
+  ): Observable<Space | undefined> => this.request(WEN_FUNC.unblockMemberSpace, req);
 
-  public acceptMember = (req: WenRequest): Observable<Space | undefined> =>
-    this.request(WEN_FUNC.acceptMemberSpace, req);
+  public acceptMember = (
+    req: Build5Request<SpaceMemberUpsertRequest>,
+  ): Observable<Space | undefined> => this.request(WEN_FUNC.acceptMemberSpace, req);
 
-  public rejectMember = (req: WenRequest): Observable<Space | undefined> =>
-    this.request(WEN_FUNC.declineMemberSpace, req);
+  public rejectMember = (
+    req: Build5Request<SpaceMemberUpsertRequest>,
+  ): Observable<Space | undefined> => this.request(WEN_FUNC.declineMemberSpace, req);
 
-  public update = (req: WenRequest): Observable<Space | undefined> =>
+  public update = (req: Build5Request<SpaceUpdateRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.updateSpace, req);
 }

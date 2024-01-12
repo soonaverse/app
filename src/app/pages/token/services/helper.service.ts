@@ -143,8 +143,8 @@ export class HelperService {
     );
   }
 
-  public getShareUrl(token?: Token | null): string {
-    return token?.wenUrl || window?.location.href;
+  public getShareUrl(): string {
+    return window?.location.href;
   }
 
   public isExpired(val?: Transaction | null): boolean {

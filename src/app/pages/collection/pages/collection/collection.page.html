@@ -214,11 +214,7 @@
         >
           <div class="text-xs font-medium text-foregrounds-secondary" i18n>Links</div>
           <div class="flex">
-            <a
-              target="_new"
-              [href]="helper.getShareUrl(data.collection$ | async)"
-              class="flex items-center"
-            >
+            <a target="_new" [href]="helper.getShareUrl()" class="flex items-center">
               <wen-icon-share class="mr-3"> </wen-icon-share>
             </a>
 

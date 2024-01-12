@@ -12,7 +12,6 @@ import {
   TokenDistribution,
   TokenStats,
 } from '@build-5/interfaces';
-import { AwardFilter } from '@build-5/lib';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
@@ -20,7 +19,7 @@ import {
   AuditOneResponseMember,
 } from 'src/app/service-modules/audit-one/services/query.service';
 import { AwardApi } from './../../../@api/award.api';
-import { DEFAULT_LIST_SIZE } from './../../../@api/base.api';
+import { AwardFilter, DEFAULT_LIST_SIZE } from './../../../@api/base.api';
 import { ProposalApi, ProposalFilter } from './../../../@api/proposal.api';
 import { SpaceApi } from './../../../@api/space.api';
 import { AuthService } from './../../../components/auth/services/auth.service';

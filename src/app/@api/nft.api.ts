@@ -4,16 +4,20 @@ import {
   Member,
   Network,
   Nft,
-  PublicCollections,
+  Dataset,
   Transaction,
   TransactionPayloadType,
   TransactionType,
   WEN_FUNC,
-  WenRequest,
+  Build5Request,
+  NftCreateRequest,
+  NftSetForSaleRequest,
+  NftWithdrawRequest,
+  NftDepositRequest,
+  NftStakeRequest,
 } from '@build-5/interfaces';
-import { MemberRepository, NftRepository, TransactionRepository } from '@build-5/lib';
 import { Observable, switchMap } from 'rxjs';
-import { BaseApi, SOON_ENV } from './base.api';
+import { BaseApi } from './base.api';
 
 export interface SuccesfullOrdersWithFullHistory {
   newMember: Member;
@@ -30,30 +34,32 @@ export interface OffersHistory {
   providedIn: 'root',
 })
 export class NftApi extends BaseApi<Nft> {
-  private transactionRepo = new TransactionRepository(SOON_ENV);
-  private memberRepo = new MemberRepository(SOON_ENV);
-  private nftRepo = new NftRepository(SOON_ENV);
+  protected transactionDataset = this.project.dataset(Dataset.TRANSACTION);
+  protected memberDataset = this.project.dataset(Dataset.MEMBER);
+  protected nftDataset = this.project.dataset(Dataset.NFT);
 
   constructor(protected httpClient: HttpClient) {
-    super(PublicCollections.NFT, httpClient);
+    super(Dataset.NFT, httpClient);
   }
 
-  public create = (req: WenRequest): Observable<Nft | undefined> =>
+  public create = (req: Build5Request<NftCreateRequest>): Observable<Nft | undefined> =>
     this.request(WEN_FUNC.createNft, req);
 
-  public batchCreate = (req: WenRequest): Observable<string[] | undefined> =>
+  public batchCreate = (req: Build5Request<NftCreateRequest[]>): Observable<string[] | undefined> =>
     this.request(WEN_FUNC.createBatchNft, req);
 
-  public setForSaleNft = (req: WenRequest): Observable<Nft | undefined> =>
+  public setForSaleNft = (req: Build5Request<NftSetForSaleRequest>): Observable<Nft | undefined> =>
     this.request(WEN_FUNC.setForSaleNft, req);
 
-  public withdrawNft = (req: WenRequest): Observable<Transaction | undefined> =>
-    this.request(WEN_FUNC.withdrawNft, req);
+  public withdrawNft = (
+    req: Build5Request<NftWithdrawRequest>,
+  ): Observable<Transaction | undefined> => this.request(WEN_FUNC.withdrawNft, req);
 
-  public depositNft = (req: WenRequest): Observable<Transaction | undefined> =>
-    this.request(WEN_FUNC.depositNft, req);
+  public depositNft = (
+    req: Build5Request<NftDepositRequest>,
+  ): Observable<Transaction | undefined> => this.request(WEN_FUNC.depositNft, req);
 
-  public stakeNft = (req: WenRequest): Observable<Transaction | undefined> =>
+  public stakeNft = (req: Build5Request<NftStakeRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.stakeNft, req);
 
   public successfullOrders(
@@ -67,7 +73,7 @@ export class NftApi extends BaseApi<Nft> {
       fieldNames.push('network');
       fieldValues.push(network);
     }
-    return this.transactionRepo.getByFieldLive(fieldNames, fieldValues, lastValue).pipe(
+    return this.transactionDataset.getByFieldLive(fieldNames, fieldValues, lastValue).pipe(
       switchMap(async (transactions) => {
         const out: SuccesfullOrdersWithFullHistory[] = [];
         for (const transaction of transactions) {
@@ -75,8 +81,8 @@ export class NftApi extends BaseApi<Nft> {
           const sourceTransaction = Array.isArray(sourceTransactions)
             ? sourceTransactions[sourceTransactions.length - 1]
             : sourceTransactions;
-          const order = (await this.transactionRepo.getById(sourceTransaction!))!;
-          const member = (await this.memberRepo.getById(transaction.member!))!;
+          const order = (await this.transactionDataset.id(sourceTransaction!).get())!;
+          const member = (await this.memberDataset.id(transaction.member!).get())!;
 
           const successfullOrder: SuccesfullOrdersWithFullHistory = {
             newMember: member!,
@@ -85,7 +91,7 @@ export class NftApi extends BaseApi<Nft> {
           };
 
           for (const link of order.linkedTransactions!) {
-            const linkedTransaction = (await this.transactionRepo.getById(link))!;
+            const linkedTransaction = (await this.transactionDataset.id(link).get())!;
             if (
               (!linkedTransaction.payload.void && !linkedTransaction.payload.invalidPayment) ||
               linkedTransaction.type === TransactionType.BILL_PAYMENT
@@ -112,10 +118,10 @@ export class NftApi extends BaseApi<Nft> {
   }
 
   public getOffers(nft: Nft, lastValue?: string): Observable<OffersHistory[]> {
-    return this.transactionRepo.getNftOffersLive(nft, lastValue).pipe(
+    return this.transactionDataset.getNftOffersLive(nft, lastValue).pipe(
       switchMap(async (transactions) => {
         const promises = transactions.map(async (transaction) => {
-          const member = (await this.memberRepo.getById(transaction.member!))!;
+          const member = (await this.memberDataset.id(transaction.member!).get())!;
           return { member, transaction } as OffersHistory;
         });
         return (await Promise.all(promises)).sort(
@@ -126,21 +132,21 @@ export class NftApi extends BaseApi<Nft> {
   }
 
   public getMembersBids = (member: Member, nft: Nft, currentAuction = false, lastValue?: string) =>
-    this.transactionRepo.getMembersBidsLive(member.uid, nft, currentAuction, lastValue).pipe(
+    this.transactionDataset.getMembersBidsLive(member.uid, nft, currentAuction, lastValue).pipe(
       switchMap(async (transactions) => {
         const promises = transactions.map(async (transaction) => {
           let sourceTransactions = transaction.payload.sourceTransaction;
           let sourceTransactionId = Array.isArray(sourceTransactions)
             ? sourceTransactions[sourceTransactions.length - 1]
             : sourceTransactions;
-          let sourceTransaction = (await this.transactionRepo.getById(sourceTransactionId!))!;
+          let sourceTransaction = (await this.transactionDataset.id(sourceTransactionId!).get())!;
 
           if (sourceTransaction.type === TransactionType.PAYMENT) {
             sourceTransactions = sourceTransaction.payload.sourceTransaction;
             sourceTransactionId = Array.isArray(sourceTransactions)
               ? sourceTransactions[sourceTransactions.length - 1]
               : sourceTransactions;
-            sourceTransaction = (await this.transactionRepo.getById(sourceTransactionId!))!;
+            sourceTransaction = (await this.transactionDataset.id(sourceTransactionId!).get())!;
           }
           const isNftBid = sourceTransaction.payload.type === TransactionPayloadType.NFT_BID;
           return isNftBid ? transaction : undefined;
@@ -154,11 +160,11 @@ export class NftApi extends BaseApi<Nft> {
     );
 
   public lastCollection = (collection: string, lastValue?: string) =>
-    this.nftRepo.getByCollectionLive(collection, ['createdOn'], ['asc'], lastValue);
+    this.nftDataset.getByCollectionLive(collection, ['createdOn'], ['asc'], lastValue);
 
   public positionInCollection = (collection: string, lastValue?: string) =>
-    this.nftRepo.getByCollectionLive(collection, ['position'], ['asc'], lastValue);
+    this.nftDataset.getByCollectionLive(collection, ['position'], ['asc'], lastValue);
 
   public topMember = (member: string, lastValue?: string) =>
-    this.nftRepo.getByOwnerLive(member, lastValue);
+    this.nftDataset.getByOwnerLive(member, lastValue);
 }

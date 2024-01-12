@@ -2,21 +2,20 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   Award,
+  AwardApproveParticipantRequest,
+  AwardCreateRequest,
+  AwardFundRequest,
+  AwardParticpateRequest,
+  AwardRejectRequest,
+  Build5Request,
+  Dataset,
   Member,
-  PublicCollections,
+  Subset,
   Timestamp,
   WEN_FUNC,
-  WenRequest,
 } from '@build-5/interfaces';
-import {
-  AwardFilter,
-  AwardOwnerRepository,
-  AwardParticipantRepository,
-  AwardRepository,
-} from '@build-5/lib';
-
 import { map, Observable, of } from 'rxjs';
-import { BaseApi, SOON_ENV } from './base.api';
+import { AwardFilter, BaseApi } from './base.api';
 
 export interface AwardParticipantWithMember extends Member {
   comment?: string;
@@ -28,31 +27,45 @@ export interface AwardParticipantWithMember extends Member {
   providedIn: 'root',
 })
 export class AwardApi extends BaseApi<Award> {
-  protected awardRepo = new AwardRepository(SOON_ENV);
-  protected awardOwnerRepo = new AwardOwnerRepository(SOON_ENV);
-  protected awardParticipantRepo = new AwardParticipantRepository(SOON_ENV);
+  private awardDataset = this.project.dataset(Dataset.AWARD);
 
   constructor(protected httpClient: HttpClient) {
-    super(PublicCollections.AWARD, httpClient);
+    super(Dataset.AWARD, httpClient);
   }
 
-  public listenSpace = (space: string, filter = AwardFilter.ALL) =>
-    this.awardRepo.getBySpaceAndFilterLive(space, filter);
+  public listenSpace = (space: string, filter = AwardFilter.ALL, lastValue?: string) => {
+    switch (filter) {
+      case AwardFilter.ALL:
+        return this.awardDataset.getBySpaceLive(space, lastValue);
+      case AwardFilter.ACTIVE:
+        return this.awardDataset.getActiveLive(space, lastValue);
+      case AwardFilter.COMPLETED:
+        return this.awardDataset.getCompletedLive(space, lastValue);
+      case AwardFilter.DRAFT:
+        return this.awardDataset.getDraftLive(space, lastValue);
+      case AwardFilter.REJECTED:
+        return this.awardDataset.getRejectedLive(space, lastValue);
+    }
+  };
 
   public listenOwners = (award: string, lastValue?: string) =>
-    this.awardOwnerRepo.getAllLive(award, lastValue);
+    this.awardDataset.id(award).subset(Subset.OWNERS).getAllLive(lastValue);
 
-  public lastActive = (lastValue?: string) => this.awardRepo.getLastActiveLive(lastValue);
+  public lastActive = (lastValue?: string) => this.awardDataset.getLastActiveLive(lastValue);
 
   public listenPendingParticipants = (award: string, lastValue?: string, searchIds?: string[]) =>
-    this.awardParticipantRepo
+    this.awardDataset
+      .id(award)
+      .subset(Subset.PARTICIPANTS)
       .getParticipantsLive(award, false, searchIds, lastValue)
       .pipe(
         map((participants) => participants.map((p) => ({ ...p, participatedOn: p.createdOn }))),
       );
 
   public listenIssuedParticipants = (award: string, lastValue?: string, searchIds?: string[]) =>
-    this.awardParticipantRepo
+    this.awardDataset
+      .id(award)
+      .subset(Subset.PARTICIPANTS)
       .getParticipantsLive(award, true, searchIds, lastValue)
       .pipe(
         map((participants) => participants.map((p) => ({ ...p, participatedOn: p.createdOn }))),
@@ -62,26 +75,31 @@ export class AwardApi extends BaseApi<Award> {
     if (!awardId || !memberId) {
       return of(false);
     }
-    return this.awardParticipantRepo
-      .getByIdLive(awardId, memberId)
+    return this.awardDataset
+      .id(awardId)
+      .subset(Subset.PARTICIPANTS)
+      .subsetId(memberId)
+      .getLive()
       .pipe(map((awardMember) => !!awardMember));
   }
 
-  public create = (req: WenRequest): Observable<Award | undefined> =>
+  public create = (req: Build5Request<AwardCreateRequest>): Observable<Award | undefined> =>
     this.request(WEN_FUNC.createAward, req);
 
-  public participate = (req: WenRequest): Observable<Award | undefined> =>
-    this.request(WEN_FUNC.participateAward, req);
+  public participate = (
+    req: Build5Request<AwardParticpateRequest>,
+  ): Observable<Award | undefined> => this.request(WEN_FUNC.participateAward, req);
 
-  public approveParticipant = (req: WenRequest): Observable<Award | undefined> =>
-    this.request(WEN_FUNC.approveParticipantAward, req);
+  public approveParticipant = (
+    req: Build5Request<AwardApproveParticipantRequest>,
+  ): Observable<Award | undefined> => this.request(WEN_FUNC.approveParticipantAward, req);
 
-  public approve = (req: WenRequest): Observable<Award | undefined> =>
+  public approve = (req: Build5Request<AwardFundRequest>): Observable<Award | undefined> =>
     this.request(WEN_FUNC.fundAward, req);
 
-  public reject = (req: WenRequest): Observable<Award | undefined> =>
+  public reject = (req: Build5Request<AwardRejectRequest>): Observable<Award | undefined> =>
     this.request(WEN_FUNC.rejectAward, req);
 
-  public fundAndMint = (req: WenRequest): Observable<Award | undefined> =>
+  public fundAndMint = (req: Build5Request<AwardFundRequest>): Observable<Award | undefined> =>
     this.request(WEN_FUNC.fundAward, req);
 }
