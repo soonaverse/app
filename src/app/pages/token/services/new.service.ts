@@ -198,10 +198,7 @@ export class NewService {
     }
   }
 
-  public uploadFile(
-    type: 'token_icon' | 'token_introductionary',
-    item: NzUploadXHRArgs,
-  ): Subscription {
+  public uploadFile(item: NzUploadXHRArgs): Subscription {
     if (!this.auth.member$.value) {
       const err = $localize`Member seems to log out during the file upload request.`;
       this.nzNotification.error(err, '');
