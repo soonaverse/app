@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router, Event } from '@angular/router';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { BehaviorSubject } from 'rxjs';
 import { DeviceService } from '../device';
+import { filter } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +22,12 @@ export class RouterService {
   public urlToNewToken = '/' + ROUTER_UTILS.config.token.root + '/new';
 
   constructor(private router: Router, private deviceService: DeviceService) {
+    //this.router.events.pipe(
+    //  filter((event: Event): event is NavigationEnd => event instanceof NavigationEnd)
+    //).subscribe((event: NavigationEnd) => {
+    //  console.log('Navigation Event:', event);
+    //});
+
     this.updateVariables();
 
     this.router.events.subscribe((obj) => {

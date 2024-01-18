@@ -47,6 +47,7 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { BehaviorSubject, Subscription, combineLatest, interval, map, skip, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { DataService } from '../../services/data.service';
+import { CartService } from '@components/cart/services/cart.service';
 
 export enum ListingType {
   CURRENT_BIDS = 0,
@@ -83,6 +84,7 @@ export class NFTPage implements OnInit, OnDestroy {
     preparing: $localize`Available once minted...`,
     view: $localize`View`,
   };
+  public currentNft: Nft | null | undefined = null;
   private subscriptions$: Subscription[] = [];
   private nftSubscriptions$: Subscription[] = [];
   private collectionSubscriptions$: Subscription[] = [];
@@ -109,11 +111,16 @@ export class NFTPage implements OnInit, OnDestroy {
     private themeService: ThemeService,
     private seo: SeoService,
     private notification: NotificationService,
+    private cartService: CartService,
   ) {
     // none
   }
 
   public ngOnInit(): void {
+    this.data.nft$.subscribe(nft => {
+      //console.log('[OnInit] Current NFT:', nft);
+      this.currentNft = nft;
+    });
     this.deviceService.viewWithSearch$.next(false);
     this.route.params?.pipe(untilDestroyed(this)).subscribe((obj) => {
       const id: string | undefined = obj?.[ROUTER_UTILS.config.nft.nft.replace(':', '')];
@@ -520,6 +527,23 @@ export class NFTPage implements OnInit, OnDestroy {
       }
     } else {
       return nft.name;
+    }
+  }
+
+  public addToCart(nft: Nft): void {
+    if (nft && this.data.collection$) {
+      //console.log('[addToCart-this.data.collection$.value', this.data.collection$.value)
+      //console.log('[addToCart-this.data.nft$.value', this.data.nft$.value)
+      this.data.collection$.pipe(take(1)).subscribe(collection => {
+        if (collection) {
+          this.cartService.addToCart({ nft, collection, quantity: 1 });
+          //console.log('Added to cart:', nft, collection);
+        } else {
+          //console.error('Collection is undefined or null');
+        }
+      });
+    } else {
+      //console.error('NFT is undefined or null');
     }
   }
 

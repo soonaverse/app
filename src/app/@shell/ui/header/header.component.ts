@@ -48,6 +48,7 @@ import {
   skip,
 } from 'rxjs';
 import { MemberApi } from './../../../@api/member.api';
+import { CartService } from './../../../components/cart/services/cart.service';
 
 const IS_SCROLLED_HEIGHT = 20;
 
@@ -87,6 +88,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   >(undefined);
   private subscriptionTransaction$?: Subscription;
   private subscriptionNotification$?: Subscription;
+  public cartItemCount = 0;
+  private cartItemsSubscription!: Subscription;
 
   constructor(
     public auth: AuthService,
@@ -102,6 +105,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private cd: ChangeDetectorRef,
     private nzNotification: NzNotificationService,
     private checkoutService: CheckoutService,
+    private cartService: CartService,
   ) {}
 
   public ngOnInit(): void {
@@ -120,6 +124,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.enableCreateAwardProposal = false;
         this.cd.markForCheck();
       }
+    });
+
+    this.cartItemsSubscription = this.cartService.getCartItems().subscribe(items => {
+      this.cartItemCount = items.length;
     });
 
     const memberRoute = `/${ROUTER_UTILS.config.member.root}/`;
@@ -218,6 +226,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
         lastMember = undefined;
       }
     });
+
+    this.cartService.showCart$.subscribe(value => {
+      //console.log('Current value of showCart$: ', value);
+    });
   }
 
   public async onOpenCheckout(): Promise<void> {
@@ -315,6 +327,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }, 2500);
   }
 
+  public getCartItemCount(): number {
+    return this.cartItemCount;
+  }
+
   public unreadNotificationCount(): number {
     if (!this.notifications$.value.length || !this.auth.member$.value?.uid) {
       return 0;
@@ -372,11 +388,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
   }
 
+  public openShoppingCart(): void {
+    console.log('Opening shopping cart...');
+    this.cartService.showCart();
+  }
+
   public ngOnDestroy(): void {
     this.cancelAccessSubscriptions();
     this.subscriptionNotification$?.unsubscribe();
     this.subscriptionTransaction$?.unsubscribe();
     this.currentCheckoutNft = undefined;
     this.currentCheckoutCollection = undefined;
+    if (this.cartItemsSubscription) {
+      this.cartItemsSubscription.unsubscribe();
+    }
   }
 }

@@ -124,16 +124,22 @@ export class HelperService {
   }
 
   public getDate(date: any): any {
-    if (typeof date === 'object' && date?.toDate) {
-      const d = date.toDate();
-      if (!(d instanceof Date) || isNaN(d.valueOf())) {
-        return undefined;
-      }
+    //console.log(`[getDate] Original input:`, date);
+    if (typeof date === 'object') {
+      if (date?.toDate) {
 
-      return d;
-    } else {
-      return date || undefined;
+        const dateFromObject = date.toDate();
+        //console.log(`[getDate] Object with toDate method detected, toDate result:`, dateFromObject);
+        return dateFromObject;
+      } else if (date?.seconds) {
+
+        const dateFromSeconds = new Date(date.seconds * 1000); // Convert to milliseconds
+        //console.log(`[getDate] Object with seconds property detected, converted to Date:`, dateFromSeconds);
+        return dateFromSeconds;
+      }
     }
+    //console.log(`[getDate] Returning undefined, input could not be parsed as a date.`);
+    return undefined;
   }
 
   public getCountdownTitle(nft?: Nft | null): string {
@@ -168,15 +174,23 @@ export class HelperService {
   }
 
   public isAvailableForSale(nft?: Nft | null, col?: Collection | null): boolean {
+    //console.log("[NFThelper-isAvailableForSale] function called");
     if (!col || !nft?.availableFrom || col?.status === CollectionStatus.MINTING) {
+      //console.log("[NFT helper.service.ts] isAvailableForSale function returning false.  nft name: " + nft?.name + ", col name: " + col?.name)
       return false;
     }
 
-    return (
+
+    const isAvail = (
       col.approved === true &&
       !!this.getDate(nft.availableFrom) &&
       dayjs(this.getDate(nft.availableFrom)).isSameOrBefore(dayjs(), 's')
     );
+    //console.log("[NFT helper.service.ts] isAvailableForSale function returning " + isAvail + ".  nft name: " + nft?.name + ", col name: " + col?.name + ". nft.availableFrom: " + nft.availableFrom.seconds);
+    //console.log("col.approved: " + (col.approved === true));
+    //console.log("!!this.getDate(nft.availableFrom): " + !!this.getDate(nft.availableFrom) + ", this.getDate(nft.availableFrom): " + this.getDate(nft.availableFrom));
+    //console.log("dayjs(this.getDate(nft.availableFrom)).isSameOrBefore(dayjs(), 's')" + dayjs(this.getDate(nft.availableFrom)).isSameOrBefore(dayjs(), 's'));
+    return isAvail;
   }
 
   public canBeSetForSale(nft?: Nft | null): boolean {

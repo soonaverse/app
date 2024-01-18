@@ -51,6 +51,7 @@ export interface MarketCollectionsFilters {
     access?: string[];
     space?: string[];
     category?: string[];
+    status?: string[];
   };
   range?: {
     price: string;

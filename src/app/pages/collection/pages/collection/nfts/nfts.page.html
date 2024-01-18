@@ -4,18 +4,27 @@
       <wen-search-box [sections]="[]" [reset$]="reset$"></wen-search-box>
     </div>
   </header>
-  <div class="relative mt-11 lg:mt-10">
-    <ais-stats data-layout="mobile">
-      <ng-template let-state="state">
-        <span
-          class="font-medium ais-Stats-text text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
-        >
-          {{ state.nbHits | number }} <ng-container i18n>records</ng-container>
-        </span>
-      </ng-template>
-    </ais-stats>
+
+  <div class="relative mt-11 lg:mt-10 flex justify-between items-center">
+    <div>
+      <ais-stats data-layout="mobile">
+        <ng-template let-state="state">
+          <div class="flex items-center space-x-2">
+            <span class="font-medium ais-Stats-text text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+              {{ state.nbHits | number }} <ng-container i18n>records</ng-container>
+            </span>
+            <div class="flex-1 w-72">
+              <nz-slider [(ngModel)]="sweepCount" [nzMin]="1" [nzMax]="availableNftsCount > 20 ? 20 : availableNftsCount" [nzStep]="1" [nzTipFormatter]="null"></nz-slider>
+            </div>
+            <span class="w-12 text-center font-bold">{{ sweepCount }}</span>
+            <button nz-button nzType="primary" nzSize="small" (click)="sweepToCart(sweepCount)">Sweep to Cart</button>
+          </div>
+        </ng-template>
+      </ais-stats>
+    </div>
+
     <button
-      class="absolute top-0 right-0 z-10 wen-secondary"
+      class="wen-secondary"
       nz-button
       nzSize="small"
       (click)="filterStorageService.marketNftsFiltersVisible$.next(!filterStorageService.marketNftsFiltersVisible$.value)"
@@ -25,11 +34,11 @@
         [size]="16"
         class="mr-1 transition-all"
         [ngClass]="{ 'rotate-180': (filterStorageService.marketNftsFiltersVisible$ | async) === false}"
-      >
-      </wen-icon-collapse-arrow>
+      ></wen-icon-collapse-arrow>
       <div i18n>Filters&Sort</div>
     </button>
-  </div>
+</div>
+
   <main class="flex justify-between mx-auto">
     <section
       class="container-results"

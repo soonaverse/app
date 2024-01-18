@@ -1,0 +1,139 @@
+<ng-container *ngIf="cartService.getCartItems() | async as cartItems">
+  <nz-modal
+    [nzVisible]="cartService.showCart$ | async"
+    nzClosable="true"
+    (nzOnCancel)="handleClose()"
+    [nzTitle]="modalHeader"
+    [nzWidth]="'75%'"
+  >
+    <ng-template #modalHeader>
+      <div class="wen-modal-header">
+        <h4 class="modal-title">Your Cart</h4>
+      </div>
+    </ng-template>
+
+    <div class="flex flex-col mt-12 lg:flex-row lg:mt-9">
+      <ng-container *nzModalContent>
+        <div *ngIf="cartItems.length; else emptyCart" class="relative w-full">
+          <div *ngFor="let item of cartItems; let i = index; trackBy: trackByItemId" class="flex items-start justify-between mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-4">
+            <div class="flex w-full">
+              <div class="flex items-start font-semibold text-sm flex-1 mr-4">
+                <img src="{{item.nft.media}}" alt="{{item.nft.name}}" class="w-20 h-20 object-cover mr-4">
+                <div>
+                  <div class="text-xs font-medium text-foregrounds-secondary underline" i18n>Info</div>
+                  <div>Collection:
+                    <a href="/collection/{{item.collection.uid}}" class="text-blue-500 hover:text-blue-600" (click)="handleClose()">
+                      {{item.collection.name}}
+                    </a>
+                    <!--
+                    <a [routerLink]="['/collection', item.collection.uid]" class="text-blue-500 hover:text-blue-600" (click)="handleClose()">
+                      {{item.collection.name}}
+                    </a>-->
+                  </div>
+                  <div>NFT:
+                    <a href="/nft/{{item.nft.uid}}" class="text-blue-500 hover:text-blue-600" (click)="handleClose()">
+                      {{item.nft.name}}
+                    </a>
+                    <!--
+                    <a [routerLink]="['/nft', item.nft.uid]" class="text-blue-500 hover:text-blue-600" (click)="handleClose()">
+                      {{item.nft.name}}
+                    </a>-->
+                  </div>
+                  <div>Royalties: {{ (item.collection.royaltiesFee || 0) * 100 }}%</div>
+                </div>
+              </div>
+
+              <div class="text-lg font-bold truncate flex-1 mr-4">
+                <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>Status</div>
+                {{ cartItemsStatus[i] }}
+              </div>
+
+              <div class="text-lg font-bold truncate flex-1 mr-4">
+                <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>Qty Added / Available</div>
+                <!--<input type="number" [ngModel]="item.quantity" (change)="updateQuantity($event, item.nft.uid)" min="0" max="{{ cartItemsQuantities[i] }}" />-->
+                <!--
+                <nz-input-number
+                  i18n
+                  nzSize="small"
+                  [ngModel]="item.quantity"
+                  min="0"
+                  [nzMax]="{{ cartItemsQuantities[i] }}"
+                  (change)="updateQuantity($event, item.nft.uid)"
+                ></nz-input-number>
+                <span>/ {{ cartItemsQuantities[i] }}</span>
+                -->
+
+                <div class="flex items-baseline">
+                  <nz-form-item class="grow">
+                    <nz-form-control i18n-nzErrorTip nzErrorTip="Minimum 1 and maximum {{ cartItemsQuantities[i] }}.">
+                      <nz-input-group nzSize="default" [nzSuffix]="suffixMaxQty" class="w-30">
+                        <input
+                          nz-input
+                          type="number"
+                          class="w-full"
+                          nzSize="default"
+                          i18n
+                          [ngModel]="item.quantity"
+                          (change)="updateQuantity($event, item.nft.uid)"
+                          min="0"
+                          max="{{ cartItemsQuantities[i] }}"
+                        />
+                        <ng-template #suffixMaxQty>
+                          <span>/ {{ cartItemsQuantities[i] }}</span>
+                        </ng-template>
+                      </nz-input-group>
+                    </nz-form-control>
+                  </nz-form-item>
+                  <!--
+                  <wen-icon-question-circle
+                    class="ml-3 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                    nz-tooltip
+                    nzTooltipPlacement="right"
+                    i18n-nzTooltipTitle
+                    nzTooltipTitle="The amount of badges you want to make available for this award. This can also be thought of as how many awards you want to give out."
+                  ></wen-icon-question-circle>
+                  -->
+                </div>
+              </div>
+
+              <div class="text-lg font-bold truncate flex-1 mr-4">
+                <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>Price Each</div>
+                <ng-container *ngIf="cartItemPrices[item.nft.uid]">
+                  <div class="mr-2 text-xs font-medium line-through truncate text-foregrounds-secondary" *ngIf="discount(item.collection, item.nft) < 1">
+                    {{ (cartItemPrices[item.nft.uid]?.originalPrice | formatToken:(item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network):true:true) | async }}
+                  </div>
+                  <div class="text-lg font-bold truncate">
+                    {{ (cartItemPrices[item.nft.uid]?.discountedPrice | formatToken:(item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network):true:true) | async }}
+                  </div>
+                </ng-container>
+                <ng-template #noPrice>
+                  <div class="text-lg font-bold truncate">-</div>
+                </ng-template>
+              </div>
+
+
+              <div class="text-lg font-bold truncate flex flex-col items-center">
+                <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>Remove</div>
+                <button nz-button nzType="default" (click)="removeFromCart(item.nft.uid)">
+                  <wen-icon-trash
+                    class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                  ></wen-icon-trash>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #emptyCart>Your cart is empty.</ng-template>
+      </ng-container>
+
+      <div class="text-center" *nzModalFooter>
+        <button nz-button nzType="text" nzType="default" class="wen-btn-link" (click)="handleClose()" i18n>
+          Close
+        </button>
+        <button nz-button nzType="primary" (click)="handleCheckout()" i18n>
+          Checkout
+        </button>
+      </div>
+    </div>
+  </nz-modal>
+</ng-container>

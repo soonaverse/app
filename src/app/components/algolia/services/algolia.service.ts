@@ -4,7 +4,7 @@ import { RefinementMappings } from '@components/algolia/refinement/refinement.co
 import { enumToArray } from '@core/utils/manipulations.utils';
 import { environment } from '@env/environment';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { Access, Categories, NftAvailable } from '@build-5/interfaces';
+import { Access, Categories, NftAvailable, CollectionStatus } from '@build-5/interfaces';
 import algoliasearch from 'algoliasearch/lite';
 
 const accessMapping: RefinementMappings = {};
@@ -71,6 +71,18 @@ export class AlgoliaService {
     const categories = enumToArray(Categories);
     return algoliaItems.map((algolia) => {
       const label = categories.find((category) => category.key === algolia.value)?.value;
+      return {
+        ...algolia,
+        label: label,
+        highlighted: label,
+      };
+    });
+  }
+
+  public convertCollectionStatus(algoliaItems: any[]) {
+    const statuses = enumToArray(CollectionStatus);
+    return algoliaItems.map((algolia) => {
+      const label = statuses.find((status) => status.key === algolia.value)?.value;
       return {
         ...algolia,
         label: label,

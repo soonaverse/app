@@ -248,27 +248,44 @@
         ></wen-connect-wallet>
       </div>
 
-      <div
-        *ngIf="!helper.isLocked(data.nft$ | async, data.collection$ | async, true) && helper.isAvailableForSale(data.nft$ | async, data.collection$ | async) && (!(data.nft$ | async)?.owner || (data.nft$ | async)?.owner !== (auth.member$ | async)?.uid)"
-        class="mt-10"
-      >
-        <button
-          nz-button
-          nzType="primary"
-          (click)="buy($event)"
-          *ngIf="auth.isLoggedIn$ | async"
-          nzBlock
-          nzSize="large"
-          i18n
+      <div *ngIf="(data.nft$ | async) as nft">
+        <div
+          *ngIf="!helper.isLocked(nft, data.collection$ | async, true) && helper.isAvailableForSale(nft, data.collection$ | async) && (!nft.owner || nft.owner !== (auth.member$ | async)?.uid)"
+          class="mt-10"
         >
-          Buy now
-        </button>
+          <!-- Buy Now Button -->
+          <button
+            nz-button
+            nzType="primary"
+            (click)="buy($event)"
+            *ngIf="auth.isLoggedIn$ | async"
+            nzBlock
+            nzSize="large"
+            i18n
+          >
+            Buy now
+          </button>
 
-        <wen-connect-wallet
-          class="w-full"
-          wrapperClass="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
-          *ngIf="(auth.isLoggedIn$ | async) === false"
-        ></wen-connect-wallet>
+          <!-- Add to Cart Button -->
+          <button
+            nz-button
+            nzType="primary"
+            (click)="addToCart(nft)"
+            nzBlock
+            nzSize="large"
+            i18n
+            style="margin-top:5px;margin-bottom:5px;"
+          >
+            Add to Cart
+          </button>
+
+          <!-- Connect Wallet Component -->
+          <wen-connect-wallet
+            class="w-full"
+            wrapperClass="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+            *ngIf="(auth.isLoggedIn$ | async) === false"
+          ></wen-connect-wallet>
+        </div>
       </div>
 
       <div class="mt-12 font-medium" [innerHtml]="(data.nft$ | async)?.description| markdown"></div>

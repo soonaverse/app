@@ -10,6 +10,7 @@ import { UnitsService } from '@core/services/units';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/nft/services/helper.service';
+import { CartService } from '@components/cart/services/cart.service';
 import {
   Access,
   Collection,
@@ -89,6 +90,7 @@ export class NftCardComponent {
     private memberApi: MemberApi,
     private fileApi: FileApi,
     private cache: CacheService,
+    public cartService: CartService,
   ) {}
 
   public onBuy(event: MouseEvent): void {
@@ -182,4 +184,19 @@ export class NftCardComponent {
   public get collectionStatuses(): typeof CollectionStatus {
     return CollectionStatus;
   }
+
+  public addToCart(event: MouseEvent, nft: Nft | null | undefined, collection: Collection | null | undefined): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (nft && collection) {
+      console.log('[NftCardComponent] Adding item to cart:', nft, collection);
+      this.cartService.addToCart({ nft, collection, quantity: 1 });
+      // Optionally, provide feedback to the user
+    } else {
+      // Handle the case when nft or collection is null or undefined
+      console.error('Attempted to add a null or undefined NFT or Collection to the cart');
+    }
+  }
+
 }
