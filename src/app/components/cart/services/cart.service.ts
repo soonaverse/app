@@ -3,6 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import {
   Nft,
   Collection,
+  MIN_AMOUNT_TO_TRANSFER,
 } from '@build-5/interfaces';
 import { getItem, setItem, StorageItem } from './../../../@core/utils/local-storage.utils';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
@@ -13,6 +14,7 @@ export interface CartItem {
   nft: Nft;
   collection: Collection;
   quantity: number;
+  salePrice: number;
 }
 
 @Injectable({
@@ -70,6 +72,12 @@ export class CartService {
     //console.log('[CartService-removeFromCart] Cart updated:', updatedCartItems);
   }
 
+  public removeItemsFromCart(itemIds: string[]): void {
+    const updatedCartItems = this.cartItemsSubject.value.filter(item => !itemIds.includes(item.nft.uid));
+    this.cartItemsSubject.next(updatedCartItems);
+    this.saveCartItems();
+  }
+
   public getCartItems(): BehaviorSubject<CartItem[]> {
     //console.log('[CartService] getCartItems function called.');
     return this.cartItemsSubject;
@@ -119,5 +127,36 @@ export class CartService {
     }
     //console.log("[service-getAvailableNftQuantity] returning 0, isAvailableForSale: " + isAvailableForSale + ". placeholder: " + cartItem.nft.placeholderNft);
     return 0;
+  }
+
+  public discount(collection?: Collection | null, nft?: Nft | null): number {
+    if (!collection?.space || !this.auth.member$.value || nft?.owner) {
+      return 1;
+    }
+
+    const spaceRewards = (this.auth.member$.value.spaces || {})[collection.space];
+    const descDiscounts = [...(collection.discounts || [])].sort((a, b) => b.amount - a.amount);
+    for (const discount of descDiscounts) {
+      const awardStat = (spaceRewards?.awardStat || {})[discount.tokenUid!];
+      const memberTotalReward = awardStat?.totalReward || 0;
+      if (memberTotalReward >= discount.tokenReward) {
+        return 1 - discount.amount;
+      }
+    }
+    return 1;
+  }
+
+  public calc(amount: number | null | undefined, discount: number): number {
+    let finalPrice = Math.ceil((amount || 0) * discount);
+    if (finalPrice < MIN_AMOUNT_TO_TRANSFER) {
+      finalPrice = MIN_AMOUNT_TO_TRANSFER;
+    }
+
+    return finalPrice;
+  }
+
+  public calcPrice(item: CartItem, discount: number): number {
+    const itemPrice = item.nft?.availablePrice || item.nft?.price || 0;
+    return this.calc(itemPrice, discount); // assuming calc method applies the discount
   }
 }

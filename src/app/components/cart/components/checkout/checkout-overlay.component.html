@@ -1,7 +1,246 @@
-<!-- Display cart items -->
-<div *ngFor="let item of items">
-  <!-- Display item details here -->
-</div>
+<ng-container *ngIf="groupedCartItems.length > 0; else emptyCart">
+  <div *ngIf="unavailableItemCount > 0" class="alert alert-warning">
+    <nz-tag nzColor="orange">Notice</nz-tag> {{ unavailableItemCount }} items were not included in the checkout due to not being available for sale.
+  </div>
+  <nz-divider></nz-divider>
+  <div *ngFor="let group of groupedCartItems">
+    <h3 nz-typography nzTitle level="4" class="mb-2">Network/Token: {{ group.tokenSymbol }}</h3>
+    <label>
+      <input type="radio" name="selectedNetwork" [(ngModel)]="selectedNetwork" [value]="group.tokenSymbol">
+      Select this network/group of NFTs for payment
+    </label>
+    <nz-table nzBordered [nzData]="group.items">
+      <thead>
+        <tr>
+          <th nzWidth="20%">NFT Name</th>
+          <th nzWidth="20%">Collection Name</th>
+          <th nzWidth="20%">Quantity Added</th>
+          <th nzWidth="20%">Price ({{ group.tokenSymbol }})</th>
+          <th nzWidth="20%">Line Item Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let item of group.items; let i = index">
+          <tr>
+            <td>{{ item.nft.name }}</td>
+            <td>{{ item.collection.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>
+              {{ (item.salePrice | formatToken:(item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network):true:true) | async }}
+            </td>
+            <td>
+              {{ ((item.quantity * item.salePrice) | formatToken:(item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network):true:true) | async }}
+            </td>
+          </tr>
+        </ng-container>
+        <tr>
+          <td colspan="2"><strong>Total</strong></td>
+          <td><strong>{{ group.totalQuantity }}</strong></td>
+          <td></td>
+          <td>
+            <strong>
+              {{ (group.totalPrice / 1000000) }} {{ group.tokenSymbol }}
+            </strong>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+    <nz-divider></nz-divider>
+  </div>
 
-<!-- Payment Form -->
-<!-- Implement your payment form here -->
+  <div [ngSwitch]="currentStep" class="w-full">
+    <ng-container *ngSwitchCase="stepType.CONFIRM">
+      <ng-container *ngTemplateOutlet="confirmTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.TRANSACTION">
+      <ng-container *ngTemplateOutlet="transactionTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.WAIT">
+      <ng-container *ngTemplateOutlet="waitTemplate"></ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="stepType.COMPLETE">
+      <ng-container *ngTemplateOutlet="completeTemplate"></ng-container>
+    </ng-container>
+  </div>
+</ng-container>
+
+<ng-template #emptyCart>
+  <nz-empty nzNotFoundContent="No cart items were available for sale."></nz-empty>
+</ng-template>
+
+<ng-template #confirmTemplate>
+  <div class="wen-transaction-select-container">
+    <wen-terms-and-conditions
+      class="lg:ml-6"
+      [isChecked]="agreeTermsConditions"
+      documentLink="https://docs.google.com/document/d/1ng67fXTdINhmgkLpnbS_SkiDlZSsDAqrd13cbwXQCcQ"
+      (wenOnCheckChange)="agreeTermsConditions = $event"
+    >
+    </wen-terms-and-conditions>
+
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full mt-6 lg:w-auto"
+      [disabled]="!agreeTermsConditions"
+      i18n
+      (click)="initiateBulkOrder()"
+    >
+      Confirm and Lock
+    </button>
+
+    <div
+      class="mt-4 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+    >
+      <span i18n>Your NFTs will be locked for purchase for</span> {{ lockTime }}
+      <span i18n>minutes</span>.
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #transactionTemplate>
+  <div class="wen-transaction-active-container">
+    <div class="px-4 py-2.5 rounded-2xl border border-alerts-error flex">
+      <wen-icon-stopwatch class="mr-2 lg:mr-3"></wen-icon-stopwatch>
+      <div class="text-base font-medium">
+        <span *ngIf="!helper.isExpired(transaction$ | async)">{{
+          expiryTicker$ | async | countdownTime
+        }}</span>
+        <span class="text-alerts-error" *ngIf="!helper.isExpired(transaction$ | async)" i18n>
+          remaining to make the transfer.</span
+        >
+        <span class="text-alerts-error" *ngIf="helper.isExpired(transaction$ | async)" i18n
+          >Expired</span
+        >
+      </div>
+    </div>
+
+    <nz-alert
+      class="mt-2"
+      nzType="warning"
+      nzShowIcon
+      *ngIf="!helper.isExpired(transaction$ | async) && invalidPayment"
+      i18n-nzMessage
+      nzMessage="We received invalid amount. Try again."
+    ></nz-alert>
+
+    <wen-send-funds
+      class="block w-full"
+      *ngIf="!helper.isExpired(transaction$ | async)"
+      [targetAddress]="targetAddress"
+      [formattedAmount]="
+        targetAmount | formatToken : mintingDataNetwork : true | async
+      "
+    >
+    </wen-send-funds>
+
+    <wen-wallet-deeplink
+      *ngIf="!helper.isExpired(transaction$ | async)"
+      class="mt-6"
+      [targetAddress]="targetAddress"
+      [network]="mintingDataNetwork"
+      [targetAmount]="(targetAmount || 0).toString()"
+    >
+    </wen-wallet-deeplink>
+  </div>
+</ng-template>
+
+<ng-template #waitTemplate>
+  <div class="wen-transaction-wait-container">
+    <div class="w-full my-8 border border-inputs-border dark:border-inputs-border-dark rounded-2xl">
+      <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+      <div class="wen-modal-history-log">
+        <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+          <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+          <a
+            class="absolute text-sm font-medium underline left-16 wen-btn-link"
+            target="_blank"
+            *ngIf="t.link"
+            [href]="transactionService.getExplorerLink(t.transaction)"
+            >{{ t.label }}</a
+          >
+          <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+        </div>
+      </div>
+    </div>
+
+    <button
+      nz-button
+      nzSize="large"
+      nzType="default"
+      class="flex items-center border-inputs-border dark:border-inputs-border-dark"
+    >
+      <wen-icon-refresh
+        class="mr-3 text-foregrounds-secondary dark:text-foregrounds-secondary-dark animate-spin"
+      ></wen-icon-refresh>
+      <div class="text-foregrounds-primary dark:text-foregrounds-primary-dark" i18n>
+        Validating your transaction...
+      </div>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #completeTemplate>
+  <div class="wen-transaction-active-container">
+    <div class="w-full my-8 border border-inputs-border dark:border-inputs-border-dark rounded-2xl">
+      <div class="wen-modal-block-title" i18n>Transaction history</div>
+
+      <div class="h-auto px-5 pt-4 pb-2">
+        <div *ngFor="let t of history; let first = first" class="wen-modal-history-log-item">
+          <div class="mr-2 text-sm font-medium text-foregrounds-secondary">{{ t.date | Time }}</div>
+          <a
+            class="absolute text-sm font-medium underline left-16 wen-btn-link"
+            target="_blank"
+            *ngIf="t.link"
+            [href]="transactionService.getExplorerLink(t.transaction)"
+            >{{ t.label }}</a
+          >
+          <div class="absolute text-sm font-medium left-16" *ngIf="!t.link">{{ t.label }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex lg:items-center">
+      <div
+        class="flex items-center justify-center w-10 h-10 rounded-full bg-alerts-success dark:bg-alerts-success-dark"
+      >
+        <wen-icon-check
+          class="text-foregrounds-on-primary dark:text-foregrounds-on-primary-dark"
+        ></wen-icon-check>
+      </div>
+      <div class="ml-3.5 text-lg font-medium" i18n>Transaction complete. Congratulations.</div>
+    </div>
+
+    <div class="flex flex-col items-center w-full mt-8 lg:flex-row lg:w-auto">
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="large"
+        class="w-full lg:mr-2"
+        i18n
+        (click)="close()"
+      >
+        Close checkout
+      </button>
+
+      <!--
+      <button
+        nz-button
+        nzType="default"
+        (click)="goToNft()"
+        nzSize="large"
+        class="w-full mb-6 lg:mb-0 lg:mt-1"
+        i18n
+      >
+        Show my NFT
+      </button>
+      -->
+
+    </div>
+  </div>
+</ng-template>

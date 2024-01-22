@@ -191,7 +191,7 @@ export class NftCardComponent {
 
     if (nft && collection) {
       console.log('[NftCardComponent] Adding item to cart:', nft, collection);
-      this.cartService.addToCart({ nft, collection, quantity: 1 });
+      this.cartService.addToCart({ nft, collection, quantity: 1, salePrice: 0 });
       // Optionally, provide feedback to the user
     } else {
       // Handle the case when nft or collection is null or undefined

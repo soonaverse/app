@@ -14,7 +14,8 @@
               {{ state.nbHits | number }} <ng-container i18n>records</ng-container>
             </span>
             <div class="flex-1 w-72">
-              <nz-slider [(ngModel)]="sweepCount" [nzMin]="1" [nzMax]="availableNftsCount > 20 ? 20 : availableNftsCount" [nzStep]="1" [nzTipFormatter]="null"></nz-slider>
+              <nz-slider *ngIf="availableNftsCount !== null && availableNftsCount > 1" [(ngModel)]="sweepCount" [nzMin]="1" [nzMax]="availableNftsCount > 20 ? 20 : availableNftsCount" [nzStep]="1" [nzTipFormatter]="null"></nz-slider>
+              <!--<nz-slider *ngIf="sliderCalcMaxValueIsKnown" [(ngModel)]="sweepCount" [nzMin]="1" [nzMax]="sliderCalcMaxValue" [nzStep]="1" [nzTipFormatter]="null"></nz-slider>-->
             </div>
             <span class="w-12 text-center font-bold">{{ sweepCount }}</span>
             <button nz-button nzType="primary" nzSize="small" (click)="sweepToCart(sweepCount)">Sweep to Cart</button>

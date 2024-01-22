@@ -536,7 +536,7 @@ export class NFTPage implements OnInit, OnDestroy {
       //console.log('[addToCart-this.data.nft$.value', this.data.nft$.value)
       this.data.collection$.pipe(take(1)).subscribe(collection => {
         if (collection) {
-          this.cartService.addToCart({ nft, collection, quantity: 1 });
+          this.cartService.addToCart({ nft, collection, quantity: 1, salePrice: 0 });
           //console.log('Added to cart:', nft, collection);
         } else {
           //console.error('Collection is undefined or null');

@@ -6,6 +6,8 @@ import {
   OnInit,
   TemplateRef,
   ViewChild,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { CollectionApi } from '@api/collection.api';
@@ -35,6 +37,7 @@ import {
   NotificationType,
   TRANSACTION_AUTO_EXPIRY_MS,
   Transaction,
+  TransactionPayloadType
 } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationRef, NzNotificationService } from 'ng-zorro-antd/notification';
@@ -49,6 +52,9 @@ import {
 } from 'rxjs';
 import { MemberApi } from './../../../@api/member.api';
 import { CartService } from './../../../components/cart/services/cart.service';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { CheckoutOverlayComponent } from '@components/cart/components/checkout/checkout-overlay.component';
+
 
 const IS_SCROLLED_HEIGHT = 20;
 
@@ -77,6 +83,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public isMobileMenuVisible = false;
   public isScrolled = false;
   public isCheckoutOpen = false;
+  public isCartCheckoutOpen = false;
   public currentCheckoutNft?: Nft;
   public currentCheckoutCollection?: Collection;
   public notifications$: BehaviorSubject<Notification[]> = new BehaviorSubject<Notification[]>([]);
@@ -90,6 +97,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private subscriptionNotification$?: Subscription;
   public cartItemCount = 0;
   private cartItemsSubscription!: Subscription;
+
+  @Output() openCartModal = new EventEmitter<void>();
 
   constructor(
     public auth: AuthService,
@@ -105,7 +114,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private cd: ChangeDetectorRef,
     private nzNotification: NzNotificationService,
     private checkoutService: CheckoutService,
-    private cartService: CartService,
+    public cartService: CartService,
+    private modalService: NzModalService,
   ) {}
 
   public ngOnInit(): void {
@@ -234,6 +244,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   public async onOpenCheckout(): Promise<void> {
     const t = this.transaction$.getValue();
+    console.log('[header-onOpenCheckout] transaction: ', t)
+    console.log('[header-onOpenCheckout] t?.payload.type: ', t?.payload.type)
+    if (t?.payload.type == TransactionPayloadType.NFT_PURCHASE_BULK) {
+      console.log('[header-onOpenCheckout] !t?.payload.type && t?.payload.type == TransactionPayloadType.NFT_PURCHASE_BULK equals true and isCartCheckoutOpen set to true')
+      this.openCartModal.emit();
+      this.openCheckoutOverlay();
+    }
+
     if (!t?.payload.nft || !t.payload.collection) {
       return;
     }
@@ -257,6 +275,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
+  private openCheckoutOverlay(): void {
+    const cartItems = this.cartService.getCartItems().getValue();
+
+    this.modalService.create({
+      nzTitle: 'Checkout',
+      nzContent: CheckoutOverlayComponent,
+      nzComponentParams: { items: cartItems },
+      nzFooter: null,
+      nzWidth: '80%',
+    });
+  }
+
+  public handleOpenCartModal(): void {
+    this.openCartModal.emit();
+  }
+
+
+
   public get filesizes(): typeof FILE_SIZES {
     return FILE_SIZES;
   }
@@ -276,6 +312,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public closeCheckout(): void {
     this.checkoutService.modalOpen$.next(false);
     this.isCheckoutOpen = false;
+  }
+
+  public closeCartCheckout() {
+    this.isCartCheckoutOpen = false;
   }
 
   public goToMyProfile(): void {
@@ -392,6 +432,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     console.log('Opening shopping cart...');
     this.cartService.showCart();
   }
+
+  public handleCartCheckout(): void {
+    this.isCartCheckoutOpen = true;
+    this.cd.markForCheck();
+  }
+
 
   public ngOnDestroy(): void {
     this.cancelAccessSubscriptions();

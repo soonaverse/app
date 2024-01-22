@@ -4,7 +4,9 @@ import {
   OnInit,
   OnDestroy,
   ChangeDetectorRef,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  EventEmitter,
+  Output,
 } from '@angular/core';
 import {
   Nft,
@@ -14,12 +16,12 @@ import {
 import { Subscription, forkJoin, map, take, catchError, of } from 'rxjs';
 import { CartService, CartItem } from './../../services/cart.service';
 import { AuthService } from '@components/auth/services/auth.service';
-//import { ActivatedRoute, Router } from '@angular/router';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { CheckoutOverlayComponent } from '../checkout/checkout-overlay.component';
 import { NftApi } from '@api/nft.api';
-//import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
+
 
 @Component({
   selector: 'app-cart-modal',
@@ -33,6 +35,9 @@ export class CartModalComponent implements OnInit, OnDestroy {
   public nftPath: string = ROUTER_UTILS.config.nft.root;
   public cartItemsQuantities: number[] = [];
   cartItemPrices: { [key: string]: { originalPrice: number, discountedPrice: number } } = {};
+  isCartCheckoutOpen = false;
+
+  @Output() onCartCheckout = new EventEmitter<void>();
 
   constructor(
     public cartService: CartService,
@@ -40,6 +45,7 @@ export class CartModalComponent implements OnInit, OnDestroy {
     public auth: AuthService,
     private modalService: NzModalService,
     private nftApi: NftApi,
+    private notification: NzNotificationService,
   ) {}
 
   ngOnInit() {
@@ -96,7 +102,6 @@ export class CartModalComponent implements OnInit, OnDestroy {
 
         this.cartService.updateCartItems(freshCartItems);
 
-        // Perform existing refresh operations
         this.cartItemsStatus = freshCartItems.map(item => this.cartItemStatus(item));
         this.cartItemsQuantities = freshCartItems.map(item => this.cartItemSaleAvailableQty(item));
         freshCartItems.forEach(item => {
@@ -110,9 +115,8 @@ export class CartModalComponent implements OnInit, OnDestroy {
         this.cd.markForCheck();
       },
       error => {
-        console.error('Error while refreshing cart items:', error);
-        // Handle the error appropriately
-        // Maybe show a user-friendly message or perform some recovery logic
+        console.error('Error while refreshing cart items: ', error);
+        this.notification.error($localize`Error while refreshing cart items: ` + error, '');
       }
     );
   }
@@ -159,7 +163,7 @@ export class CartModalComponent implements OnInit, OnDestroy {
     return finalPrice;
   }
 
-  private calcPrice(item: CartItem, discount: number): number {
+  public calcPrice(item: CartItem, discount: number): number {
     const itemPrice = item.nft?.availablePrice || item.nft?.price || 0;
     return this.calc(itemPrice, discount); // assuming calc method applies the discount
   }
@@ -182,15 +186,15 @@ export class CartModalComponent implements OnInit, OnDestroy {
     return availQty;
   }
 
-  handleClose(): void {
+  public handleClose(): void {
     this.cartService.hideCart();
   }
 
+  /*
   public handleCheckout(): void {
     const cartItems = this.cartService.getCartItems().getValue();
     //console.log('Proceeding to checkout with items:', cartItems);
 
-    // Open the checkout overlay here
     this.modalService.create({
       nzTitle: 'Checkout',
       nzContent: CheckoutOverlayComponent,
@@ -198,6 +202,21 @@ export class CartModalComponent implements OnInit, OnDestroy {
         items: cartItems
       },
       nzFooter: null,
+      nzWidth: '80%'
+    });
+  }
+  */
+
+  public handleCartCheckout(): void {
+    const cartItems = this.cartService.getCartItems().getValue();
+
+    this.modalService.create({
+      nzTitle: 'Checkout',
+      nzContent: CheckoutOverlayComponent,
+      nzComponentParams: { items: cartItems },
+      nzFooter: null,
+      nzWidth: '80%',
+      nzOnOk: () => this.isCartCheckoutOpen = false  // Optionally handle the modal close event
     });
   }
 

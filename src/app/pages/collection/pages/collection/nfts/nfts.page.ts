@@ -5,7 +5,6 @@ import {
   Input,
   OnChanges,
   OnInit,
-  AfterViewInit,
 } from '@angular/core';
 import { NftApi } from '@api/nft.api';
 import { CollectionApi } from '@api/collection.api';
@@ -49,7 +48,7 @@ export enum HOT_TAGS {
   // eslint-disable-next-line @angular-eslint/prefer-on-push-component-change-detection
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class CollectionNFTsPage implements OnInit, OnChanges, AfterViewInit {
+export class CollectionNFTsPage implements OnInit, OnChanges {
   @Input() public collectionId?: string | null;
   config?: InstantSearchConfig;
   sections = marketSections;
@@ -65,7 +64,6 @@ export class CollectionNFTsPage implements OnInit, OnChanges, AfterViewInit {
   private destroy$ = new Subject<void>();
   availableNftsCount = 0;
   collection: Collection | null = null;
-
 
   constructor(
     public filter: FilterService,
@@ -93,7 +91,7 @@ export class CollectionNFTsPage implements OnInit, OnChanges, AfterViewInit {
             }
           },
           error: err => {
-            console.error('Error fetching collection:', err);
+            //console.error('Error fetching collection:', err);
             this.notification.error($localize`Error occurred while fetching collection.`, '');
           }
         });
@@ -105,21 +103,8 @@ export class CollectionNFTsPage implements OnInit, OnChanges, AfterViewInit {
         this.availableNftsCount = count;
       });
 
-    setTimeout(() => {
-      this.sweepCount = 1; // or whatever the initial value should be
-      this.cd.markForCheck(); // trigger change detection manually
-    }, 0);
-
-    console.log('Component initialized, sweepCount:', this.sweepCount);
-
     // Algolia change detection bug fix
     setInterval(() => this.cd.markForCheck(), 500);
-  }
-
-  ngAfterViewInit() {
-    console.log('View fully initialized, slider should now be rendered, sweepCount: ', this.sweepCount);
-    this.cd.detectChanges();
-    this.cd.markForCheck();
   }
 
   public ngOnChanges(): void {
@@ -149,9 +134,7 @@ export class CollectionNFTsPage implements OnInit, OnChanges, AfterViewInit {
     if (hits && hits.length > 0 && this.collection) {
       this.originalNfts = hits;
       this.collectionNftStateService.setListedNfts(hits, this.collection);
-      console.log('Original hits captured:', this.originalNfts);
     } else {
-      console.log('Received empty hits array or collection is not available, ignoring to preserve existing listedNfts.');
     }
   }
 
@@ -160,10 +143,8 @@ export class CollectionNFTsPage implements OnInit, OnChanges, AfterViewInit {
   }
 
   public convertAllToSoonaverseModel = (algoliaItems: any[]) => {
-    // Capture the original hits
     this.captureOriginalHits(algoliaItems);
 
-    // Proceed with the transformation
     const transformedItems = algoliaItems.map((algolia) => ({
       ...algolia,
       availableFrom: Timestamp.fromMillis(+algolia.availableFrom),
@@ -191,15 +172,11 @@ export class CollectionNFTsPage implements OnInit, OnChanges, AfterViewInit {
         filter((collection): collection is Collection => collection !== undefined),
         switchMap((collection: Collection) => {
           const listedNfts = this.collectionNftStateService.getListedNfts();
-          console.log('[sweep] Listed NFTs:', listedNfts);
 
-          // Filter NFTs based on their availability for sale
           const nftsForSale = listedNfts.filter(nft =>
             this.cartService.isNftAvailableForSale(nft, collection)
           );
-          console.log('[sweep] NFTs for sale:', nftsForSale);
 
-          // Sort the NFTs by price and take the top 'count' NFTs
           const nftsToAdd = nftsForSale
             .slice(0, Math.min(count, 20))
             .sort((a, b) => {
@@ -208,26 +185,21 @@ export class CollectionNFTsPage implements OnInit, OnChanges, AfterViewInit {
               return priceA - priceB;
             });
 
-          // Add the selected NFTs to the cart
           nftsToAdd.forEach(nft => {
-            const cartItem = { nft, collection, quantity: 1 };
+            const cartItem = { nft, collection, quantity: 1, salePrice: 0 };
             this.cartService.addToCart(cartItem);
           });
 
-          console.log('[sweep] NFTs added to cart:', nftsToAdd);
           this.notification.success($localize`NFTs swept into your cart, open cart to review added items.`, '');
 
-          return nftsToAdd; // You can return something relevant here if needed
+          return nftsToAdd;
         }),
         takeUntil(this.destroy$)
       )
       .subscribe({
         next: nftsToAdd => {
-          // Handle successful addition
-          console.log('[sweep] NFTs successfully added to cart:', nftsToAdd);
         },
         error: err => {
-          console.error('[sweep] Error fetching collection:', err);
           this.notification.error($localize`Error occurred while fetching collection.`, '');
         }
       });

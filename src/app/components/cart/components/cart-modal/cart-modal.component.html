@@ -50,19 +50,6 @@
 
               <div class="text-lg font-bold truncate flex-1 mr-4">
                 <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>Qty Added / Available</div>
-                <!--<input type="number" [ngModel]="item.quantity" (change)="updateQuantity($event, item.nft.uid)" min="0" max="{{ cartItemsQuantities[i] }}" />-->
-                <!--
-                <nz-input-number
-                  i18n
-                  nzSize="small"
-                  [ngModel]="item.quantity"
-                  min="0"
-                  [nzMax]="{{ cartItemsQuantities[i] }}"
-                  (change)="updateQuantity($event, item.nft.uid)"
-                ></nz-input-number>
-                <span>/ {{ cartItemsQuantities[i] }}</span>
-                -->
-
                 <div class="flex items-baseline">
                   <nz-form-item class="grow">
                     <nz-form-control i18n-nzErrorTip nzErrorTip="Minimum 1 and maximum {{ cartItemsQuantities[i] }}.">
@@ -84,15 +71,6 @@
                       </nz-input-group>
                     </nz-form-control>
                   </nz-form-item>
-                  <!--
-                  <wen-icon-question-circle
-                    class="ml-3 text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
-                    nz-tooltip
-                    nzTooltipPlacement="right"
-                    i18n-nzTooltipTitle
-                    nzTooltipTitle="The amount of badges you want to make available for this award. This can also be thought of as how many awards you want to give out."
-                  ></wen-icon-question-circle>
-                  -->
                 </div>
               </div>
 
@@ -110,7 +88,6 @@
                   <div class="text-lg font-bold truncate">-</div>
                 </ng-template>
               </div>
-
 
               <div class="text-lg font-bold truncate flex flex-col items-center">
                 <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>Remove</div>
@@ -130,7 +107,7 @@
         <button nz-button nzType="text" nzType="default" class="wen-btn-link" (click)="handleClose()" i18n>
           Close
         </button>
-        <button nz-button nzType="primary" (click)="handleCheckout()" i18n>
+        <button nz-button nzType="primary" (click)="handleCartCheckout()" i18n>
           Checkout
         </button>
       </div>

@@ -51,7 +51,7 @@ import { CartModule } from '@components/cart/cart.module';
     NftCheckoutModule,
     MobileMenuModule,
     MobileHeaderModule,
-    CartModule
+    CartModule,
   ],
   exports: [HeaderComponent],
 })

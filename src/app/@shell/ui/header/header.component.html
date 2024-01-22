@@ -275,7 +275,9 @@
 </header>
 
 <wen-sign-in-modal></wen-sign-in-modal>
-<app-cart-modal></app-cart-modal>
+<!--<app-cart-modal (openCheckout)="openCartCheckout()"></app-cart-modal>-->
+
+<app-cart-modal (openCartModal)="handleOpenCartModal()"></app-cart-modal>
 
 <wen-nft-checkout
   *ngIf="isCheckoutOpen"
