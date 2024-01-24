@@ -10,15 +10,26 @@
       <ais-stats data-layout="mobile">
         <ng-template let-state="state">
           <div class="flex items-center space-x-2">
-            <span class="font-medium ais-Stats-text text-foregrounds-secondary dark:text-foregrounds-secondary-dark">
+            <span
+              class="font-medium ais-Stats-text text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+            >
               {{ state.nbHits | number }} <ng-container i18n>records</ng-container>
             </span>
             <div class="flex-1 w-72">
-              <nz-slider *ngIf="availableNftsCount !== null && availableNftsCount > 1" [(ngModel)]="sweepCount" [nzMin]="1" [nzMax]="availableNftsCount > 20 ? 20 : availableNftsCount" [nzStep]="1" [nzTipFormatter]="null"></nz-slider>
+              <nz-slider
+                *ngIf="availableNftsCount !== null && availableNftsCount > 1"
+                [(ngModel)]="sweepCount"
+                [nzMin]="1"
+                [nzMax]="availableNftsCount > 20 ? 20 : availableNftsCount"
+                [nzStep]="1"
+                [nzTipFormatter]="null"
+              ></nz-slider>
               <!--<nz-slider *ngIf="sliderCalcMaxValueIsKnown" [(ngModel)]="sweepCount" [nzMin]="1" [nzMax]="sliderCalcMaxValue" [nzStep]="1" [nzTipFormatter]="null"></nz-slider>-->
             </div>
             <span class="w-12 text-center font-bold">{{ sweepCount }}</span>
-            <button nz-button nzType="primary" nzSize="small" (click)="sweepToCart(sweepCount)">Sweep to Cart</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="sweepToCart(sweepCount)">
+              Sweep to Cart
+            </button>
           </div>
         </ng-template>
       </ais-stats>
@@ -38,7 +49,7 @@
       ></wen-icon-collapse-arrow>
       <div i18n>Filters&Sort</div>
     </button>
-</div>
+  </div>
 
   <main class="flex justify-between mx-auto">
     <section

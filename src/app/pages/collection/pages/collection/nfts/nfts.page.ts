@@ -78,11 +78,12 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
     public cartService: CartService,
     private notification: NzNotificationService,
     private collectionNftStateService: CollectionNftStateService,
-  ) { }
+  ) {}
 
   public ngOnInit(): void {
     if (this.collectionId) {
-      this.collectionApi.getCollectionById(this.collectionId)
+      this.collectionApi
+        .getCollectionById(this.collectionId)
         .pipe(take(1))
         .subscribe({
           next: (collectionData) => {
@@ -91,16 +92,16 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
               this.collectionNftStateService.setListedNfts(this.originalNfts, this.collection);
             }
           },
-          error: err => {
+          error: (err) => {
             // console.error('Error fetching collection:', err);
             this.notification.error($localize`Error occurred while fetching collection.`, '');
-          }
+          },
         });
     }
 
     this.collectionNftStateService.availableNftsCount$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(count => {
+      .subscribe((count) => {
         this.availableNftsCount = count;
       });
 
@@ -166,40 +167,42 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
       return;
     }
 
-    this.collectionApi.getCollectionById(this.collectionId)
+    this.collectionApi
+      .getCollectionById(this.collectionId)
       .pipe(
         take(1),
         filter((collection): collection is Collection => collection !== undefined),
         switchMap((collection: Collection) => {
           const listedNfts = this.collectionNftStateService.getListedNfts();
 
-          const nftsForSale = listedNfts.filter(nft =>
-            this.cartService.isNftAvailableForSale(nft, collection)
+          const nftsForSale = listedNfts.filter((nft) =>
+            this.cartService.isNftAvailableForSale(nft, collection),
           );
 
-          const nftsToAdd = nftsForSale
-            .slice(0, Math.min(count, 20))
-            .sort((a, b) => {
-              const priceA = a.availablePrice != null ? a.availablePrice : 0;
-              const priceB = b.availablePrice != null ? b.availablePrice : 0;
-              return priceA - priceB;
-            });
+          const nftsToAdd = nftsForSale.slice(0, Math.min(count, 20)).sort((a, b) => {
+            const priceA = a.availablePrice != null ? a.availablePrice : 0;
+            const priceB = b.availablePrice != null ? b.availablePrice : 0;
+            return priceA - priceB;
+          });
 
-          nftsToAdd.forEach(nft => {
+          nftsToAdd.forEach((nft) => {
             const cartItem = { nft, collection, quantity: 1, salePrice: 0 };
             this.cartService.addToCart(cartItem);
           });
 
-          this.notification.success($localize`NFTs swept into your cart, open cart to review added items.`, '');
+          this.notification.success(
+            $localize`NFTs swept into your cart, open cart to review added items.`,
+            '',
+          );
 
           return nftsToAdd;
         }),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe({
-        error: err => {
+        error: (err) => {
           this.notification.error($localize`Error occurred while fetching collection.`, '');
-        }
+        },
       });
   }
 

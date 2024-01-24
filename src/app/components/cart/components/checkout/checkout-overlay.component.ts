@@ -1,4 +1,12 @@
-import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, Output, EventEmitter, } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { CartItem, CartService } from './../../services/cart.service';
 import {
   CollectionType,
@@ -25,6 +33,7 @@ import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { NzModalRef } from 'ng-zorro-antd/modal';
+import { ThemeList, ThemeService } from '@core/services/theme';
 
 export enum StepType {
   CONFIRM = 'Confirm',
@@ -70,9 +79,12 @@ export class CheckoutOverlayComponent implements OnInit {
   unavailableItemCount = 0;
   cartItemPrices: { [key: string]: { originalPrice: number; discountedPrice: number } } = {};
   public agreeTermsConditions = false;
-  public transaction$: BehaviorSubject<Transaction | undefined> = new BehaviorSubject<Transaction | undefined>(undefined);
+  public transaction$: BehaviorSubject<Transaction | undefined> = new BehaviorSubject<
+    Transaction | undefined
+  >(undefined);
   public history: HistoryItem[] = [];
-  public expiryTicker$: BehaviorSubject<dayjs.Dayjs | null> = new BehaviorSubject<dayjs.Dayjs | null>(null);
+  public expiryTicker$: BehaviorSubject<dayjs.Dayjs | null> =
+    new BehaviorSubject<dayjs.Dayjs | null>(null);
   public invalidPayment = false;
   public receivedTransactions = false;
   public targetAddress?: string;
@@ -89,6 +101,7 @@ export class CheckoutOverlayComponent implements OnInit {
   public nftPath = ROUTER_UTILS.config.nft.root;
   public collectionPath: string = ROUTER_UTILS.config.collection.root;
 
+  public theme = ThemeList;
   constructor(
     private cartService: CartService,
     private auth: AuthService,
@@ -101,7 +114,12 @@ export class CheckoutOverlayComponent implements OnInit {
     private router: Router,
     private nzNotification: NzNotificationService,
     private modalRef: NzModalRef,
+    public themeService: ThemeService,
   ) {}
+
+  public get themes(): typeof ThemeList {
+    return ThemeList;
+  }
 
   ngOnInit() {
     // console.log('checkout-overlay ngOnInit called, running groupItems code.');
@@ -184,7 +202,7 @@ export class CheckoutOverlayComponent implements OnInit {
         // Load purchased NFTs.
         if (val.payload.nftOrders && val.payload.nftOrders.length > 0) {
           this.purchasedNfts = this.purchasedNfts || [];
-          val.payload.nftOrders.forEach(nftOrder => {
+          val.payload.nftOrders.forEach((nftOrder) => {
             firstValueFrom(this.nftApi.listen(nftOrder.nft)).then((obj) => {
               if (obj !== null && obj !== undefined) {
                 const purchasedNft = obj as Nft;
@@ -288,15 +306,21 @@ export class CheckoutOverlayComponent implements OnInit {
   groupItems() {
     // console.log('groupItems function called.')
     const groups: { [tokenSymbol: string]: GroupedCartItem } = {};
-    this.items.forEach(item => {
-      const tokenSymbol = (item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network) || 'Unknown';
+    this.items.forEach((item) => {
+      const tokenSymbol =
+        (item.nft?.placeholderNft
+          ? item.collection?.mintingData?.network
+          : item.nft?.mintingData?.network) || 'Unknown';
       const discount = this.discount(item);
       const originalPrice = this.calcPrice(item, 1);
       const discountedPrice = this.calcPrice(item, discount);
-      const price = (this.discount(item) < 1) ? discountedPrice : originalPrice;
+      const price = this.discount(item) < 1 ? discountedPrice : originalPrice;
       item.salePrice = price;
 
-      const network = (item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network) || undefined;
+      const network =
+        (item.nft?.placeholderNft
+          ? item.collection?.mintingData?.network
+          : item.nft?.mintingData?.network) || undefined;
 
       if (this.cartService.isCartItemAvailableForSale(item)) {
         if (!groups[tokenSymbol]) {
@@ -305,7 +329,7 @@ export class CheckoutOverlayComponent implements OnInit {
             items: [],
             totalQuantity: 0,
             totalPrice: 0,
-            network
+            network,
           };
         }
         groups[tokenSymbol].items.push(item);
@@ -412,17 +436,24 @@ export class CheckoutOverlayComponent implements OnInit {
   }
 
   public async initiateBulkOrder(): Promise<void> {
-    const selectedGroup = this.groupedCartItems.find(group => group.tokenSymbol === this.selectedNetwork);
+    const selectedGroup = this.groupedCartItems.find(
+      (group) => group.tokenSymbol === this.selectedNetwork,
+    );
 
     if (selectedGroup && selectedGroup.items.length > 0) {
       this.purchasedTokenSymbol = selectedGroup.tokenSymbol;
       const firstItem = selectedGroup.items[0];
-      this.mintingDataNetwork = firstItem.nft?.placeholderNft ? firstItem.collection?.mintingData?.network : firstItem.nft?.mintingData?.network;
+      this.mintingDataNetwork = firstItem.nft?.placeholderNft
+        ? firstItem.collection?.mintingData?.network
+        : firstItem.nft?.mintingData?.network;
     }
 
     if (!selectedGroup || selectedGroup.items.length === 0) {
       console.warn('No network selected or no items in the selected network.');
-      this.nzNotification.error($localize`No network selected or no items in the selected network.`, '');
+      this.nzNotification.error(
+        $localize`No network selected or no items in the selected network.`,
+        '',
+      );
       return;
     }
 
@@ -440,7 +471,7 @@ export class CheckoutOverlayComponent implements OnInit {
   public convertGroupedCartItemsToNfts(selectedGroup: GroupedCartItem): NftPurchaseRequest[] {
     const nfts: NftPurchaseRequest[] = [];
 
-    selectedGroup.items.forEach(item => {
+    selectedGroup.items.forEach((item) => {
       if (item.nft && item.collection) {
         // console.log('[checkout-overlay.component-convertGroupedCartItemsToNfts] looped nft (item): ', item);
 
@@ -465,37 +496,59 @@ export class CheckoutOverlayComponent implements OnInit {
 
   public async proceedWithBulkOrder(nfts: NftPurchaseRequest[]): Promise<void> {
     // console.log('[checkout-overlay.component-proceddWithBulkOrder] nfts passed in: ', nfts)
-    const selectedGroup = this.groupedCartItems.find(group => group.tokenSymbol === this.selectedNetwork);
+    const selectedGroup = this.groupedCartItems.find(
+      (group) => group.tokenSymbol === this.selectedNetwork,
+    );
     if (!selectedGroup) {
       console.warn('No network selected or no items in the selected network.');
-      this.nzNotification.error($localize`No network selected or no items in the selected network.`, '');
+      this.nzNotification.error(
+        $localize`No network selected or no items in the selected network.`,
+        '',
+      );
       return;
     }
 
     if (nfts.length === 0 || !this.agreeTermsConditions) {
       console.warn('No NFTs to purchase or terms and conditions are not agreed.');
-      this.nzNotification.error($localize`No NFTs to purchase or terms and conditions are not agreed.`, '');
+      this.nzNotification.error(
+        $localize`No NFTs to purchase or terms and conditions are not agreed.`,
+        '',
+      );
       return;
     }
 
     const bulkPurchaseRequest = {
-      orders: nfts
+      orders: nfts,
     };
 
     // console.log('[checkout-overlay.component-proceddWithBulkOrder] params being passed for signing: ', bulkPurchaseRequest);
 
     await this.auth.sign(bulkPurchaseRequest, async (signedRequest, finish) => {
       this.notification
-        .processRequest(this.orderApi.orderNfts(signedRequest), $localize`Bulk order created.`, finish)
+        .processRequest(
+          this.orderApi.orderNfts(signedRequest),
+          $localize`Bulk order created.`,
+          finish,
+        )
         .subscribe((transaction: Transaction | undefined) => {
           if (transaction) {
             this.transSubscription?.unsubscribe();
             setItem(StorageItem.CheckoutTransaction, transaction.uid);
-            this.transSubscription = this.orderApi.listen(transaction.uid).subscribe(<any>this.transaction$);
-            this.pushToHistory(transaction, transaction.uid, dayjs(), $localize`Waiting for transaction...`);
+            this.transSubscription = this.orderApi
+              .listen(transaction.uid)
+              .subscribe(<any>this.transaction$);
+            this.pushToHistory(
+              transaction,
+              transaction.uid,
+              dayjs(),
+              $localize`Waiting for transaction...`,
+            );
           } else {
             console.error('Transaction failed or did not return a valid transaction.');
-            this.nzNotification.error($localize`Transaction failed or did not return a valid transaction.`, '');
+            this.nzNotification.error(
+              $localize`Transaction failed or did not return a valid transaction.`,
+              '',
+            );
           }
         });
     });

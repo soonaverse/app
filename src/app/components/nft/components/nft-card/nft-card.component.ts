@@ -185,7 +185,11 @@ export class NftCardComponent {
     return CollectionStatus;
   }
 
-  public addToCart(event: MouseEvent, nft: Nft | null | undefined, collection: Collection | null | undefined): void {
+  public addToCart(
+    event: MouseEvent,
+    nft: Nft | null | undefined,
+    collection: Collection | null | undefined,
+  ): void {
     event.stopPropagation();
     event.preventDefault();
 
@@ -198,5 +202,4 @@ export class NftCardComponent {
       console.error('Attempted to add a null or undefined NFT or Collection to the cart');
     }
   }
-
 }

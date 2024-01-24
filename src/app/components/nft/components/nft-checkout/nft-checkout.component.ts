@@ -432,13 +432,19 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
       params.nft = this.nft.uid;
     }
 
-    console.log('[nft-checkout.component-proceedWithOrder] params being passed for signing: ', params);
+    console.log(
+      '[nft-checkout.component-proceedWithOrder] params being passed for signing: ',
+      params,
+    );
 
     await this.auth.sign(params, (sc, finish) => {
       this.notification
         .processRequest(this.orderApi.orderNft(sc), $localize`Order created.`, finish)
         .subscribe((val: any) => {
-          console.log('[nft-this.checkoutService.component-proceedWithOrder] val after processing: ', val);
+          console.log(
+            '[nft-this.checkoutService.component-proceedWithOrder] val after processing: ',
+            val,
+          );
           this.transSubscription?.unsubscribe();
           setItem(StorageItem.CheckoutTransaction, val.uid);
           this.transSubscription = this.orderApi.listen(val.uid).subscribe(<any>this.transaction$);

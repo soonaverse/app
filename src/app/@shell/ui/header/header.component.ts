@@ -37,7 +37,7 @@ import {
   NotificationType,
   TRANSACTION_AUTO_EXPIRY_MS,
   Transaction,
-  TransactionPayloadType
+  TransactionPayloadType,
 } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationRef, NzNotificationService } from 'ng-zorro-antd/notification';
@@ -54,7 +54,6 @@ import { MemberApi } from './../../../@api/member.api';
 import { CartService } from './../../../components/cart/services/cart.service';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { CheckoutOverlayComponent } from '@components/cart/components/checkout/checkout-overlay.component';
-
 
 const IS_SCROLLED_HEIGHT = 20;
 
@@ -136,7 +135,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.cartItemsSubscription = this.cartService.getCartItems().subscribe(items => {
+    this.cartItemsSubscription = this.cartService.getCartItems().subscribe((items) => {
       this.cartItemCount = items.length;
     });
 
@@ -237,17 +236,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.cartService.showCart$.subscribe(value => {
+    this.cartService.showCart$.subscribe((value) => {
       // console.log('Current value of showCart$: ', value);
     });
   }
 
   public async onOpenCheckout(): Promise<void> {
     const t = this.transaction$.getValue();
-    console.log('[header-onOpenCheckout] transaction: ', t)
-    console.log('[header-onOpenCheckout] t?.payload.type: ', t?.payload.type)
+    console.log('[header-onOpenCheckout] transaction: ', t);
+    console.log('[header-onOpenCheckout] t?.payload.type: ', t?.payload.type);
     if (t?.payload.type == TransactionPayloadType.NFT_PURCHASE_BULK) {
-      console.log('[header-onOpenCheckout] !t?.payload.type && t?.payload.type == TransactionPayloadType.NFT_PURCHASE_BULK equals true and isCartCheckoutOpen set to true')
+      console.log(
+        '[header-onOpenCheckout] !t?.payload.type && t?.payload.type == TransactionPayloadType.NFT_PURCHASE_BULK equals true and isCartCheckoutOpen set to true',
+      );
       this.openCartModal.emit();
       this.openCheckoutOverlay();
     }
@@ -290,7 +291,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public handleOpenCartModal(): void {
     this.openCartModal.emit();
   }
-
 
   public get filesizes(): typeof FILE_SIZES {
     return FILE_SIZES;
@@ -436,7 +436,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.isCartCheckoutOpen = true;
     this.cd.markForCheck();
   }
-
 
   public ngOnDestroy(): void {
     this.cancelAccessSubscriptions();

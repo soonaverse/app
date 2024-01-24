@@ -238,11 +238,11 @@
           >
             <wen-icon-wallet class="text-white"></wen-icon-wallet>
           </button>
-
-
         </span>
         <span
-          *ngIf="nft && collection && (!nft.owner || cartService.isNftAvailableForSale(nft, collection))"
+          *ngIf="
+            nft && collection && (!nft.owner || cartService.isNftAvailableForSale(nft, collection))
+          "
           class="ml-1em"
           nz-tooltip
           i18n-nzTooltipTitle

@@ -51,9 +51,14 @@
         (click)="openShoppingCart()"
       >
         <nz-badge *ngIf="cartItemCount > 0" [nzCount]="cartItemCount">
-          <wen-icon-cart class="text-foregrounds-primary dark:text-foregrounds-primary-dark"></wen-icon-cart>
+          <wen-icon-cart
+            class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          ></wen-icon-cart>
         </nz-badge>
-        <wen-icon-cart *ngIf="cartItemCount === 0" class="text-foregrounds-primary dark:text-foregrounds-primary-dark"></wen-icon-cart>
+        <wen-icon-cart
+          *ngIf="cartItemCount === 0"
+          class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        ></wen-icon-cart>
       </button>
 
       <button
@@ -185,9 +190,14 @@
       (click)="openShoppingCart()"
     >
       <nz-badge *ngIf="cartItemCount > 0" [nzCount]="cartItemCount">
-        <wen-icon-cart class="text-foregrounds-primary dark:text-foregrounds-primary-dark"></wen-icon-cart>
+        <wen-icon-cart
+          class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+        ></wen-icon-cart>
       </nz-badge>
-      <wen-icon-cart *ngIf="cartItemCount === 0" class="text-foregrounds-primary dark:text-foregrounds-primary-dark"></wen-icon-cart>
+      <wen-icon-cart
+        *ngIf="cartItemCount === 0"
+        class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      ></wen-icon-cart>
     </button>
 
     <button

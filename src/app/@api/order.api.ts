@@ -28,8 +28,9 @@ export class OrderApi extends BaseApi<Transaction> {
   public orderNft = (req: Build5Request<NftPurchaseRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.orderNft, req);
 
-  public orderNfts = (req: Build5Request<NftPurchaseBulkRequest>): Observable<Transaction | undefined> =>
-    this.request(WEN_FUNC.orderNftBulk, req);
+  public orderNfts = (
+    req: Build5Request<NftPurchaseBulkRequest>,
+  ): Observable<Transaction | undefined> => this.request(WEN_FUNC.orderNftBulk, req);
 
   public orderToken = (
     req: Build5Request<OrderTokenRequest>,

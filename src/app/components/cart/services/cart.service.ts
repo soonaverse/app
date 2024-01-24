@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import {
-  Nft,
-  Collection,
-  MIN_AMOUNT_TO_TRANSFER,
-} from '@build-5/interfaces';
+import { Nft, Collection, MIN_AMOUNT_TO_TRANSFER } from '@build-5/interfaces';
 import { getItem, setItem, StorageItem } from './../../../@core/utils/local-storage.utils';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { HelperService } from '@pages/nft/services/helper.service';
@@ -18,10 +14,9 @@ export interface CartItem {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CartService {
-
   private showCartSubject = new BehaviorSubject<boolean>(false);
   public showCart$ = this.showCartSubject.asObservable();
   private cartItemsSubject = new BehaviorSubject<CartItem[]>(this.loadCartItems());
@@ -50,13 +45,20 @@ export class CartService {
     console.log('[CartService] addToCart function called. Adding cart item: ', cartItem);
     const currentItems = this.cartItemsSubject.value;
 
-    const isItemAlreadyInCart = currentItems.some(item => item.nft.uid === cartItem.nft.uid);
+    const isItemAlreadyInCart = currentItems.some((item) => item.nft.uid === cartItem.nft.uid);
 
     if (!isItemAlreadyInCart) {
       const updatedCartItems = [...currentItems, cartItem];
       this.cartItemsSubject.next(updatedCartItems);
       this.saveCartItems();
-      this.notification.success($localize`NFT ` + cartItem.nft.name + ` from collection ` + cartItem.collection.name + ` has been added to your cart.`, '');
+      this.notification.success(
+        $localize`NFT ` +
+          cartItem.nft.name +
+          ` from collection ` +
+          cartItem.collection.name +
+          ` has been added to your cart.`,
+        '',
+      );
       // console.log('[CartService] NFT added to cart:', cartItem);
     } else {
       // console.log('[CartService] NFT is already in the cart:', cartItem);
@@ -66,21 +68,26 @@ export class CartService {
 
   public removeFromCart(itemId: string): void {
     // console.log('[CartService] removeFromCart function called.');
-    const updatedCartItems = this.cartItemsSubject.value.filter(item => item.nft.uid !== itemId);
+    const updatedCartItems = this.cartItemsSubject.value.filter((item) => item.nft.uid !== itemId);
     this.cartItemsSubject.next(updatedCartItems);
     this.saveCartItems();
     // console.log('[CartService-removeFromCart] Cart updated:', updatedCartItems);
   }
 
   public removeItemsFromCart(itemIds: string[]): void {
-    const updatedCartItems = this.cartItemsSubject.value.filter(item => !itemIds.includes(item.nft.uid));
+    const updatedCartItems = this.cartItemsSubject.value.filter(
+      (item) => !itemIds.includes(item.nft.uid),
+    );
     this.cartItemsSubject.next(updatedCartItems);
     this.saveCartItems();
   }
 
   public removeGroupItemsFromCart(tokenSymbol: string): void {
-    const updatedCartItems = this.cartItemsSubject.value.filter(item => {
-      const itemTokenSymbol = (item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network) || 'Unknown';
+    const updatedCartItems = this.cartItemsSubject.value.filter((item) => {
+      const itemTokenSymbol =
+        (item.nft?.placeholderNft
+          ? item.collection?.mintingData?.network
+          : item.nft?.mintingData?.network) || 'Unknown';
       return itemTokenSymbol !== tokenSymbol;
     });
     this.cartItemsSubject.next(updatedCartItems);
@@ -124,7 +131,10 @@ export class CartService {
   }
 
   public getAvailableNftQuantity(cartItem: CartItem): number {
-    const isAvailableForSale = this.helperService.isAvailableForSale(cartItem.nft, cartItem.collection);
+    const isAvailableForSale = this.helperService.isAvailableForSale(
+      cartItem.nft,
+      cartItem.collection,
+    );
     // console.log("[cart.service-getAvailableNftQuantity] function called for cartItem.nft.name: " + cartItem.nft.name + ", isAvailableForSale: " + isAvailableForSale);
 
     if (cartItem.nft.placeholderNft && isAvailableForSale) {

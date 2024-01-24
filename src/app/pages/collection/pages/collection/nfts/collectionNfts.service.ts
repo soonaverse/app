@@ -4,7 +4,7 @@ import { Nft, Collection } from '@build-5/interfaces';
 import { CartService } from '@components/cart/services/cart.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CollectionNftStateService {
   private listedNftsSubject = new BehaviorSubject<Nft[]>([]);
@@ -12,9 +12,7 @@ export class CollectionNftStateService {
   private availableNftsCountSubject = new BehaviorSubject<number>(0);
   public availableNftsCount$ = this.availableNftsCountSubject.asObservable();
 
-  constructor(
-    private cartService: CartService,
-    ) { }
+  constructor(private cartService: CartService) {}
 
   public setListedNfts(nfts: Nft[], collection: Collection) {
     this.listedNftsSubject.next(nfts);
@@ -22,7 +20,9 @@ export class CollectionNftStateService {
   }
 
   private updateAvailableNftsCount(nfts: Nft[], collection: Collection) {
-    const availableNftsCount = nfts.filter(nft => this.cartService.isNftAvailableForSale(nft, collection)).length;
+    const availableNftsCount = nfts.filter((nft) =>
+      this.cartService.isNftAvailableForSale(nft, collection),
+    ).length;
     this.availableNftsCountSubject.next(availableNftsCount);
   }
 
@@ -30,5 +30,3 @@ export class CollectionNftStateService {
     return this.listedNftsSubject.getValue();
   }
 }
-
-

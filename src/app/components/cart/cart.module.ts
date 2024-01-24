@@ -27,10 +27,7 @@ import { WalletDeeplinkModule } from '@components/wallet-deeplink/wallet-deeplin
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 
 @NgModule({
-  declarations: [
-    CartModalComponent,
-    CheckoutOverlayComponent,
-  ],
+  declarations: [CartModalComponent, CheckoutOverlayComponent],
   imports: [
     CommonModule,
     NzModalModule,
@@ -58,9 +55,6 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
     WalletDeeplinkModule,
     NzRadioModule,
   ],
-  exports: [
-    CartModalComponent,
-    CheckoutOverlayComponent,
-  ],
+  exports: [CartModalComponent, CheckoutOverlayComponent],
 })
 export class CartModule {}

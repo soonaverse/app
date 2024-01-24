@@ -127,12 +127,10 @@ export class HelperService {
     // console.log(`[getDate] Original input:`, date);
     if (typeof date === 'object') {
       if (date?.toDate) {
-
         const dateFromObject = date.toDate();
         // console.log(`[getDate] Object with toDate method detected, toDate result:`, dateFromObject);
         return dateFromObject;
       } else if (date?.seconds) {
-
         const dateFromSeconds = new Date(date.seconds * 1000); // Convert to milliseconds
         // console.log(`[getDate] Object with seconds property detected, converted to Date:`, dateFromSeconds);
         return dateFromSeconds;
@@ -180,12 +178,10 @@ export class HelperService {
       return false;
     }
 
-
-    const isAvail = (
+    const isAvail =
       col.approved === true &&
       !!this.getDate(nft.availableFrom) &&
-      dayjs(this.getDate(nft.availableFrom)).isSameOrBefore(dayjs(), 's')
-    );
+      dayjs(this.getDate(nft.availableFrom)).isSameOrBefore(dayjs(), 's');
     // console.log("[NFT helper.service.ts] isAvailableForSale function returning " + isAvail + ".  nft name: " + nft?.name + ", col name: " + col?.name + ". nft.availableFrom: " + nft.availableFrom.seconds);
     // console.log("col.approved: " + (col.approved === true));
     // console.log("!!this.getDate(nft.availableFrom): " + !!this.getDate(nft.availableFrom) + ", this.getDate(nft.availableFrom): " + this.getDate(nft.availableFrom));

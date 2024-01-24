@@ -120,7 +120,7 @@ export class NFTPage implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this.data.nft$.subscribe(nft => {
+    this.data.nft$.subscribe((nft) => {
       // console.log('[OnInit] Current NFT:', nft);
       this.currentNft = nft;
     });
@@ -418,7 +418,10 @@ export class NFTPage implements OnInit, OnDestroy {
     if (status === null || status === undefined) {
       return 'Unknown';
     }
-    console.log('[nft.page-getCollectionStatusString] return collection status: ', CollectionStatus[status]);
+    console.log(
+      '[nft.page-getCollectionStatusString] return collection status: ',
+      CollectionStatus[status],
+    );
     return CollectionStatus[status];
   }
 
@@ -555,7 +558,7 @@ export class NFTPage implements OnInit, OnDestroy {
     if (nft && this.data.collection$) {
       // console.log('[addToCart-this.data.collection$.value', this.data.collection$.value)
       // console.log('[addToCart-this.data.nft$.value', this.data.nft$.value)
-      this.data.collection$.pipe(take(1)).subscribe(collection => {
+      this.data.collection$.pipe(take(1)).subscribe((collection) => {
         if (collection) {
           this.cartService.addToCart({ nft, collection, quantity: 1, salePrice: 0 });
           // console.log('Added to cart:', nft, collection);
