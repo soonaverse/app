@@ -47,7 +47,7 @@
         nz-button
         nzType="default"
         nzShape="circle"
-        class="relative inline-flex items-center justify-center border-0 wen-header-button"
+        class="relative inline-flex items-center justify-center border-0 wen-header-button ml-0 mr-2"
         (click)="openShoppingCart()"
       >
         <nz-badge *ngIf="cartItemCount > 0" [nzCount]="cartItemCount">
@@ -181,7 +181,7 @@
       nz-button
       nzType="default"
       nzShape="circle"
-      class="relative inline-flex items-center justify-center border-0 wen-header-button"
+      class="relative inline-flex items-center justify-center border-0 wen-header-button ml-0 mr-1"
       (click)="openShoppingCart()"
     >
       <nz-badge *ngIf="cartItemCount > 0" [nzCount]="cartItemCount">
@@ -189,9 +189,6 @@
       </nz-badge>
       <wen-icon-cart *ngIf="cartItemCount === 0" class="text-foregrounds-primary dark:text-foregrounds-primary-dark"></wen-icon-cart>
     </button>
-
-    <div class="relative inline-flex items-center justify-center border-0">&nbsp;</div>
-    <div class="relative inline-flex items-center justify-center border-0">&nbsp;</div>
 
     <button
       nz-button
@@ -275,9 +272,7 @@
 </header>
 
 <wen-sign-in-modal></wen-sign-in-modal>
-<!--<app-cart-modal (openCheckout)="openCartCheckout()"></app-cart-modal>-->
-
-<app-cart-modal (openCartModal)="handleOpenCartModal()"></app-cart-modal>
+<wen-app-cart-modal (openCartModal)="handleOpenCartModal()"></wen-app-cart-modal>
 
 <wen-nft-checkout
   *ngIf="isCheckoutOpen"

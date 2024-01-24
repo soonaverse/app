@@ -31,7 +31,7 @@ export class CartService {
     private helperService: HelperService,
     public auth: AuthService,
   ) {
-    //console.log('CartService instance created');
+    // console.log('CartService instance created');
   }
 
   public showCart(): void {
@@ -47,7 +47,7 @@ export class CartService {
   }
 
   public addToCart(cartItem: CartItem): void {
-    //console.log('[CartService] addToCart function called.');
+    console.log('[CartService] addToCart function called. Adding cart item: ', cartItem);
     const currentItems = this.cartItemsSubject.value;
 
     const isItemAlreadyInCart = currentItems.some(item => item.nft.uid === cartItem.nft.uid);
@@ -57,19 +57,19 @@ export class CartService {
       this.cartItemsSubject.next(updatedCartItems);
       this.saveCartItems();
       this.notification.success($localize`NFT ` + cartItem.nft.name + ` from collection ` + cartItem.collection.name + ` has been added to your cart.`, '');
-      //console.log('[CartService] NFT added to cart:', cartItem);
+      // console.log('[CartService] NFT added to cart:', cartItem);
     } else {
-      //console.log('[CartService] NFT is already in the cart:', cartItem);
+      // console.log('[CartService] NFT is already in the cart:', cartItem);
       this.notification.error($localize`This NFT already exists in your cart.`, '');
     }
   }
 
   public removeFromCart(itemId: string): void {
-    //console.log('[CartService] removeFromCart function called.');
+    // console.log('[CartService] removeFromCart function called.');
     const updatedCartItems = this.cartItemsSubject.value.filter(item => item.nft.uid !== itemId);
     this.cartItemsSubject.next(updatedCartItems);
     this.saveCartItems();
-    //console.log('[CartService-removeFromCart] Cart updated:', updatedCartItems);
+    // console.log('[CartService-removeFromCart] Cart updated:', updatedCartItems);
   }
 
   public removeItemsFromCart(itemIds: string[]): void {
@@ -78,8 +78,17 @@ export class CartService {
     this.saveCartItems();
   }
 
+  public removeGroupItemsFromCart(tokenSymbol: string): void {
+    const updatedCartItems = this.cartItemsSubject.value.filter(item => {
+      const itemTokenSymbol = (item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network) || 'Unknown';
+      return itemTokenSymbol !== tokenSymbol;
+    });
+    this.cartItemsSubject.next(updatedCartItems);
+    this.saveCartItems();
+  }
+
   public getCartItems(): BehaviorSubject<CartItem[]> {
-    //console.log('[CartService] getCartItems function called.');
+    // console.log('[CartService] getCartItems function called.');
     return this.cartItemsSubject;
   }
 
@@ -89,15 +98,15 @@ export class CartService {
   }
 
   public saveCartItems(): void {
-    //console.log('[CartService] getCartItems function called.');
+    // console.log('[CartService] getCartItems function called.');
     setItem(StorageItem.CartItems, this.cartItemsSubject.value);
-    //console.log('[CartService] Saving cart items to local storage:', this.cartItemsSubject.value);
+    // console.log('[CartService] Saving cart items to local storage:', this.cartItemsSubject.value);
   }
 
   private loadCartItems(): CartItem[] {
-    //console.log('[CartService] Loading cart items from local storage');
+    // console.log('[CartService] Loading cart items from local storage');
     const items = getItem(StorageItem.CartItems) as CartItem[];
-    //console.log('[CartService] Cart items loaded from local storage:', items);
+    // console.log('[CartService] Cart items loaded from local storage:', items);
     return items || [];
   }
 
@@ -105,7 +114,7 @@ export class CartService {
     const isLocked = this.helperService.isLocked(nft, collection, true);
     const isOwner = nft.owner === this.auth.member$.value?.uid;
     const availableForSale = this.helperService.isAvailableForSale(nft, collection);
-    //console.log(`[cart.service-isNftAvailableForSale] results for NFT ${nft.name}; availableForSale: ${availableForSale}, isLocked: ${isLocked}, isOwner: ${isOwner}`);
+    // console.log(`[cart.service-isNftAvailableForSale] results for NFT ${nft.name}; availableForSale: ${availableForSale}, isLocked: ${isLocked}, isOwner: ${isOwner}`);
 
     return !isLocked && availableForSale && (!isOwner || !nft.owner);
   }
@@ -116,16 +125,16 @@ export class CartService {
 
   public getAvailableNftQuantity(cartItem: CartItem): number {
     const isAvailableForSale = this.helperService.isAvailableForSale(cartItem.nft, cartItem.collection);
-    //console.log("[cart.service-getAvailableNftQuantity] function called for cartItem.nft.name: " + cartItem.nft.name + ", isAvailableForSale: " + isAvailableForSale);
+    // console.log("[cart.service-getAvailableNftQuantity] function called for cartItem.nft.name: " + cartItem.nft.name + ", isAvailableForSale: " + isAvailableForSale);
 
     if (cartItem.nft.placeholderNft && isAvailableForSale) {
-      //console.log("[service-getAvailableNftQuantity] returning qty, placeholder: " + cartItem.nft.placeholderNft + ". availableNfts " + cartItem.collection.availableNfts);
+      // console.log("[service-getAvailableNftQuantity] returning qty, placeholder: " + cartItem.nft.placeholderNft + ". availableNfts " + cartItem.collection.availableNfts);
       return cartItem.collection.availableNfts || 0;
     } else if (isAvailableForSale) {
-      //console.log("[service-getAvailableNftQuantity] returning 1, isAvailableForSale: " + isAvailableForSale + ". placeholder: " + cartItem.nft.placeholderNft);
+      // console.log("[service-getAvailableNftQuantity] returning 1, isAvailableForSale: " + isAvailableForSale + ". placeholder: " + cartItem.nft.placeholderNft);
       return 1;
     }
-    //console.log("[service-getAvailableNftQuantity] returning 0, isAvailableForSale: " + isAvailableForSale + ". placeholder: " + cartItem.nft.placeholderNft);
+    // console.log("[service-getAvailableNftQuantity] returning 0, isAvailableForSale: " + isAvailableForSale + ". placeholder: " + cartItem.nft.placeholderNft);
     return 0;
   }
 

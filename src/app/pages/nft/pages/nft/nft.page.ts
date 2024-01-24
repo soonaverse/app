@@ -30,6 +30,7 @@ import { HelperService } from '@pages/nft/services/helper.service';
 import {
   Collection,
   CollectionType,
+  CollectionStatus,
   DEFAULT_NETWORK,
   FILE_SIZES,
   IPFS_GATEWAY,
@@ -89,6 +90,8 @@ export class NFTPage implements OnInit, OnDestroy {
   private nftSubscriptions$: Subscription[] = [];
   private collectionSubscriptions$: Subscription[] = [];
   private tranSubscriptions$: Subscription[] = [];
+  public collectionType: CollectionType | null | undefined = null;
+  public collectionMinting: CollectionStatus | null | undefined = null;
 
   constructor(
     public data: DataService,
@@ -118,7 +121,7 @@ export class NFTPage implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.data.nft$.subscribe(nft => {
-      //console.log('[OnInit] Current NFT:', nft);
+      // console.log('[OnInit] Current NFT:', nft);
       this.currentNft = nft;
     });
     this.deviceService.viewWithSearch$.next(false);
@@ -275,6 +278,9 @@ export class NFTPage implements OnInit, OnDestroy {
 
     this.data.collection$.pipe(skip(1), untilDestroyed(this)).subscribe(async (p) => {
       if (p) {
+        this.collectionType = p.type;
+        // this.collectionMinting = p.status;
+        // console.log('[nft.page-p] collectionMinting set to: ', p.status)
         this.collectionSubscriptions$.forEach((s) => {
           s.unsubscribe();
         });
@@ -399,6 +405,21 @@ export class NFTPage implements OnInit, OnDestroy {
         }
       }
     }
+  }
+
+  public getCollectionTypeString(type: CollectionType | null | undefined): string {
+    if (type === null || type === undefined) {
+      return 'Unknown';
+    }
+    return CollectionType[type];
+  }
+
+  public getCollectionStatusString(status: CollectionStatus | null | undefined): string {
+    if (status === null || status === undefined) {
+      return 'Unknown';
+    }
+    console.log('[nft.page-getCollectionStatusString] return collection status: ', CollectionStatus[status]);
+    return CollectionStatus[status];
   }
 
   private listenToNft(id: string): void {
@@ -532,18 +553,18 @@ export class NFTPage implements OnInit, OnDestroy {
 
   public addToCart(nft: Nft): void {
     if (nft && this.data.collection$) {
-      //console.log('[addToCart-this.data.collection$.value', this.data.collection$.value)
-      //console.log('[addToCart-this.data.nft$.value', this.data.nft$.value)
+      // console.log('[addToCart-this.data.collection$.value', this.data.collection$.value)
+      // console.log('[addToCart-this.data.nft$.value', this.data.nft$.value)
       this.data.collection$.pipe(take(1)).subscribe(collection => {
         if (collection) {
           this.cartService.addToCart({ nft, collection, quantity: 1, salePrice: 0 });
-          //console.log('Added to cart:', nft, collection);
+          // console.log('Added to cart:', nft, collection);
         } else {
-          //console.error('Collection is undefined or null');
+          // console.error('Collection is undefined or null');
         }
       });
     } else {
-      //console.error('NFT is undefined or null');
+      // console.error('NFT is undefined or null');
     }
   }
 

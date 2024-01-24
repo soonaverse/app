@@ -22,11 +22,11 @@ export class RouterService {
   public urlToNewToken = '/' + ROUTER_UTILS.config.token.root + '/new';
 
   constructor(private router: Router, private deviceService: DeviceService) {
-    //this.router.events.pipe(
+    // this.router.events.pipe(
     //  filter((event: Event): event is NavigationEnd => event instanceof NavigationEnd)
-    //).subscribe((event: NavigationEnd) => {
+    // ).subscribe((event: NavigationEnd) => {
     //  console.log('Navigation Event:', event);
-    //});
+    // });
 
     this.updateVariables();
 

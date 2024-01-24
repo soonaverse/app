@@ -22,22 +22,14 @@
                 <div>
                   <div class="text-xs font-medium text-foregrounds-secondary underline" i18n>Info</div>
                   <div>Collection:
-                    <a href="/collection/{{item.collection.uid}}" class="text-blue-500 hover:text-blue-600" (click)="handleClose()">
+                    <span class="text-blue-500 hover:text-blue-600 cursor-pointer" (click)="goToCollection(item.collection.uid)">
                       {{item.collection.name}}
-                    </a>
-                    <!--
-                    <a [routerLink]="['/collection', item.collection.uid]" class="text-blue-500 hover:text-blue-600" (click)="handleClose()">
-                      {{item.collection.name}}
-                    </a>-->
+                    </span>
                   </div>
                   <div>NFT:
-                    <a href="/nft/{{item.nft.uid}}" class="text-blue-500 hover:text-blue-600" (click)="handleClose()">
+                    <span class="text-blue-500 hover:text-blue-600 cursor-pointer" (click)="goToNft(item.nft.uid)">
                       {{item.nft.name}}
-                    </a>
-                    <!--
-                    <a [routerLink]="['/nft', item.nft.uid]" class="text-blue-500 hover:text-blue-600" (click)="handleClose()">
-                      {{item.nft.name}}
-                    </a>-->
+                    </span>
                   </div>
                   <div>Royalties: {{ (item.collection.royaltiesFee || 0) * 100 }}%</div>
                 </div>
@@ -107,7 +99,7 @@
         <button nz-button nzType="text" nzType="default" class="wen-btn-link" (click)="handleClose()" i18n>
           Close
         </button>
-        <button nz-button nzType="primary" (click)="handleCartCheckout()" i18n>
+        <button *ngIf="cartItems.length" nz-button nzType="primary" (click)="handleCartCheckout()" i18n>
           Checkout
         </button>
       </div>

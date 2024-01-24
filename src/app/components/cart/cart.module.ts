@@ -6,8 +6,8 @@ import { CartModalComponent } from './components/cart-modal/cart-modal.component
 import { IconModule } from '@components/icon/icon.module';
 import { NzNotificationModule } from 'ng-zorro-antd/notification';
 import { FormatTokenModule } from '@core/pipes/formatToken/format-token.module';
-//import { NftRoutingModule } from '@pages/nft/nft-routing.module';
-//import { CollectionRoutingModule } from '@pages/collection/collection-routing.module';
+// import { NftRoutingModule } from '@pages/nft/nft-routing.module';
+// import { CollectionRoutingModule } from '@pages/collection/collection-routing.module';
 import { CheckoutOverlayComponent } from './components/checkout/checkout-overlay.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
@@ -38,8 +38,8 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
     IconModule,
     NzNotificationModule,
     FormatTokenModule,
-    //NftRoutingModule,
-    //CollectionRoutingModule,
+    // NftRoutingModule,
+    // CollectionRoutingModule,
     FormsModule,
     NzInputNumberModule,
     ReactiveFormsModule,

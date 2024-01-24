@@ -238,7 +238,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
 
     this.cartService.showCart$.subscribe(value => {
-      //console.log('Current value of showCart$: ', value);
+      // console.log('Current value of showCart$: ', value);
     });
   }
 
@@ -290,7 +290,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public handleOpenCartModal(): void {
     this.openCartModal.emit();
   }
-
 
 
   public get filesizes(): typeof FILE_SIZES {
@@ -429,7 +428,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   public openShoppingCart(): void {
-    console.log('Opening shopping cart...');
+    // console.log('Opening shopping cart...');
     this.cartService.showCart();
   }
 

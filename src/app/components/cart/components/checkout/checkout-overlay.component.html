@@ -9,7 +9,15 @@
       <input type="radio" name="selectedNetwork" [(ngModel)]="selectedNetwork" [value]="group.tokenSymbol">
       Select this network/group of NFTs for payment
     </label>
-    <nz-table nzBordered [nzData]="group.items">
+    <nz-table
+      [nzData]="group.items"
+      [nzShowPagination]="false"
+      [nzFrontPagination]="false"
+      nzSize="small"
+      [ngClass]="{
+        'table-dark': (themeService.theme$ | async) === themes.Dark,
+        'table-light': (themeService.theme$ | async) === themes.Light}"
+    >
       <thead>
         <tr>
           <th nzWidth="20%">NFT Name</th>
@@ -22,8 +30,16 @@
       <tbody>
         <ng-container *ngFor="let item of group.items; let i = index">
           <tr>
-            <td>{{ item.nft.name }}</td>
-            <td>{{ item.collection.name }}</td>
+            <td>
+              <span class="text-blue-500 hover:text-blue-600 cursor-pointer" (click)="goToNft(item.nft.uid, true)">
+                {{item.nft.name}}
+              </span>
+            </td>
+            <td>
+              <span class="text-blue-500 hover:text-blue-600 cursor-pointer" (click)="goToCollection(item.collection.uid, true)">
+                {{item.collection.name}}
+              </span>
+            </td>
             <td>{{ item.quantity }}</td>
             <td>
               {{ (item.salePrice | formatToken:(item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network):true:true) | async }}
@@ -34,12 +50,13 @@
           </tr>
         </ng-container>
         <tr>
-          <td colspan="2"><strong>Total</strong></td>
+          <td></td>
+          <td><strong>Total</strong></td>
           <td><strong>{{ group.totalQuantity }}</strong></td>
           <td></td>
           <td>
             <strong>
-              {{ (group.totalPrice / 1000000) }} {{ group.tokenSymbol }}
+              {{ (group.totalPrice | formatToken : group.network : true : true) | async }}
             </strong>
           </td>
         </tr>
@@ -69,6 +86,18 @@
 
 <ng-template #emptyCart>
   <nz-empty nzNotFoundContent="No cart items were available for sale."></nz-empty>
+  <div class="flex flex-col items-center w-full mt-8 lg:flex-row lg:w-auto">
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      class="w-full lg:mr-2"
+      i18n
+      (click)="close(false)"
+    >
+      Close checkout
+    </button>
+  </div>
 </ng-template>
 
 <ng-template #confirmTemplate>
@@ -221,26 +250,12 @@
         nz-button
         nzType="primary"
         nzSize="large"
-        class="w-full lg:mr-2"
+        class="w-full lg:mr-2 mb-2"
         i18n
         (click)="close()"
       >
         Close checkout
       </button>
-
-      <!--
-      <button
-        nz-button
-        nzType="default"
-        (click)="goToNft()"
-        nzSize="large"
-        class="w-full mb-6 lg:mb-0 lg:mt-1"
-        i18n
-      >
-        Show my NFT
-      </button>
-      -->
-
     </div>
   </div>
 </ng-template>

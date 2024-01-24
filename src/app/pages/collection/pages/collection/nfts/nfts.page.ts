@@ -5,6 +5,7 @@ import {
   Input,
   OnChanges,
   OnInit,
+  OnDestroy,
 } from '@angular/core';
 import { NftApi } from '@api/nft.api';
 import { CollectionApi } from '@api/collection.api';
@@ -18,14 +19,14 @@ import { FilterStorageService } from '@core/services/filter-storage';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { marketSections } from '@pages/market/pages/market/market.page';
 import { FilterService } from '@pages/market/services/filter.service';
-import { COL, Timestamp } from '@build-5/interfaces';
+import { COL, Timestamp, Collection } from '@build-5/interfaces';
 import { InstantSearchConfig } from 'angular-instantsearch/instantsearch/instantsearch';
 import { Subject, take, filter, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { CartService } from '@components/cart/services/cart.service';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { state } from '@angular/animations';
-import { Collection } from '@build-5/interfaces';
+
 import { CollectionNftStateService } from './collectionNfts.service';
 
 // used in src/app/pages/collection/pages/collection/collection.page.ts
@@ -48,7 +49,7 @@ export enum HOT_TAGS {
   // eslint-disable-next-line @angular-eslint/prefer-on-push-component-change-detection
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class CollectionNFTsPage implements OnInit, OnChanges {
+export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   @Input() public collectionId?: string | null;
   config?: InstantSearchConfig;
   sections = marketSections;
@@ -91,7 +92,7 @@ export class CollectionNFTsPage implements OnInit, OnChanges {
             }
           },
           error: err => {
-            //console.error('Error fetching collection:', err);
+            // console.error('Error fetching collection:', err);
             this.notification.error($localize`Error occurred while fetching collection.`, '');
           }
         });
@@ -134,7 +135,6 @@ export class CollectionNFTsPage implements OnInit, OnChanges {
     if (hits && hits.length > 0 && this.collection) {
       this.originalNfts = hits;
       this.collectionNftStateService.setListedNfts(hits, this.collection);
-    } else {
     }
   }
 
@@ -197,8 +197,6 @@ export class CollectionNFTsPage implements OnInit, OnChanges {
         takeUntil(this.destroy$)
       )
       .subscribe({
-        next: nftsToAdd => {
-        },
         error: err => {
           this.notification.error($localize`Error occurred while fetching collection.`, '');
         }
