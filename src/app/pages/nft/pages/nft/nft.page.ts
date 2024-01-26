@@ -4,6 +4,7 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CollectionApi } from '@api/collection.api';
@@ -47,6 +48,7 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { BehaviorSubject, Subscription, combineLatest, interval, map, skip, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { DataService } from '../../services/data.service';
+import { NgModel } from '@angular/forms';
 
 export enum ListingType {
   CURRENT_BIDS = 0,
@@ -62,6 +64,7 @@ export enum ListingType {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NFTPage implements OnInit, OnDestroy {
+  @ViewChild('quantityInput', { static: false }) quantityInput!: NgModel;
   public collectionPath: string = ROUTER_UTILS.config.collection.root;
   public isCheckoutOpen = false;
   public isBidOpen = false;
@@ -87,6 +90,7 @@ export class NFTPage implements OnInit, OnDestroy {
   private nftSubscriptions$: Subscription[] = [];
   private collectionSubscriptions$: Subscription[] = [];
   private tranSubscriptions$: Subscription[] = [];
+  public nftQtySelected = 1;
 
   constructor(
     public data: DataService,
@@ -404,6 +408,33 @@ export class NFTPage implements OnInit, OnDestroy {
 
   public canSetItForSale(nft?: Nft | null): boolean {
     return !!nft?.owner && nft?.owner === this.auth.member$.value?.uid;
+  }
+
+  public getAvailableNftQuantity(col?: Collection | null, nft?: Nft | null): number {
+    return this.helper.getAvailNftQty(nft, col);
+  }
+
+  public updateQuantity(): void {
+    const maxQuantity = this.getAvailableNftQuantity(
+      this.data.collection$.value,
+      this.data.nft$.value,
+    );
+    const parsedQuantity = Number(this.nftQtySelected);
+    if (isNaN(parsedQuantity) || parsedQuantity < 1) {
+      this.nftQtySelected = 1;
+      this.resetInput();
+    } else if (parsedQuantity > maxQuantity) {
+      this.nftQtySelected = maxQuantity;
+      this.resetInput();
+    } else {
+      this.nftQtySelected = parsedQuantity;
+    }
+  }
+
+  private resetInput() {
+    if (this.quantityInput) {
+      this.quantityInput.reset(this.nftQtySelected);
+    }
   }
 
   public discount(collection?: Collection | null, nft?: Nft | null): number {

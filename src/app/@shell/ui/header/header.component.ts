@@ -28,6 +28,7 @@ import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   Collection,
+  CollectionType,
   FILE_SIZES,
   Member,
   Nft,
@@ -78,6 +79,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public isCheckoutOpen = false;
   public currentCheckoutNft?: Nft;
   public currentCheckoutCollection?: Collection;
+  public nftQty?: number;
   public notifications$: BehaviorSubject<Notification[]> = new BehaviorSubject<Notification[]>([]);
   private notificationRef?: NzNotificationRef;
   public expiryTicker$: BehaviorSubject<dayjs.Dayjs | null> =
@@ -221,26 +223,47 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   public async onOpenCheckout(): Promise<void> {
+    // console.log('Open Checkout clicked');
     const t = this.transaction$.getValue();
-    if (!t?.payload.nft || !t.payload.collection) {
-      return;
+    let colId = '';
+    let nftId = '';
+    // console.log('open checkout transaction value: ', t);
+
+    if (t?.payload.nftOrders && t?.payload.nftOrders?.length > 0) {
+      // console.log('open checkout passed if test for bulk order.  bool (t?.payload.nftOrders) and t?.payload.nftOrders?.length (bulk count): ', t?.payload.nftOrders, t?.payload.nftOrders?.length);
+      colId = t?.payload.nftOrders[0].collection;
+      nftId = t?.payload.nftOrders[0].nft;
+      this.nftQty = t?.payload.nftOrders.length;
+    } else {
+      // console.log('open checkout failed if test for bulk order and will use nft, collection (colId, nftId): ', t?.payload.collection, t?.payload?.nft);
+      if (!t?.payload.nft || !t.payload.collection) {
+        return;
+      }
+      colId = t?.payload.collection;
+      nftId = t?.payload?.nft;
+      this.nftQty = 1;
     }
+
     const collection: Collection | undefined = await firstValueFrom(
-      this.collectionApi.listen(t?.payload.collection),
+      this.collectionApi.listen(colId),
     );
     let nft: Nft | undefined = undefined;
-    try {
-      nft = await firstValueFrom(this.nftApi.listen(t?.payload?.nft));
-    } catch (_e) {
-      // If it's not classic or re-sale we're using placeholder NFT
+    nft = await firstValueFrom(this.nftApi.listen(nftId));
+    // console.log('open checkout collection and nft value set (colId, collection, nftId, nft): ', colId, collection, nftId, nft);
+
+    if (!nft) {
+      // console.log('open checkout try nft failed, previous nft value (nftId, nft): ', nftId, nft);
       if (collection?.placeholderNft) {
         nft = await firstValueFrom(this.nftApi.listen(collection?.placeholderNft));
+        // console.log('open checkout try nft failed, will attempt to set nft based on collection placeholer (collection?.placeholderNft): ', collection?.placeholderNft);
       }
     }
+
     if (nft && collection) {
       this.currentCheckoutCollection = collection;
       this.currentCheckoutNft = nft;
       this.isCheckoutOpen = true;
+      // console.log('Checkout Open initiated with the following values (collection, nft, bulk order bool, bulk order count, transaction', collection, nft, (t?.payload.nftOrders && t?.payload.nftOrders.length > 0), t?.payload.nftOrders?.length, t)
       this.cd.markForCheck();
     }
   }

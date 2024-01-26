@@ -248,28 +248,70 @@
         ></wen-connect-wallet>
       </div>
 
-      <div
-        *ngIf="!helper.isLocked(data.nft$ | async, data.collection$ | async, true) && helper.isAvailableForSale(data.nft$ | async, data.collection$ | async) && (!(data.nft$ | async)?.owner || (data.nft$ | async)?.owner !== (auth.member$ | async)?.uid)"
-        class="mt-10"
-      >
-        <button
-          nz-button
-          nzType="primary"
-          (click)="buy($event)"
-          *ngIf="auth.isLoggedIn$ | async"
-          nzBlock
-          nzSize="large"
-          i18n
-        >
-          Buy now
-        </button>
+      <ng-container *ngIf="(data.collection$ | async) as collection">
+        <ng-container *ngIf="(data.nft$ | async) as nft">
+          <div
+            *ngIf="!helper.isLocked(nft, collection, true) && helper.isAvailableForSale(nft, collection) && (!nft.owner || nft.owner !== (auth.member$ | async)?.uid)"
+            class="mt-10"
+          >
+            <!-- If Multiple Available Set Quantity -->
+            <div *ngIf="getAvailableNftQuantity(collection, nft) > 1">
+              <nz-form-item>
+                <nz-form-control
+                  i18n-nzErrorTip
+                  nzErrorTip="Minimum 1 and maximum {{ getAvailableNftQuantity(collection, nft) }}."
+                >
+                  <nz-input-group nzAddOnBefore="Set NFT Purchase Quantity:">
+                    <input
+                      nz-input
+                      type="number"
+                      [(ngModel)]="nftQtySelected"
+                      (ngModelChange)="updateQuantity()"
+                      #quantityInput="ngModel"
+                      min="1"
+                      max="{{ getAvailableNftQuantity(collection, nft) }}"
+                    />
+                  </nz-input-group>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
 
-        <wen-connect-wallet
-          class="w-full"
-          wrapperClass="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
-          *ngIf="(auth.isLoggedIn$ | async) === false"
-        ></wen-connect-wallet>
-      </div>
+            <!-- Buy Now Button -->
+            <button
+              nz-button
+              nzType="primary"
+              (click)="buy($event)"
+              *ngIf="auth.isLoggedIn$ | async"
+              nzBlock
+              nzSize="large"
+              i18n
+            >
+              Buy now
+            </button>
+
+            <!-- Add to Cart Button
+            <button
+              nz-button
+              nzType="primary"
+              (click)="addToCart(nft)"
+              nzBlock
+              nzSize="large"
+              i18n
+              style="margin-top: 5px; margin-bottom: 5px"
+            >
+              Add to Cart
+            </button>
+            -->
+
+            <!-- Connect Wallet Component -->
+            <wen-connect-wallet
+              class="w-full"
+              wrapperClass="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+              *ngIf="(auth.isLoggedIn$ | async) === false"
+            ></wen-connect-wallet>
+          </div>
+        </ng-container>
+      </ng-container>
 
       <div class="mt-12 font-medium" [innerHtml]="(data.nft$ | async)?.description| markdown"></div>
 
@@ -775,6 +817,7 @@
   [isOpen]="isCheckoutOpen"
   [nft]="data.nft$ | async"
   [collection]="data.collection$ | async"
+  [nftQuantity]="nftQtySelected"
   (wenOnClose)="isCheckoutOpen = false"
 ></wen-nft-checkout>
 <wen-nft-sale

@@ -179,6 +179,18 @@ export class HelperService {
     );
   }
 
+  public getAvailNftQty(nft?: Nft | null, col?: Collection | null): number {
+    const isAvailableForSale = this.isAvailableForSale(nft, col);
+
+    if (nft?.placeholderNft && isAvailableForSale) {
+      return col?.availableNfts || 0;
+    } else if (isAvailableForSale) {
+      return 1;
+    }
+
+    return 0;
+  }
+
   public canBeSetForSale(nft?: Nft | null): boolean {
     if (nft?.auctionFrom || nft?.availableFrom) {
       return false;

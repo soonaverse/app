@@ -65,41 +65,270 @@
         </a>
 
         <div
+          class="flex items-center p-5 mt-6 rounded-xl bg-alerts-warning dark:bg-alerts-warning-dark text-foregrounds-primary dark:text-foregrounds-primary"
+          *ngIf="nftQuantity > 1"
+        >
+          <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+          <div class="text-base font-bold">
+            <span
+              >You have selected to perform a bulk order of this NFT. Please review quantity
+              selected before finalizing and purchase.</span
+            >
+          </div>
+        </div>
+
+        <div
           class="px-5 py-3 mt-8 lg:mt-auto bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl w-max"
         >
-          <div
-            class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
-            i18n
-          >
-            Total price
-          </div>
-          <div
-            class="flex items-center mt-2 text-lg"
-            *ngIf="discount() < 1 && currentStep === stepType.CONFIRM"
-          >
-            <div class="mr-2 font-bold line-through text-foregrounds-tertiary">
-              {{ targetPrice | formatToken : collection?.mintingData?.network : true | async }}
+          <!-- Display when nftQuantity is not over 1 (Regular Order) -->
+          <ng-container *ngIf="!nftQuantity || nftQuantity <= 1">
+            <div
+              class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+              i18n
+            >
+              Total price
             </div>
-            <div class="mr-2 font-bold truncate">
-              {{
-                calc(targetPrice, discount())
-                  | formatToken : collection?.mintingData?.network : true
-                  | async
-              }}
+
+            <div
+              class="flex items-center mt-2 text-lg"
+              *ngIf="discount() < 1 && currentStep === stepType.CONFIRM"
+            >
+              <div class="mr-2 font-bold line-through text-foregrounds-tertiary">
+                {{ targetPrice | formatToken : collection?.mintingData?.network : true | async }}
+              </div>
+              <div class="mr-2 font-bold truncate">
+                {{
+                  calc(targetPrice, discount())
+                    | formatToken : collection?.mintingData?.network : true
+                    | async
+                }}
+              </div>
             </div>
-          </div>
-          <div
-            class="flex items-center mt-2 text-lg"
-            *ngIf="discount() === 1 || currentStep !== stepType.CONFIRM"
+
+            <div
+              class="flex items-center mt-2 text-lg"
+              *ngIf="discount() === 1 || currentStep !== stepType.CONFIRM"
+            >
+              <div class="mr-2 font-bold truncate">
+                {{
+                  currentStep !== stepType.CONFIRM
+                    ? (targetAmount | formatToken : collection?.mintingData?.network : true | async)
+                    : (targetPrice | formatToken : collection?.mintingData?.network : true | async)
+                }}
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Display when nftQuantity is over 1 (Bulk Order) -->
+          <ng-container
+            *ngIf="
+              nftQuantity > 1 &&
+                ((currentStep === stepType.CONFIRM && targetPrice !== null) ||
+                  (currentStep !== stepType.CONFIRM && targetAmount !== null));
+              else elseBlock
+            "
           >
-            <div class="mr-2 font-bold truncate">
-              {{
-                currentStep !== stepType.CONFIRM
-                  ? (targetAmount | formatToken : collection?.mintingData?.network : true | async)
-                  : (targetPrice | formatToken : collection?.mintingData?.network : true | async)
-              }}
+            <div class="flex flex-row justify-between items-center mt-2">
+              <!-- Price Each -->
+              <div class="flex flex-col items-center mr-4">
+                <div
+                  class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                  i18n
+                >
+                  Price each
+                </div>
+
+                <div
+                  class="flex items-center mt-2 text-lg"
+                  *ngIf="discount() < 1 && currentStep === stepType.CONFIRM"
+                >
+                  <div class="mr-2 font-bold line-through text-foregrounds-tertiary">
+                    {{
+                      targetPrice | formatToken : collection?.mintingData?.network : true | async
+                    }}
+                  </div>
+                  <div class="mr-2 font-bold truncate">
+                    {{
+                      calc(targetPrice, discount())
+                        | formatToken : collection?.mintingData?.network : true
+                        | async
+                    }}
+                  </div>
+                </div>
+
+                <div
+                  class="flex items-center mt-2 text-lg"
+                  *ngIf="discount() === 1 || currentStep !== stepType.CONFIRM"
+                >
+                  <div class="mr-2 font-bold truncate">
+                    {{
+                      currentStep !== stepType.CONFIRM
+                        ? (pricePerItem
+                          | formatToken : collection?.mintingData?.network : true
+                          | async)
+                        : (targetPrice
+                          | formatToken : collection?.mintingData?.network : true
+                          | async)
+                    }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Order Qty -->
+              <div class="flex flex-col items-center mr-4">
+                <div
+                  class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                  i18n
+                >
+                  Order quantity
+                </div>
+                <div class="flex items-center mt-2 text-lg">
+                  <div class="mr-2 font-bold truncate">
+                    {{ nftQuantity }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Total Price -->
+              <div class="flex flex-col items-center">
+                <div
+                  class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                  i18n
+                >
+                  Total price
+                </div>
+
+                <div
+                  class="flex items-center mt-2 text-lg"
+                  *ngIf="discount() < 1 && currentStep === stepType.CONFIRM && targetPrice !== null"
+                >
+                  <div class="mr-2 font-bold line-through text-foregrounds-tertiary">
+                    {{
+                      targetPrice * nftQuantity
+                        | formatToken : collection?.mintingData?.network : true
+                        | async
+                    }}
+                  </div>
+                  <div class="mr-2 font-bold truncate">
+                    {{
+                      calc(targetPrice, discount()) * nftQuantity
+                        | formatToken : collection?.mintingData?.network : true
+                        | async
+                    }}
+                  </div>
+                </div>
+
+                <div
+                  class="flex items-center mt-2 text-lg"
+                  *ngIf="
+                    (currentStep === stepType.CONFIRM && targetPrice !== null) ||
+                    (currentStep !== stepType.CONFIRM && targetAmount !== null)
+                  "
+                >
+                  <div class="mr-2 font-bold truncate">
+                    {{
+                      currentStep !== stepType.CONFIRM && targetAmount !== null
+                        ? (targetAmount
+                          | formatToken : collection?.mintingData?.network : true
+                          | async)
+                        : (targetPrice * nftQuantity
+                          | formatToken : collection?.mintingData?.network : true
+                          | async)
+                    }}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          </ng-container>
+
+          <!-- Warning/Error Message Block -->
+          <ng-template #elseBlock>
+            <div
+              class="px-5 py-3 mt-8 lg:mt-auto bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl w-max"
+              *ngIf="nftQuantity !== 1"
+            >
+              <div
+                class="flex items-center p-5 mt-6 rounded-xl bg-alerts-warning dark:bg-alerts-warning-dark text-foregrounds-primary dark:text-foregrounds-primary"
+              >
+                <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+                <div class="text-base font-bold">
+                  <span>Warning: Missing or Invalid Data</span>
+                </div>
+              </div>
+
+              <div class="flex flex-row justify-between items-center mt-2">
+                <div class="flex flex-col items-center mr-4">
+                  <div class="flex flex-col items-center mr-4">
+                    <div
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      i18n
+                    >
+                      Target Price
+                    </div>
+                    <div class="text-lg font-bold truncate">
+                      {{ targetPrice }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-center mr-4">
+                  <div class="flex flex-col items-center mr-4">
+                    <div
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      i18n
+                    >
+                      Target Amount
+                    </div>
+                    <div class="text-lg font-bold truncate">
+                      {{ targetAmount }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-center mr-4">
+                  <div class="flex flex-col items-center mr-4">
+                    <div
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      i18n
+                    >
+                      Quantity Selected
+                    </div>
+                    <div class="text-lg font-bold truncate">
+                      {{ nftQuantity }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-center mr-4">
+                  <div class="flex flex-col items-center mr-4">
+                    <div
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      i18n
+                    >
+                      Discount
+                    </div>
+                    <div class="text-lg font-bold truncate">
+                      {{ discount() }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-center mr-4">
+                  <div class="flex flex-col items-center mr-4">
+                    <div
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      i18n
+                    >
+                      Purchase Workflow Step
+                    </div>
+                    <div class="text-lg font-bold truncate">
+                      {{ currentStep }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-template>
         </div>
       </div>
     </div>
@@ -287,6 +516,7 @@
         (click)="goToNft()"
         nzSize="large"
         class="w-full mb-6 lg:mb-0 lg:mt-1"
+        *ngIf="!nftQuantity || nftQuantity <= 1"
         i18n
       >
         Show my NFT

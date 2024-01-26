@@ -34,6 +34,7 @@ import {
   Transaction,
   TransactionType,
   TRANSACTION_AUTO_EXPIRY_MS,
+  NftPurchaseRequest,
 } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, firstValueFrom, interval, Subscription, take } from 'rxjs';
@@ -64,6 +65,7 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
   @Input() currentStep = StepType.CONFIRM;
 
   @Input() set isOpen(value: boolean) {
+    // console.log('Is Open changed:', value);
     this._isOpen = value;
     this.checkoutService.modalOpen$.next(value);
   }
@@ -86,6 +88,7 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
 
       if (this.currentStep === StepType.CONFIRM) {
         this.targetPrice = this._nft.availablePrice || this._nft.price || 0;
+        // console.log('targetPrice set, _nft.availablePrice, _nft.price, targetPrice: ', this._nft.availablePrice,  this._nft.price, this.targetPrice);
       }
     }
   }
@@ -111,6 +114,8 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
   get collection(): Collection | null | undefined {
     return this._collection;
   }
+
+  @Input() nftQuantity = 1;
 
   @Output() wenOnClose = new EventEmitter<void>();
 
@@ -156,12 +161,14 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
+    // console.log('[nft-checkout] loaded, qty passed in: ', this.nftQuantity);
     this.receivedTransactions = false;
     const listeningToTransaction: string[] = [];
     this.transaction$.pipe(untilDestroyed(this)).subscribe((val) => {
       if (val && val.type === TransactionType.ORDER) {
         this.targetAddress = val.payload.targetAddress;
         this.targetAmount = val.payload.amount;
+        // console.log('target amount set using val.payload.amount.  val: ', val);
         const expiresOn: dayjs.Dayjs = dayjs(val.payload.expiresOn!.toDate());
         if (expiresOn.isBefore(dayjs()) || val.payload?.void || val.payload?.reconciled) {
           // It's expired.
@@ -414,34 +421,69 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
     return this.purchasedNft || this.nft;
   }
 
+  get pricePerItem(): number {
+    return (this.targetAmount ?? 0) / (this.nftQuantity || 1);
+  }
+
   public async proceedWithOrder(): Promise<void> {
     if (!this.collection || !this.nft || !this.agreeTermsConditions) {
       return;
     }
 
-    const params: any = {
-      collection: this.collection.uid,
-    };
+    if (this.nftQuantity > 1) {
+      const nfts: NftPurchaseRequest[] = [];
 
-    if (this.collection.type === CollectionType.CLASSIC) {
-      params.nft = this.nft.uid;
+      for (let i = 0; i < this.nftQuantity; i++) {
+        const nftData: NftPurchaseRequest = {
+          collection: this.collection.uid,
+        };
+
+        nfts.push(nftData);
+      }
+
+      const bulkPurchaseRequest = {
+        orders: nfts,
+      };
+
+      await this.auth.sign(bulkPurchaseRequest, (sc, finish) => {
+        this.notification
+          .processRequest(this.orderApi.orderNfts(sc), $localize`Order created.`, finish)
+          .subscribe((val: any) => {
+            this.transSubscription?.unsubscribe();
+            setItem(StorageItem.CheckoutTransaction, val.uid);
+            this.transSubscription = this.orderApi
+              .listen(val.uid)
+              .subscribe(<any>this.transaction$);
+            this.pushToHistory(val, val.uid, dayjs(), $localize`Waiting for transaction...`);
+          });
+      });
+    } else {
+      const params: any = {
+        collection: this.collection.uid,
+      };
+
+      if (this.collection.type === CollectionType.CLASSIC) {
+        params.nft = this.nft.uid;
+      }
+
+      // If owner is set CollectionType is not relevant.
+      if (this.nft.owner) {
+        params.nft = this.nft.uid;
+      }
+
+      await this.auth.sign(params, (sc, finish) => {
+        this.notification
+          .processRequest(this.orderApi.orderNft(sc), $localize`Order created.`, finish)
+          .subscribe((val: any) => {
+            this.transSubscription?.unsubscribe();
+            setItem(StorageItem.CheckoutTransaction, val.uid);
+            this.transSubscription = this.orderApi
+              .listen(val.uid)
+              .subscribe(<any>this.transaction$);
+            this.pushToHistory(val, val.uid, dayjs(), $localize`Waiting for transaction...`);
+          });
+      });
     }
-
-    // If owner is set CollectionType is not relevant.
-    if (this.nft.owner) {
-      params.nft = this.nft.uid;
-    }
-
-    await this.auth.sign(params, (sc, finish) => {
-      this.notification
-        .processRequest(this.orderApi.orderNft(sc), $localize`Order created.`, finish)
-        .subscribe((val: any) => {
-          this.transSubscription?.unsubscribe();
-          setItem(StorageItem.CheckoutTransaction, val.uid);
-          this.transSubscription = this.orderApi.listen(val.uid).subscribe(<any>this.transaction$);
-          this.pushToHistory(val, val.uid, dayjs(), $localize`Waiting for transaction...`);
-        });
-    });
   }
 
   public getTitle(): any {
