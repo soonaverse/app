@@ -25,9 +25,7 @@ export class CartService {
     private notification: NzNotificationService,
     private helperService: HelperService,
     public auth: AuthService,
-  ) {
-    // console.log('CartService instance created');
-  }
+  ) {}
 
   public showCart(): void {
     this.showCartSubject.next(true);
@@ -59,9 +57,7 @@ export class CartService {
           ` has been added to your cart.`,
         '',
       );
-      // console.log('[CartService] NFT added to cart:', cartItem);
     } else {
-      // console.log('[CartService] NFT is already in the cart:', cartItem);
       this.notification.error($localize`This NFT already exists in your cart.`, '');
     }
   }
@@ -71,7 +67,6 @@ export class CartService {
     const updatedCartItems = this.cartItemsSubject.value.filter((item) => item.nft.uid !== itemId);
     this.cartItemsSubject.next(updatedCartItems);
     this.saveCartItems();
-    // console.log('[CartService-removeFromCart] Cart updated:', updatedCartItems);
   }
 
   public removeItemsFromCart(itemIds: string[]): void {
@@ -95,33 +90,32 @@ export class CartService {
   }
 
   public getCartItems(): BehaviorSubject<CartItem[]> {
-    // console.log('[CartService] getCartItems function called.');
     return this.cartItemsSubject;
   }
 
   public updateCartItems(updatedItems: CartItem[]): void {
-    this.cartItemsSubject.next(updatedItems); // Update the BehaviorSubject with the new cart items
-    this.saveCartItems(); // Save the updated cart items to local storage or your backend
+    this.cartItemsSubject.next(updatedItems);
+    this.saveCartItems();
   }
 
   public saveCartItems(): void {
-    // console.log('[CartService] getCartItems function called.');
     setItem(StorageItem.CartItems, this.cartItemsSubject.value);
-    // console.log('[CartService] Saving cart items to local storage:', this.cartItemsSubject.value);
   }
 
   private loadCartItems(): CartItem[] {
-    // console.log('[CartService] Loading cart items from local storage');
     const items = getItem(StorageItem.CartItems) as CartItem[];
-    // console.log('[CartService] Cart items loaded from local storage:', items);
     return items || [];
   }
 
   public isNftAvailableForSale(nft: Nft, collection: Collection): boolean {
     const isLocked = this.helperService.isLocked(nft, collection, true);
-    const isOwner = nft.owner === this.auth.member$.value?.uid;
+
+    let isOwner = false;
+    if (nft.owner != null && this.auth.member$.value?.uid != null) {
+      isOwner = nft.owner === this.auth.member$.value?.uid;
+    }
+
     const availableForSale = this.helperService.isAvailableForSale(nft, collection);
-    // console.log(`[cart.service-isNftAvailableForSale] results for NFT ${nft.name}; availableForSale: ${availableForSale}, isLocked: ${isLocked}, isOwner: ${isOwner}`);
 
     return !isLocked && availableForSale && (!isOwner || !nft.owner);
   }
@@ -135,16 +129,12 @@ export class CartService {
       cartItem.nft,
       cartItem.collection,
     );
-    // console.log("[cart.service-getAvailableNftQuantity] function called for cartItem.nft.name: " + cartItem.nft.name + ", isAvailableForSale: " + isAvailableForSale);
 
     if (cartItem.nft.placeholderNft && isAvailableForSale) {
-      // console.log("[service-getAvailableNftQuantity] returning qty, placeholder: " + cartItem.nft.placeholderNft + ". availableNfts " + cartItem.collection.availableNfts);
       return cartItem.collection.availableNfts || 0;
     } else if (isAvailableForSale) {
-      // console.log("[service-getAvailableNftQuantity] returning 1, isAvailableForSale: " + isAvailableForSale + ". placeholder: " + cartItem.nft.placeholderNft);
       return 1;
     }
-    // console.log("[service-getAvailableNftQuantity] returning 0, isAvailableForSale: " + isAvailableForSale + ". placeholder: " + cartItem.nft.placeholderNft);
     return 0;
   }
 
@@ -176,6 +166,6 @@ export class CartService {
 
   public calcPrice(item: CartItem, discount: number): number {
     const itemPrice = item.nft?.availablePrice || item.nft?.price || 0;
-    return this.calc(itemPrice, discount); // assuming calc method applies the discount
+    return this.calc(itemPrice, discount);
   }
 }

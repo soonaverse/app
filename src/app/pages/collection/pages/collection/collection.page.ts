@@ -32,7 +32,15 @@ import {
   RANKING_TEST,
 } from '@build-5/interfaces';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { BehaviorSubject, first, firstValueFrom, skip, Subscription } from 'rxjs';
+import {
+  Subject,
+  BehaviorSubject,
+  first,
+  firstValueFrom,
+  skip,
+  Subscription,
+  takeUntil,
+} from 'rxjs';
 import { DataService } from '../../services/data.service';
 import { NotificationService } from './../../../../@core/services/notification/notification.service';
 
@@ -51,6 +59,7 @@ export class CollectionPage implements OnInit, OnDestroy {
   private guardiansSubscription$?: Subscription;
   private guardiansRankModeratorSubscription$?: Subscription;
   private subscriptions$: Subscription[] = [];
+  private destroy$ = new Subject<void>();
 
   constructor(
     public deviceService: DeviceService,
@@ -309,6 +318,8 @@ export class CollectionPage implements OnInit, OnDestroy {
   public ngOnDestroy(): void {
     this.cancelSubscriptions();
     this.guardiansSubscription$?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   public get networkTypes(): typeof Network {

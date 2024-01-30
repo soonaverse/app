@@ -20,6 +20,11 @@ export class CollectionNftStateService {
   }
 
   private updateAvailableNftsCount(nfts: Nft[], collection: Collection) {
+    console.log(
+      '[collectionNfts.service-updateAvailableNftsCount] function called with (nfts, collection): ',
+      nfts,
+      collection,
+    );
     const availableNftsCount = nfts.filter((nft) =>
       this.cartService.isNftAvailableForSale(nft, collection),
     ).length;

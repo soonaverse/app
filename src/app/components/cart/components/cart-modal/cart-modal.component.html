@@ -100,11 +100,11 @@
                     *ngIf="discount(item.collection, item.nft) < 1"
                   >
                     {{
-                      cartItemPrices[item.nft.uid]?.originalPrice
+                      cartItemPrices[item.nft.uid].originalPrice
                         | formatToken
-                          : (item.nft?.placeholderNft
-                              ? item.collection?.mintingData?.network
-                              : item.nft?.mintingData?.network)
+                          : (item.nft.placeholderNft
+                              ? item.collection.mintingData?.network
+                              : item.nft.mintingData?.network)
                           : true
                           : true
                         | async
@@ -112,11 +112,11 @@
                   </div>
                   <div class="text-lg font-bold truncate">
                     {{
-                      cartItemPrices[item.nft.uid]?.discountedPrice
+                      cartItemPrices[item.nft.uid].discountedPrice
                         | formatToken
-                          : (item.nft?.placeholderNft
-                              ? item.collection?.mintingData?.network
-                              : item.nft?.mintingData?.network)
+                          : (item.nft.placeholderNft
+                              ? item.collection.mintingData?.network
+                              : item.nft.mintingData?.network)
                           : true
                           : true
                         | async

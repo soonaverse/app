@@ -92,6 +92,7 @@ export class NFTPage implements OnInit, OnDestroy {
   private tranSubscriptions$: Subscription[] = [];
   public collectionType: CollectionType | null | undefined = null;
   public collectionMinting: CollectionStatus | null | undefined = null;
+  public nftQtySelected = 1;
 
   constructor(
     public data: DataService,
@@ -121,7 +122,6 @@ export class NFTPage implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.data.nft$.subscribe((nft) => {
-      // console.log('[OnInit] Current NFT:', nft);
       this.currentNft = nft;
     });
     this.deviceService.viewWithSearch$.next(false);
@@ -279,8 +279,6 @@ export class NFTPage implements OnInit, OnDestroy {
     this.data.collection$.pipe(skip(1), untilDestroyed(this)).subscribe(async (p) => {
       if (p) {
         this.collectionType = p.type;
-        // this.collectionMinting = p.status;
-        // console.log('[nft.page-p] collectionMinting set to: ', p.status)
         this.collectionSubscriptions$.forEach((s) => {
           s.unsubscribe();
         });
@@ -476,6 +474,7 @@ export class NFTPage implements OnInit, OnDestroy {
   }
 
   public buy(event?: MouseEvent): void {
+    console.log('Buy now NFT button pressed, qty to pass: ', this.nftQtySelected);
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -556,18 +555,22 @@ export class NFTPage implements OnInit, OnDestroy {
 
   public addToCart(nft: Nft): void {
     if (nft && this.data.collection$) {
-      // console.log('[addToCart-this.data.collection$.value', this.data.collection$.value)
-      // console.log('[addToCart-this.data.nft$.value', this.data.nft$.value)
       this.data.collection$.pipe(take(1)).subscribe((collection) => {
         if (collection) {
-          this.cartService.addToCart({ nft, collection, quantity: 1, salePrice: 0 });
-          // console.log('Added to cart:', nft, collection);
-        } else {
-          // console.error('Collection is undefined or null');
+          this.cartService.addToCart({
+            nft,
+            collection,
+            quantity: this.nftQtySelected,
+            salePrice: 0,
+          });
+          console.log(
+            'Added to cart (nft, collection, qty):',
+            nft,
+            collection,
+            this.nftQtySelected,
+          );
         }
       });
-    } else {
-      // console.error('NFT is undefined or null');
     }
   }
 

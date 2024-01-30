@@ -111,6 +111,10 @@ export class HelperService {
   }
 
   public isDateInFuture(date?: Timestamp | null): boolean {
+    if (!date) {
+      return false;
+    }
+
     if (!this.getDate(date)) {
       return false;
     }
@@ -124,19 +128,40 @@ export class HelperService {
   }
 
   public getDate(date: any): any {
-    // console.log(`[getDate] Original input:`, date);
-    if (typeof date === 'object') {
-      if (date?.toDate) {
-        const dateFromObject = date.toDate();
-        // console.log(`[getDate] Object with toDate method detected, toDate result:`, dateFromObject);
-        return dateFromObject;
-      } else if (date?.seconds) {
-        const dateFromSeconds = new Date(date.seconds * 1000); // Convert to milliseconds
-        // console.log(`[getDate] Object with seconds property detected, converted to Date:`, dateFromSeconds);
-        return dateFromSeconds;
+    if (!date) {
+      console.warn('getDate called with null or undefined:', date);
+      return undefined;
+    }
+
+    if (typeof date === 'number') {
+      return new Date(date);
+    } else if (typeof date === 'object') {
+      // Checking if toDate exists and is a function
+      if (date.toDate && typeof date.toDate === 'function') {
+        try {
+          return date.toDate();
+        } catch (e) {
+          console.error('Error calling toDate:', e);
+        }
+      }
+
+      // Checking if seconds exists and is a number
+      if ('seconds' in date && !isNaN(Number(date.seconds))) {
+        const seconds = Number(date.seconds);
+        return new Date(seconds * 1000);
+      }
+
+      // Checking if toMillis exists and is a function
+      if (date.toMillis && typeof date.toMillis === 'function') {
+        try {
+          return new Date(date.toMillis());
+        } catch (e) {
+          console.error('Error calling toMillis:', e);
+        }
       }
     }
-    // console.log(`[getDate] Returning undefined, input could not be parsed as a date.`);
+
+    console.warn('Unrecognized date format:', date);
     return undefined;
   }
 
@@ -172,9 +197,7 @@ export class HelperService {
   }
 
   public isAvailableForSale(nft?: Nft | null, col?: Collection | null): boolean {
-    // console.log("[NFThelper-isAvailableForSale] function called");
     if (!col || !nft?.availableFrom || col?.status === CollectionStatus.MINTING) {
-      // console.log("[NFT helper.service.ts] isAvailableForSale function returning false.  nft name: " + nft?.name + ", col name: " + col?.name)
       return false;
     }
 
@@ -182,11 +205,19 @@ export class HelperService {
       col.approved === true &&
       !!this.getDate(nft.availableFrom) &&
       dayjs(this.getDate(nft.availableFrom)).isSameOrBefore(dayjs(), 's');
-    // console.log("[NFT helper.service.ts] isAvailableForSale function returning " + isAvail + ".  nft name: " + nft?.name + ", col name: " + col?.name + ". nft.availableFrom: " + nft.availableFrom.seconds);
-    // console.log("col.approved: " + (col.approved === true));
-    // console.log("!!this.getDate(nft.availableFrom): " + !!this.getDate(nft.availableFrom) + ", this.getDate(nft.availableFrom): " + this.getDate(nft.availableFrom));
-    // console.log("dayjs(this.getDate(nft.availableFrom)).isSameOrBefore(dayjs(), 's')" + dayjs(this.getDate(nft.availableFrom)).isSameOrBefore(dayjs(), 's'));
     return isAvail;
+  }
+
+  public getAvailNftQty(nft?: Nft | null, col?: Collection | null): number {
+    const isAvailableForSale = this.isAvailableForSale(nft, col);
+
+    if (nft?.placeholderNft && isAvailableForSale) {
+      return col?.availableNfts || 0;
+    } else if (isAvailableForSale) {
+      return 1;
+    }
+
+    return 0;
   }
 
   public canBeSetForSale(nft?: Nft | null): boolean {

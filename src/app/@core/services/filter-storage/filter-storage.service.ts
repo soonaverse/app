@@ -195,7 +195,7 @@ export class FilterStorageService {
   public marketNftsResetVisible$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   public marketNftsFilters$: BehaviorSubject<MarketNftsFilters> =
     new BehaviorSubject<MarketNftsFilters>({
-      sortBy: this.marketNftsFiltersOptions.sortItems[0].value,
+      sortBy: this.marketNftsFiltersOptions.sortItems[2].value,
     });
 
   public marketCollectionsFiltersOptions = {

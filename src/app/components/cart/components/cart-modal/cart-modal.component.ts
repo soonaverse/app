@@ -46,7 +46,6 @@ export class CartModalComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscriptions.add(
       this.cartService.getCartItems().subscribe((items) => {
-        // console.log('[CartModalComponent-ngOnInit] Cart items updated:', items);
         this.cartItemsStatus = items.map((item) => this.cartItemStatus(item));
         this.cartItemsQuantities = items.map((item) => this.cartItemSaleAvailableQty(item));
         items.forEach((item) => {
@@ -77,19 +76,15 @@ export class CartModalComponent implements OnInit, OnDestroy {
   }
 
   private refreshCartData() {
-    // console.log('Refreshing cart items...');
     const cartItems = this.cartService.getCartItems().getValue();
-    // console.log('Current cart items:', cartItems);
 
     const freshDataObservables = cartItems.map((item) =>
       this.nftApi.getNftById(item.nft.uid).pipe(
         take(1),
         map((freshNft) => {
-          // console.log(`Fetched fresh data for NFT ${item.nft.uid}:`, freshNft);
           return freshNft ? { ...item, nft: freshNft } : item;
         }),
         catchError((error) => {
-          // console.error(`Error fetching fresh data for NFT ${item.nft.uid}:`, error);
           return of(item);
         }),
       ),
@@ -97,8 +92,6 @@ export class CartModalComponent implements OnInit, OnDestroy {
 
     forkJoin(freshDataObservables).subscribe(
       (freshCartItems) => {
-        // console.log('Fresh cart items:', freshCartItems);
-
         this.cartService.updateCartItems(freshCartItems);
 
         this.cartItemsStatus = freshCartItems.map((item) => this.cartItemStatus(item));
@@ -111,8 +104,6 @@ export class CartModalComponent implements OnInit, OnDestroy {
           this.cartItemPrices[item.nft.uid] = { originalPrice, discountedPrice };
         });
 
-        // console.log('Finished refreshing cart items.');
-
         this.cd.markForCheck();
       },
       (error) => {
@@ -124,17 +115,25 @@ export class CartModalComponent implements OnInit, OnDestroy {
 
   public updateQuantity(event: Event, itemId: string): void {
     const inputElement = event.target as HTMLInputElement;
-    const newQuantity = Number(inputElement.value);
+    let newQuantity = Number(inputElement.value);
 
-    if (newQuantity === 0) {
-      this.cartService.removeFromCart(itemId);
-    } else {
-      const cartItems = this.cartService.getCartItems().getValue();
-      const itemIndex = cartItems.findIndex((cartItem) => cartItem.nft.uid === itemId);
-      if (itemIndex !== -1) {
-        cartItems[itemIndex].quantity = newQuantity;
-        this.cartService.saveCartItems();
+    const cartItems = this.cartService.getCartItems().getValue();
+    const itemIndex = cartItems.findIndex((cartItem) => cartItem.nft.uid === itemId);
+
+    if (itemIndex !== -1) {
+      const maxQuantity = this.cartItemsQuantities[itemIndex];
+      const minQuantity = 1;
+
+      if (newQuantity < minQuantity) {
+        newQuantity = minQuantity;
+        inputElement.value = minQuantity.toString();
+      } else if (newQuantity > maxQuantity) {
+        newQuantity = maxQuantity;
+        inputElement.value = maxQuantity.toString();
       }
+
+      cartItems[itemIndex].quantity = newQuantity;
+      this.cartService.saveCartItems();
     }
   }
 
@@ -170,20 +169,15 @@ export class CartModalComponent implements OnInit, OnDestroy {
   }
 
   public cartItemStatus(item: CartItem): any {
-    // console.log("[cart-modal.component-cartItemStatus] function called");
     const itemAvailable = this.cartService.isCartItemAvailableForSale(item);
     if (itemAvailable) {
-      // console.log("[cart-modal.component-cartItemStatus] returning Available, itemAvailable: " + itemAvailable);
       return 'Available';
     }
-    // console.log("[cart-modal.component-cartItemStatus] returning Not Available, itemAvailable: " + itemAvailable);
     return 'Not Available';
   }
 
   private cartItemSaleAvailableQty(item: CartItem): number {
-    // console.log("[cart-modal.component-cartItemSaleAvailableQty] function called");
     const availQty = this.cartService.getAvailableNftQuantity(item);
-    // console.log("[cart-modal.component] cartItemSaleAvailableQty, qty: " + availQty);
     return availQty;
   }
 

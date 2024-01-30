@@ -112,6 +112,8 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
     return this._collection;
   }
 
+  @Input() nftQuantity = 1;
+
   @Output() wenOnClose = new EventEmitter<void>();
 
   public purchasedNft?: Nft | null;
@@ -156,6 +158,7 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
+    console.log('[nft-checkout] loaded, qty passed in: ', this.nftQuantity);
     this.receivedTransactions = false;
     const listeningToTransaction: string[] = [];
     this.transaction$.pipe(untilDestroyed(this)).subscribe((val) => {

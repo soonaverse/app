@@ -58,9 +58,9 @@
               {{
                 item.salePrice
                   | formatToken
-                    : (item.nft?.placeholderNft
-                        ? item.collection?.mintingData?.network
-                        : item.nft?.mintingData?.network)
+                    : (item.nft.placeholderNft
+                        ? item.collection.mintingData?.network
+                        : item.nft.mintingData?.network)
                     : true
                     : true
                   | async
@@ -70,9 +70,9 @@
               {{
                 item.quantity * item.salePrice
                   | formatToken
-                    : (item.nft?.placeholderNft
-                        ? item.collection?.mintingData?.network
-                        : item.nft?.mintingData?.network)
+                    : (item.nft.placeholderNft
+                        ? item.collection.mintingData?.network
+                        : item.nft.mintingData?.network)
                     : true
                     : true
                   | async

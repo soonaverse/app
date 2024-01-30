@@ -11,23 +11,34 @@
         <ng-template let-state="state">
           <div class="flex items-center space-x-2">
             <span
-              class="font-medium ais-Stats-text text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+              class="font-medium ais-Stats-text text-foregrounds-secondary dark:text-foregrounds-secondary-dark mr-3"
             >
               {{ state.nbHits | number }} <ng-container i18n>records</ng-container>
             </span>
-            <div class="flex-1 w-72">
-              <nz-slider
-                *ngIf="availableNftsCount !== null && availableNftsCount > 1"
-                [(ngModel)]="sweepCount"
-                [nzMin]="1"
-                [nzMax]="availableNftsCount > 20 ? 20 : availableNftsCount"
-                [nzStep]="1"
-                [nzTipFormatter]="null"
-              ></nz-slider>
-              <!--<nz-slider *ngIf="sliderCalcMaxValueIsKnown" [(ngModel)]="sweepCount" [nzMin]="1" [nzMax]="sliderCalcMaxValue" [nzStep]="1" [nzTipFormatter]="null"></nz-slider>-->
+            <div class="flex-1 w-72 text-center">
+              <ng-container
+                *ngIf="availableNftsCount !== null && availableNftsCount > 0; else noNftsAvailable"
+              >
+                <nz-slider
+                  [(ngModel)]="sweepCount"
+                  [nzMin]="1"
+                  [nzMax]="availableNftsCount > 20 ? 20 : availableNftsCount"
+                  [nzStep]="1"
+                  [nzTipFormatter]="null"
+                ></nz-slider>
+                <span class="w-12 text-center font-bold">{{ sweepCount }}</span>
+              </ng-container>
+              <ng-template #noNftsAvailable>
+                <span>No NFTs available to sweep.</span>
+              </ng-template>
             </div>
-            <span class="w-12 text-center font-bold">{{ sweepCount }}</span>
-            <button nz-button nzType="primary" nzSize="small" (click)="sweepToCart(sweepCount)">
+            <button
+              nz-button
+              nzType="primary"
+              nzSize="small"
+              (click)="sweepToCart(sweepCount)"
+              [disabled]="availableNftsCount === null || availableNftsCount === 0"
+            >
               Sweep to Cart
             </button>
           </div>
