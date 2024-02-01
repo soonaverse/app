@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { DEFAULT_NETWORK, NETWORK_DETAIL, Network, WEN_NAME } from '@build-5/interfaces';
+import { NETWORK_DETAIL, Network, WEN_NAME } from '@build-5/interfaces';
 
 @Component({
   selector: 'wen-wallet-deeplink',
@@ -90,11 +90,9 @@ export class WalletDeeplinkComponent {
   }
 
   private getBloomDeepLink(): SafeUrl {
-    if (!this._network || this._network === Network.IOTA || this._network === Network.ATOI) {
-      // TODO: IOTA network support in Bloom
+    if (!this._network) {
       return '';
     } else {
-      // Shimmer Network
       const parameters = {
         address: this.targetAddress,
         baseCoinAmount:
