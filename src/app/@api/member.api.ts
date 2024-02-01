@@ -5,7 +5,7 @@ import {
   NetworkAddress,
   Member,
   Proposal,
-  PublicCollections,
+  Dataset,
   SOON_TOKEN,
   SOON_TOKEN_TEST,
   Stake,
@@ -15,26 +15,16 @@ import {
   TokenDropStatus,
   Transaction,
   WEN_FUNC,
-  WenRequest,
+  Build5Request,
+  BUILD5_PROD_ADDRESS_API,
+  BUILD5_TEST_ADDRESS_API,
+  Subset,
+  MemberUpdateRequest,
+  CustomTokenRequest,
 } from '@build-5/interfaces';
-import {
-  AirdropRepository,
-  AwardParticipantRepository,
-  AwardRepository,
-  MemberRepository,
-  ProposalMemberRepository,
-  ProposalRepository,
-  SpaceKnockingMemberRepository,
-  SpaceMemberRepository,
-  SpaceRepository,
-  StakeRepository,
-  TokenDistributionRepository,
-  TokenRepository,
-  TransactionRepository,
-} from '@build-5/lib';
 import dayjs from 'dayjs';
 import { Observable, combineLatest, map, of, switchMap } from 'rxjs';
-import { BaseApi, SOON_ENV } from './base.api';
+import { BaseApi } from './base.api';
 
 export interface TokenDistributionWithAirdrops extends TokenDistribution {
   tokenDrops: TokenDrop[];
@@ -56,43 +46,43 @@ export interface StakeWithTokenRec extends Stake {
   providedIn: 'root',
 })
 export class MemberApi extends BaseApi<Member> {
-  protected memberRepo = new MemberRepository(SOON_ENV);
-  protected tokenDistRepo = new TokenDistributionRepository(SOON_ENV);
-  protected airdropRepo = new AirdropRepository(SOON_ENV);
-  protected stakeRepo = new StakeRepository(SOON_ENV);
-  protected tokenRepo = new TokenRepository(SOON_ENV);
-  protected spaceRepo = new SpaceRepository(SOON_ENV);
-  protected spaceMemberRepo = new SpaceMemberRepository(SOON_ENV);
-  protected spaceKnockingRepo = new SpaceKnockingMemberRepository(SOON_ENV);
-  protected awardRepo = new AwardRepository(SOON_ENV);
-  protected awardParticipantRepo = new AwardParticipantRepository(SOON_ENV);
-  protected proposalRepo = new ProposalRepository(SOON_ENV);
-  protected proposalMemberRepo = new ProposalMemberRepository(SOON_ENV);
-  protected transactionRepo = new TransactionRepository(SOON_ENV);
+  protected memberDataset = this.project.dataset(Dataset.MEMBER);
+  protected airdropDataset = this.project.dataset(Dataset.AIRDROP);
+  protected stakeDataset = this.project.dataset(Dataset.STAKE);
+  protected tokenDataset = this.project.dataset(Dataset.TOKEN);
+  protected spaceDataset = this.project.dataset(Dataset.SPACE);
+  protected awardDataset = this.project.dataset(Dataset.AWARD);
+  protected proposalDataset = this.project.dataset(Dataset.PROPOSAL);
+  protected transactionDataset = this.project.dataset(Dataset.TRANSACTION);
 
   constructor(protected httpClient: HttpClient) {
-    super(PublicCollections.MEMBER, httpClient);
+    super(Dataset.MEMBER, httpClient);
   }
 
   public soonDistributionStats = (id: NetworkAddress) => {
     const tokenId = environment.production ? SOON_TOKEN : SOON_TOKEN_TEST;
-    return this.tokenDistRepo.getByIdLive(tokenId, id.toLowerCase()).pipe(
-      switchMap(async (distribution) => {
-        if (!distribution) {
-          return;
-        }
-        const tokenDrops = await this.airdropRepo.getByField(
-          ['member', 'token', 'status'],
-          [id.toLowerCase(), tokenId, TokenDropStatus.UNCLAIMED],
-        );
-        return { ...distribution, tokenDrops };
-      }),
-    ) as Observable<TokenDistributionWithAirdrops | undefined>;
+    return this.tokenDataset
+      .id(tokenId)
+      .subset(Subset.DISTRIBUTION)
+      .subsetId(id.toLowerCase())
+      .getLive()
+      .pipe(
+        switchMap(async (distribution) => {
+          if (!distribution) {
+            return;
+          }
+          const tokenDrops = await this.airdropDataset.getByField(
+            ['member', 'token', 'status'],
+            [id.toLowerCase(), tokenId, TokenDropStatus.UNCLAIMED],
+          );
+          return { ...distribution, tokenDrops };
+        }),
+      ) as Observable<TokenDistributionWithAirdrops | undefined>;
   };
 
   public listenMultiple = (ids: NetworkAddress[]) =>
     ids.length
-      ? this.memberRepo
+      ? this.memberDataset
           .getByFieldLive(
             ids.map(() => 'uid'),
             ids,
@@ -109,10 +99,10 @@ export class MemberApi extends BaseApi<Member> {
     memberId: NetworkAddress,
     lastValue?: string,
   ): Observable<StakeWithTokenRec[]> =>
-    this.stakeRepo.getByMemberLive(memberId, lastValue).pipe(
+    this.stakeDataset.getByMemberLive(memberId, lastValue).pipe(
       switchMap(async (stakes: Stake[]) => {
         const tokenIds = Array.from(new Set(stakes.map((s) => s.token)));
-        const tokenPromises = tokenIds.map((id) => this.tokenRepo.getById(id));
+        const tokenPromises = tokenIds.map((id) => this.tokenDataset.id(id).get());
         const tokens = await Promise.all(tokenPromises);
 
         return stakes.map((stake) => ({
@@ -123,22 +113,25 @@ export class MemberApi extends BaseApi<Member> {
     );
 
   public topTokens = (memberId: NetworkAddress): Observable<TokenWithMemberDistribution[]> =>
-    this.tokenDistRepo.getTopBySubColIdLive(memberId, [], []).pipe(
-      switchMap(async (distributions) => {
-        const promises = distributions.map(async (distribution) => {
-          const token = await this.tokenRepo.getById(distribution.parentId);
-          const tokenDrops = await this.airdropRepo.getByField(
-            ['member', 'token', 'status'],
-            [memberId, distribution.parentId, TokenDropStatus.UNCLAIMED],
-          );
-          return {
-            ...token,
-            distribution: { ...distribution, tokenDrops },
-          } as TokenWithMemberDistribution;
-        });
-        return await Promise.all(promises);
-      }),
-    );
+    this.tokenDataset
+      .subset(Subset.DISTRIBUTION)
+      .getTopBySubColIdLive(memberId, [], [])
+      .pipe(
+        switchMap(async (distributions) => {
+          const promises = distributions.map(async (distribution) => {
+            const token = await this.tokenDataset.id(distribution.parentId).get();
+            const tokenDrops = await this.airdropDataset.getByField(
+              ['member', 'token', 'status'],
+              [memberId, distribution.parentId, TokenDropStatus.UNCLAIMED],
+            );
+            return {
+              ...token,
+              distribution: { ...distribution, tokenDrops },
+            } as TokenWithMemberDistribution;
+          });
+          return await Promise.all(promises);
+        }),
+      );
 
   public topSpaces = (
     memberId: NetworkAddress,
@@ -146,20 +139,20 @@ export class MemberApi extends BaseApi<Member> {
     orderByDir = ['desc'],
     lastValue?: string,
     limit?: number,
-  ) => this.spaceRepo.getTopByMember(memberId, orderBy, orderByDir, lastValue, limit);
+  ) => this.spaceDataset.getTopByMember(memberId, orderBy, orderByDir, lastValue, limit);
 
   public pendingSpaces = (
     memberId: NetworkAddress,
     orderBy = ['createdOn'],
     orderByDir = ['desc'],
     lastValue?: string,
-  ) => this.spaceRepo.getPendingSpacesByMemberLive(memberId, orderBy, orderByDir, lastValue);
+  ) => this.spaceDataset.getPendingSpacesByMemberLive(memberId, orderBy, orderByDir, lastValue);
 
   public topAwardsPending = (memberId: NetworkAddress, lastValue?: string) =>
-    this.awardRepo.getTopByMemberLive(memberId, false, lastValue);
+    this.awardDataset.getTopByMemberLive(memberId, false, lastValue);
 
   public topAwardsCompleted = (memberId: NetworkAddress, lastValue?: string) =>
-    this.awardRepo.getTopByMemberLive(memberId, true, lastValue);
+    this.awardDataset.getTopByMemberLive(memberId, true, lastValue);
 
   public topProposals = (
     memberId: NetworkAddress,
@@ -167,19 +160,22 @@ export class MemberApi extends BaseApi<Member> {
     orderByDir = ['desc'],
     lastValue?: string,
   ) =>
-    this.proposalMemberRepo.getTopBySubColIdLive(memberId, orderBy, orderByDir, lastValue).pipe(
-      switchMap(async (members) => {
-        const result: Proposal[] = [];
-        for (const member of members) {
-          const proposal = (await this.proposalRepo.getById(member.parentId))!;
-          const endDate = proposal.settings.endDate?.toDate();
-          if (endDate && dayjs(endDate).isAfter(dayjs(new Date()))) {
-            result.push(proposal);
+    this.proposalDataset
+      .subset(Subset.MEMBERS)
+      .getTopBySubColIdLive(memberId, orderBy, orderByDir, lastValue)
+      .pipe(
+        switchMap(async (members) => {
+          const result: Proposal[] = [];
+          for (const member of members) {
+            const proposal = (await this.proposalDataset.id(member.parentId).get())!;
+            const endDate = proposal.settings.endDate?.toDate();
+            if (endDate && dayjs(endDate).isAfter(dayjs(new Date()))) {
+              result.push(proposal);
+            }
           }
-        }
-        return result;
-      }),
-    );
+          return result;
+        }),
+      );
 
   public topBadges(
     memberId: string,
@@ -187,7 +183,7 @@ export class MemberApi extends BaseApi<Member> {
     lastValue?: string,
   ): Observable<Transaction[]> {
     const orderBys = Array.isArray(orderBy) ? orderBy : [orderBy];
-    return this.transactionRepo.getBadgesForMemberLive(memberId, orderBys, lastValue);
+    return this.transactionDataset.getBadgesForMemberLive(memberId, orderBys, lastValue);
   }
 
   public topTransactions(
@@ -197,11 +193,11 @@ export class MemberApi extends BaseApi<Member> {
   ): Observable<Transaction[]> {
     const orderBys = Array.isArray(orderBy) ? orderBy : [orderBy];
 
-    const prevOwner = this.transactionRepo
+    const prevOwner = this.transactionDataset
       .getTopTransactionsLive(orderBys, lastValue, undefined, memberId)
       .pipe(map((result) => result.filter((t) => t.member !== memberId)));
 
-    const members = this.transactionRepo.getTopTransactionsLive(orderBys, lastValue, memberId);
+    const members = this.transactionDataset.getTopTransactionsLive(orderBys, lastValue, memberId);
 
     return combineLatest([prevOwner, members]).pipe(
       map((combined) =>
@@ -215,25 +211,36 @@ export class MemberApi extends BaseApi<Member> {
   }
 
   public allSpacesAsMember = (memberId: NetworkAddress, lastValue?: string) =>
-    this.spaceMemberRepo.getTopBySubColIdLive(memberId, [], [], lastValue).pipe(
-      switchMap(async (spaceMembers) => {
-        const spacePromises = spaceMembers.map(
-          async (member) => (await this.spaceRepo.getById(member.parentId))!,
-        );
-        return await Promise.all(spacePromises);
-      }),
-    );
+    this.spaceDataset
+      .subset(Subset.MEMBERS)
+      .getTopBySubColIdLive(memberId, [], [], lastValue)
+      .pipe(
+        switchMap(async (spaceMembers) => {
+          const spacePromises = spaceMembers.map(
+            async (member) => (await this.spaceDataset.id(member.parentId).get())!,
+          );
+          return await Promise.all(spacePromises);
+        }),
+      );
 
   public createIfNotExists = (address: string): Observable<Member | undefined> =>
     this.request(WEN_FUNC.createMember, {
-      address: '',
+      address: address,
       projectApiKey: environment.build5Token,
-      body: address,
+      body: {
+        address,
+      },
     });
 
-  public updateMember = (req: WenRequest): Observable<Member | undefined> =>
+  public updateMember = (req: Build5Request<MemberUpdateRequest>): Observable<Member | undefined> =>
     this.request(WEN_FUNC.updateMember, req);
 
-  public generateAuthToken = (req: WenRequest): Observable<string | undefined> =>
-    this.request(WEN_FUNC.generateCustomToken, req);
+  public generateAuthToken = (
+    req: Build5Request<CustomTokenRequest>,
+  ): Observable<string | undefined> => {
+    const origin = environment.production ? BUILD5_PROD_ADDRESS_API : BUILD5_TEST_ADDRESS_API;
+    return <any>this.httpClient.post(origin + WEN_FUNC.generateCustomToken, req, {
+      responseType: 'text',
+    });
+  };
 }

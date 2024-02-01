@@ -1,29 +1,30 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  PublicCollections,
+  Dataset,
   TokenTradeOrder,
   TokenTradeOrderStatus,
   TokenTradeOrderType,
   WEN_FUNC,
-  WenRequest,
+  Build5Request,
+  TradeTokenRequest,
+  CancelTokenTradeOrderRequest,
 } from '@build-5/interfaces';
-import { TokenMarketRepository } from '@build-5/lib';
 import { Observable, map } from 'rxjs';
-import { BaseApi, SOON_ENV } from './base.api';
+import { BaseApi } from './base.api';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TokenMarketApi extends BaseApi<TokenTradeOrder> {
-  private tokenMarketRepo = new TokenMarketRepository(SOON_ENV);
+  private tokenMarketDataset = this.project.dataset(Dataset.TOKEN_MARKET);
 
   constructor(protected httpClient: HttpClient) {
-    super(PublicCollections.TOKEN_MARKET, httpClient);
+    super(Dataset.TOKEN_MARKET, httpClient);
   }
 
   public bidsActive = (token: string, lastValue?: string) =>
-    this.tokenMarketRepo.getBidsLive(
+    this.tokenMarketDataset.getBidsLive(
       token,
       TokenTradeOrderType.BUY,
       TokenTradeOrderStatus.ACTIVE,
@@ -31,7 +32,7 @@ export class TokenMarketApi extends BaseApi<TokenTradeOrder> {
     );
 
   public asksActive = (token: string, lastValue?: string) =>
-    this.tokenMarketRepo.getBidsLive(
+    this.tokenMarketDataset.getBidsLive(
       token,
       TokenTradeOrderType.SELL,
       TokenTradeOrderStatus.ACTIVE,
@@ -39,17 +40,19 @@ export class TokenMarketApi extends BaseApi<TokenTradeOrder> {
     );
 
   public membersBids = (member: string, token: string, lastValue?: string) =>
-    this.tokenMarketRepo.getMemberBidsLive(token, member, TokenTradeOrderType.BUY, lastValue);
+    this.tokenMarketDataset.getMemberBidsLive(token, member, TokenTradeOrderType.BUY, lastValue);
 
   public membersAsks = (member: string, token: string, lastValue?: string) =>
-    this.tokenMarketRepo.getMemberBidsLive(token, member, TokenTradeOrderType.SELL, lastValue);
+    this.tokenMarketDataset.getMemberBidsLive(token, member, TokenTradeOrderType.SELL, lastValue);
 
   public listenAvgPrice = (tokenId: string) =>
-    this.tokenMarketRepo.getTokenPriceLive(tokenId).pipe(map((result) => result.price));
+    this.tokenMarketDataset.getTokenPriceLive(tokenId).pipe(map((result) => result.price));
 
-  public tradeToken = (req: WenRequest): Observable<TokenTradeOrder | undefined> =>
-    this.request(WEN_FUNC.tradeToken, req);
+  public tradeToken = (
+    req: Build5Request<TradeTokenRequest>,
+  ): Observable<TokenTradeOrder | undefined> => this.request(WEN_FUNC.tradeToken, req);
 
-  public cancel = (req: WenRequest): Observable<TokenTradeOrder | undefined> =>
-    this.request(WEN_FUNC.cancelTradeOrder, req);
+  public cancel = (
+    req: Build5Request<CancelTokenTradeOrderRequest>,
+  ): Observable<TokenTradeOrder | undefined> => this.request(WEN_FUNC.cancelTradeOrder, req);
 }

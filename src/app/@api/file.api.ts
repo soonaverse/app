@@ -54,7 +54,7 @@ export class FileApi {
       .pipe(
         map((b: any) => {
           if (item.onSuccess) {
-            item.onSuccess(b.url, item.file, b.url);
+            item.onSuccess(b.data.url, item.file, b.data.url);
           }
         }),
       )

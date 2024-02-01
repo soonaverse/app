@@ -17,11 +17,7 @@
     nzType="primary"
     nzSize="default"
     class="w-full"
-    *ngIf="
-      (isGuardianWithinSpace$ | async) &&
-      !helper.isMinted(data.collection$ | async) &&
-      (data.collection$ | async)?.approved === true
-    "
+    *ngIf="(isGuardianWithinSpace$ | async) && !helper.isMinted(data.collection$ | async)"
     [disabled]="helper.mintInProgress(data.collection$ | async)"
     (click)="isMintOnNetorkVisible = true"
   >
@@ -33,15 +29,12 @@
         >...)
       </ng-container>
     </ng-container>
-    <ng-template #mintText i18n>Mint Collection</ng-template>
+    <ng-template #mintText i18n>Mint & Publish Collection</ng-template>
   </button>
 
   <div
     class="font-medium"
-    *ngIf="
-      !helper.isMinted(data.collection$ | async) &&
-      ((isGuardianWithinSpace$ | async) === false || (data.collection$ | async)?.approved !== true)
-    "
+    *ngIf="!helper.isMinted(data.collection$ | async) && (isGuardianWithinSpace$ | async) === false"
     i18n
   >
     Collection is not yet migrated to the decentralized network.

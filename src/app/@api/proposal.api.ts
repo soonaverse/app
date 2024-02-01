@@ -1,23 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  NetworkAddress,
   Member,
   Proposal,
-  PublicCollections,
+  Dataset,
   Timestamp,
   Transaction,
   WEN_FUNC,
-  WenRequest,
+  Build5Request,
+  Subset,
+  ProposalCreateRequest,
+  ApproveProposalRequest,
+  RejectProposalRequest,
+  ProposalVoteRequest,
 } from '@build-5/interfaces';
-import {
-  MemberRepository,
-  ProposalMemberRepository,
-  ProposalRepository,
-  TransactionRepository,
-} from '@build-5/lib';
 import { Observable, map, of, switchMap } from 'rxjs';
-import { BaseApi, SOON_ENV } from './base.api';
+import { BaseApi } from './base.api';
 
 export enum ProposalFilter {
   ALL = 'all',
@@ -44,30 +42,34 @@ export interface TransactionWithFullMember extends Transaction {
   providedIn: 'root',
 })
 export class ProposalApi extends BaseApi<Proposal> {
-  private memberRepo = new MemberRepository(SOON_ENV);
-  private proposalRepo = new ProposalRepository(SOON_ENV);
-  private transactionRepo = new TransactionRepository(SOON_ENV);
-  private proposalMemberRepo = new ProposalMemberRepository(SOON_ENV);
+  private memberDataset = this.project.dataset(Dataset.MEMBER);
+  private proposalDataset = this.project.dataset(Dataset.PROPOSAL);
+  private transactionDataset = this.project.dataset(Dataset.TRANSACTION);
 
   constructor(protected httpClient: HttpClient) {
-    super(PublicCollections.PROPOSAL, httpClient);
+    super(Dataset.PROPOSAL, httpClient);
   }
 
-  public listen = (id: NetworkAddress) => this.proposalRepo.getByIdLive(id);
-
-  public lastActive = (lastValue?: string) => this.proposalRepo.getActiveLive(lastValue);
-
-  public listenSpace = (
-    space: string,
-    filter: ProposalFilter = ProposalFilter.ALL,
-    lastValue?: string,
-  ) => this.proposalRepo.getBySpaceAndFilterLive(space, filter, lastValue);
+  public listenSpace = (space: string, filter = ProposalFilter.ALL, lastValue?: string) => {
+    switch (filter) {
+      case ProposalFilter.ALL:
+        return this.proposalDataset.getBySpaceLive(space, lastValue);
+      case ProposalFilter.ACTIVE:
+        return this.proposalDataset.getActiveLive(space, lastValue);
+      case ProposalFilter.COMPLETED:
+        return this.proposalDataset.getCompletedLive(space, lastValue);
+      case ProposalFilter.REJECTED:
+        return this.proposalDataset.getRejectedLive(space, lastValue);
+      case ProposalFilter.DRAFT:
+        return this.proposalDataset.getDraftLive(space, lastValue);
+    }
+  };
 
   public lastVotes = (proposalId: string, lastValue?: string) =>
-    this.transactionRepo.getLatestVotesForProposalLive(proposalId, undefined, lastValue).pipe(
+    this.transactionDataset.getLatestVotesForProposalLive(proposalId, undefined, lastValue).pipe(
       switchMap(async (transactions) => {
         const memberIds = Array.from(new Set(transactions.map((t) => t.member!)));
-        const memberPromises = memberIds.map((id) => this.memberRepo.getById(id));
+        const memberPromises = memberIds.map((id) => this.memberDataset.id(id).get());
         const members = await Promise.all(memberPromises);
 
         return transactions.map(
@@ -81,60 +83,71 @@ export class ProposalApi extends BaseApi<Proposal> {
     );
 
   public getMembersVotes = (proposalId: string, memberId: string, lastValue?: string) =>
-    this.transactionRepo.getLatestVotesForProposalLive(proposalId, memberId, lastValue);
+    this.transactionDataset.getLatestVotesForProposalLive(proposalId, memberId, lastValue);
 
   public canMemberVote(proposalId: string, memberId: string) {
     if (!proposalId || !memberId) {
       return of(false);
     }
-    return this.proposalMemberRepo
-      .getByIdLive(proposalId, memberId)
+    return this.proposalDataset
+      .id(proposalId)
+      .subset(Subset.MEMBERS)
+      .subsetId(memberId)
+      .getLive()
       .pipe(map((member) => !!member));
   }
 
   public listenPendingMembers = (proposalId: string, lastValue?: string) =>
-    this.proposalMemberRepo.getVotingMembersLive(proposalId, false, lastValue).pipe(
-      switchMap(async (proposalMembers) => {
-        const memberPromises = proposalMembers.map(async (propMember) => {
-          const member = (await this.memberRepo.getById(propMember.uid))!;
-          return {
-            ...member,
-            voted: propMember.voted,
-            weight: propMember.weight,
-            values: propMember.values,
-            _issuedOn: propMember.createdOn,
-          } as ProposalParticipantWithMember;
-        });
-        return await Promise.all(memberPromises);
-      }),
-    );
+    this.proposalDataset
+      .id(proposalId)
+      .subset(Subset.MEMBERS)
+      .getVotingMembersLive(false, lastValue)
+      .pipe(
+        switchMap(async (proposalMembers) => {
+          const memberPromises = proposalMembers.map(async (propMember) => {
+            const member = (await this.memberDataset.id(propMember.uid).get())!;
+            return {
+              ...member,
+              voted: propMember.voted,
+              weight: propMember.weight,
+              values: propMember.values,
+              _issuedOn: propMember.createdOn,
+            } as ProposalParticipantWithMember;
+          });
+          return await Promise.all(memberPromises);
+        }),
+      );
 
   public listenVotedMembers = (proposalId: string, lastValue?: string) =>
-    this.proposalMemberRepo.getVotingMembersLive(proposalId, true, lastValue).pipe(
-      switchMap(async (proposalMembers) => {
-        const memberPromises = proposalMembers.map(async (propMember) => {
-          const member = (await this.memberRepo.getById(propMember.uid))!;
-          return {
-            ...member,
-            voted: propMember.voted,
-            weight: propMember.weight,
-            values: propMember.values,
-            _issuedOn: propMember.createdOn,
-          } as ProposalParticipantWithMember;
-        });
-        return await Promise.all(memberPromises);
-      }),
-    );
+    this.proposalDataset
+      .id(proposalId)
+      .subset(Subset.MEMBERS)
+      .getVotingMembersLive(true, lastValue)
+      .pipe(
+        switchMap(async (proposalMembers) => {
+          const memberPromises = proposalMembers.map(async (propMember) => {
+            const member = (await this.memberDataset.id(propMember.uid).get())!;
+            return {
+              ...member,
+              voted: propMember.voted,
+              weight: propMember.weight,
+              values: propMember.values,
+              _issuedOn: propMember.createdOn,
+            } as ProposalParticipantWithMember;
+          });
+          return await Promise.all(memberPromises);
+        }),
+      );
 
-  public create = (req: WenRequest): Observable<Proposal | undefined> =>
+  public create = (req: Build5Request<ProposalCreateRequest>): Observable<Proposal | undefined> =>
     this.request(WEN_FUNC.createProposal, req);
 
-  public approve = (req: WenRequest): Observable<Proposal | undefined> =>
+  public approve = (req: Build5Request<ApproveProposalRequest>): Observable<Proposal | undefined> =>
     this.request(WEN_FUNC.approveProposal, req);
 
-  public reject = (req: WenRequest): Observable<Proposal | undefined> =>
+  public reject = (req: Build5Request<RejectProposalRequest>): Observable<Proposal | undefined> =>
     this.request(WEN_FUNC.rejectProposal, req);
 
-  public vote = (req: WenRequest): Observable<Proposal | undefined> =>
+  public vote = (req: Build5Request<ProposalVoteRequest>): Observable<Proposal | undefined> =>
     this.request(WEN_FUNC.voteOnProposal, req);
 }

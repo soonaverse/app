@@ -57,9 +57,11 @@ export class CollectionHighlightCardComponent implements OnDestroy {
     this.collections.forEach((collection) => {
       const space$ = new BehaviorSubject<Space | undefined>(undefined);
       this.spaces$.push(space$);
-      this.subscriptions$.push(
-        this.spaceApi.listen(collection?.space).pipe(untilDestroyed(this)).subscribe(space$),
-      );
+      if (collection?.space) {
+        this.subscriptions$.push(
+          this.spaceApi.listen(collection?.space).pipe(untilDestroyed(this)).subscribe(space$),
+        );
+      }
     });
   }
 

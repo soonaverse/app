@@ -1,6 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { PublicCollections, Token, Transaction, WEN_FUNC, WenRequest } from '@build-5/interfaces';
+import {
+  Dataset,
+  Token,
+  Transaction,
+  WEN_FUNC,
+  Build5Request,
+  TokenMintRequest,
+  ImportMintedTokenRequest,
+} from '@build-5/interfaces';
 import { Observable } from 'rxjs';
 import { BaseApi } from './base.api';
 
@@ -9,12 +17,13 @@ import { BaseApi } from './base.api';
 })
 export class TokenMintApi extends BaseApi<Token> {
   constructor(protected httpClient: HttpClient) {
-    super(PublicCollections.TOKEN, httpClient);
+    super(Dataset.TOKEN, httpClient);
   }
 
-  public mintToken = (req: WenRequest): Observable<Transaction | undefined> =>
+  public mintToken = (req: Build5Request<TokenMintRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.mintTokenOrder, req);
 
-  public importToken = (req: WenRequest): Observable<Transaction | undefined> =>
-    this.request(WEN_FUNC.importMintedToken, req);
+  public importToken = (
+    req: Build5Request<ImportMintedTokenRequest>,
+  ): Observable<Transaction | undefined> => this.request(WEN_FUNC.importMintedToken, req);
 }

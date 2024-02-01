@@ -95,8 +95,7 @@ export class WalletDeeplinkComponent {
     } else {
       const parameters = {
         address: this.targetAddress,
-        baseCoinAmount:
-          this.tokenId && this.surplus ? Number(this.targetAmount).toFixed(0) : undefined,
+        baseCoinAmount: Number(this.targetAmount ?? 0).toFixed(0),
         tokenId: this.tokenId,
         tokenAmount: this.tokenId ? this.tokenAmount : undefined,
         tag: WEN_NAME.toLowerCase(),

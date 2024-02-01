@@ -272,9 +272,11 @@ export class TradePage implements OnInit, OnDestroy {
               o === 'image' ? t.overviewGraphics : undefined,
             );
           });
-        this.subscriptions$.push(
-          this.spaceApi.listen(t.space).pipe(untilDestroyed(this)).subscribe(this.data.space$),
-        );
+        if (t.space) {
+          this.subscriptions$.push(
+            this.spaceApi.listen(t.space).pipe(untilDestroyed(this)).subscribe(this.data.space$),
+          );
+        }
         this.listenToMemberSubs(this.auth.member$.value);
         this.isFavourite = ((getItem(StorageItem.FavouriteTokens) as string[]) || []).includes(
           t.uid,
@@ -545,10 +547,10 @@ export class TradePage implements OnInit, OnDestroy {
     return FILE_SIZES;
   }
 
-  public getShareUrl(token?: Token | null): string {
+  public getShareUrl(): string {
     return (
       'https://twitter.com/share?text=Check out token&url=' +
-      (token?.wenUrl || window?.location.href) +
+      window?.location.href +
       '&hashtags=soonaverse'
     );
   }

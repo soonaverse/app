@@ -20,8 +20,10 @@ jobs:
           node-version: 20
       - name: Install Dependencies
         run: npm install
+      - name: Copy ENV variables
+        run: cp -f src/environments/environment.prod.ts src/environments/environment.ts
       - name: Build project
-        run: npm run build:prod
+        run: npm run build
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
