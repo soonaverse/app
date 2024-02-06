@@ -6,8 +6,6 @@ import {
   OnInit,
   TemplateRef,
   ViewChild,
-  Output,
-  EventEmitter,
 } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { CollectionApi } from '@api/collection.api';
@@ -21,10 +19,10 @@ import { DeviceService } from '@core/services/device';
 import { RouterService } from '@core/services/router';
 import {
   StorageItem,
-  getItem,
   getNotificationItem,
   removeItem,
   setNotificationItem,
+  getCheckoutTransaction,
 } from '@core/utils';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -37,7 +35,6 @@ import {
   NotificationType,
   TRANSACTION_AUTO_EXPIRY_MS,
   Transaction,
-  TransactionPayloadType,
 } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationRef, NzNotificationService } from 'ng-zorro-antd/notification';
@@ -50,10 +47,8 @@ import {
   interval,
   skip,
 } from 'rxjs';
-import { MemberApi } from './../../../@api/member.api';
-import { CartService } from './../../../components/cart/services/cart.service';
-import { NzModalService } from 'ng-zorro-antd/modal';
-import { CheckoutOverlayComponent } from '@components/cart/components/checkout/checkout-overlay.component';
+import { MemberApi } from '@api/member.api';
+import { CartService } from '@components/cart/services/cart.service';
 
 const IS_SCROLLED_HEIGHT = 20;
 
@@ -83,6 +78,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public isScrolled = false;
   public isCheckoutOpen = false;
   public isCartCheckoutOpen = false;
+  public isCheckoutOverlayOpen = false;
   public currentCheckoutNft?: Nft;
   public currentCheckoutCollection?: Collection;
   public notifications$: BehaviorSubject<Notification[]> = new BehaviorSubject<Notification[]>([]);
@@ -95,9 +91,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private subscriptionTransaction$?: Subscription;
   private subscriptionNotification$?: Subscription;
   public cartItemCount = 0;
-  private cartItemsSubscription!: Subscription;
-
-  @Output() openCartModal = new EventEmitter<void>();
+  private cartItemsSubscription$!: Subscription;
+  public isTransactionPending = false;
+  public isCartCheckoutOverlayVisible = false;
 
   constructor(
     public auth: AuthService,
@@ -114,7 +110,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private nzNotification: NzNotificationService,
     private checkoutService: CheckoutService,
     public cartService: CartService,
-    private modalService: NzModalService,
   ) {}
 
   public ngOnInit(): void {
@@ -135,7 +130,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.cartItemsSubscription = this.cartService.getCartItems().subscribe((items) => {
+    this.cartItemsSubscription$ = this.cartService.getCartItems().subscribe((items) => {
       this.cartItemCount = items.length;
     });
 
@@ -179,6 +174,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
 
       if (expired === false && o?.payload.void === false && o.payload.reconciled === false) {
+        this.isTransactionPending = true;
         if (!this.notificationRef) {
           this.notificationRef = this.nzNotification.template(this.notCompletedNotification, {
             nzDuration: 0,
@@ -186,6 +182,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
           });
         }
       } else {
+        this.isTransactionPending = false;
         this.removeCheckoutNotification();
       }
     });
@@ -194,17 +191,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
     interval(500)
       .pipe(untilDestroyed(this))
       .subscribe(() => {
-        if (this.checkoutService.modalOpen$.value) {
+        if (
+          this.checkoutService.modalOpen$.value ||
+          this.cartService.checkoutOverlayOpenSubject$.value
+        ) {
           this.removeCheckoutNotification(false);
         } else {
+          const checkoutTransaction = getCheckoutTransaction();
           if (
-            getItem(StorageItem.CheckoutTransaction) &&
+            checkoutTransaction &&
+            checkoutTransaction.transactionId &&
             (!this.subscriptionTransaction$ || this.subscriptionTransaction$.closed)
           ) {
             this.subscriptionTransaction$ = this.orderApi
-              .listen(<any>getItem(StorageItem.CheckoutTransaction))
+              .listen(checkoutTransaction.transactionId)
               .pipe(untilDestroyed(this))
-              .subscribe(<any>this.transaction$);
+              .subscribe((transaction) => {
+                this.transaction$.next(transaction);
+              });
           }
         }
       });
@@ -236,60 +240,73 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.cartService.showCart$.subscribe((value) => {
-      // console.log('Current value of showCart$: ', value);
+    this.cartItemsSubscription$ = this.cartService.getCartItems().subscribe((items) => {
+      this.cartItemCount = items.length;
+    });
+
+    this.cartService.checkoutOverlayOpen$.pipe(untilDestroyed(this)).subscribe((isOpen) => {
+      this.isCheckoutOverlayOpen = isOpen;
+    });
+
+    this.cartService.cartModalOpen$.pipe(untilDestroyed(this)).subscribe((isOpen) => {
+      this.isCartCheckoutOpen = isOpen;
     });
   }
 
   public async onOpenCheckout(): Promise<void> {
-    const t = this.transaction$.getValue();
-    console.log('[header-onOpenCheckout] transaction: ', t);
-    console.log('[header-onOpenCheckout] t?.payload.type: ', t?.payload.type);
-    if (t?.payload.type == TransactionPayloadType.NFT_PURCHASE_BULK) {
-      console.log(
-        '[header-onOpenCheckout] !t?.payload.type && t?.payload.type == TransactionPayloadType.NFT_PURCHASE_BULK equals true and isCartCheckoutOpen set to true',
-      );
-      this.openCartModal.emit();
-      this.openCheckoutOverlay();
-    }
+    const checkoutTransaction = getCheckoutTransaction();
+    if (checkoutTransaction) {
+      switch (checkoutTransaction.source) {
+        case 'cartCheckout': {
+          if (!this.cartService.isCheckoutOverlayOpen()) {
+            this.cartService.openCartAndCheckoutOverlay();
+            this.cd.markForCheck();
+          }
+          break;
+        }
+        case 'nftCheckout': {
+          const t = this.transaction$.getValue();
 
-    if (!t?.payload.nft || !t.payload.collection) {
-      return;
-    }
-    const collection: Collection | undefined = await firstValueFrom(
-      this.collectionApi.listen(t?.payload.collection),
-    );
-    let nft: Nft | undefined = undefined;
-    try {
-      nft = await firstValueFrom(this.nftApi.listen(t?.payload?.nft));
-    } catch (_e) {
-      // If it's not classic or re-sale we're using placeholder NFT
-      if (collection?.placeholderNft) {
-        nft = await firstValueFrom(this.nftApi.listen(collection?.placeholderNft));
+          if (!t?.payload.nft || !t.payload.collection) {
+            return;
+          }
+
+          const collection: Collection | undefined = await firstValueFrom(
+            this.collectionApi.listen(t?.payload.collection),
+          );
+
+          let nft: Nft | undefined = undefined;
+          try {
+            nft = await firstValueFrom(this.nftApi.listen(t?.payload?.nft));
+          } catch (_e) {
+            if (collection?.placeholderNft) {
+              nft = await firstValueFrom(this.nftApi.listen(collection?.placeholderNft));
+            }
+          }
+
+          if (nft && collection) {
+            this.currentCheckoutCollection = collection;
+            this.currentCheckoutNft = nft;
+            this.isCheckoutOpen = true;
+            this.cd.markForCheck();
+          }
+          break;
+        }
+        default: {
+          console.error('Unknown checkout transaction source:', checkoutTransaction.source);
+        }
       }
+    } else {
+      this.removeCheckoutNotification();
     }
-    if (nft && collection) {
-      this.currentCheckoutCollection = collection;
-      this.currentCheckoutNft = nft;
-      this.isCheckoutOpen = true;
-      this.cd.markForCheck();
-    }
-  }
-
-  private openCheckoutOverlay(): void {
-    const cartItems = this.cartService.getCartItems().getValue();
-
-    this.modalService.create({
-      nzTitle: 'Checkout',
-      nzContent: CheckoutOverlayComponent,
-      nzComponentParams: { items: cartItems },
-      nzFooter: null,
-      nzWidth: '80%',
-    });
   }
 
   public handleOpenCartModal(): void {
-    this.openCartModal.emit();
+    this.cartService.showCartModal();
+  }
+
+  public handleOpenCartCheckoutModal(): void {
+    this.cartService.openCheckoutOverlay();
   }
 
   public get filesizes(): typeof FILE_SIZES {
@@ -306,15 +323,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   public get urlToDiscover(): string {
     return '/' + ROUTER_UTILS.config.market.root;
-  }
-
-  public closeCheckout(): void {
-    this.checkoutService.modalOpen$.next(false);
-    this.isCheckoutOpen = false;
-  }
-
-  public closeCartCheckout() {
-    this.isCartCheckoutOpen = false;
   }
 
   public goToMyProfile(): void {
@@ -334,6 +342,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   public trackByUid(index: number, item: Notification) {
     return item.uid;
+  }
+
+  public closeCheckout(): void {
+    this.checkoutService.modalOpen$.next(false);
+    this.isCheckoutOpen = false;
   }
 
   private removeCheckoutNotification(removeFromStorage = true): void {
@@ -427,24 +440,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
   }
 
-  public openShoppingCart(): void {
-    // console.log('Opening shopping cart...');
-    this.cartService.showCart();
-  }
-
-  public handleCartCheckout(): void {
-    this.isCartCheckoutOpen = true;
-    this.cd.markForCheck();
-  }
-
   public ngOnDestroy(): void {
     this.cancelAccessSubscriptions();
     this.subscriptionNotification$?.unsubscribe();
     this.subscriptionTransaction$?.unsubscribe();
     this.currentCheckoutNft = undefined;
     this.currentCheckoutCollection = undefined;
-    if (this.cartItemsSubscription) {
-      this.cartItemsSubscription.unsubscribe();
+    if (this.cartItemsSubscription$) {
+      this.cartItemsSubscription$.unsubscribe();
     }
   }
 }

@@ -20,7 +20,14 @@ import { NotificationService } from '@core/services/notification';
 import { PreviewImageService } from '@core/services/preview-image';
 import { TransactionService } from '@core/services/transaction';
 import { UnitsService } from '@core/services/units';
-import { getItem, removeItem, setItem, StorageItem } from '@core/utils';
+import {
+  getItem,
+  removeItem,
+  setItem,
+  StorageItem,
+  setCheckoutTransaction,
+  getCheckoutTransaction,
+} from '@core/utils';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/nft/services/helper.service';
@@ -137,7 +144,7 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
   private _nft?: Nft | null;
   private _collection?: Collection | null;
 
-  private transSubscription?: Subscription;
+  private transSubscription$?: Subscription;
   public path = ROUTER_UTILS.config.nft.root;
 
   constructor(
@@ -158,7 +165,6 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    console.log('[nft-checkout] loaded, qty passed in: ', this.nftQuantity);
     this.receivedTransactions = false;
     const listeningToTransaction: string[] = [];
     this.transaction$.pipe(untilDestroyed(this)).subscribe((val) => {
@@ -168,6 +174,10 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
         const expiresOn: dayjs.Dayjs = dayjs(val.payload.expiresOn!.toDate());
         if (expiresOn.isBefore(dayjs()) || val.payload?.void || val.payload?.reconciled) {
           // It's expired.
+          console.log(
+            'nft-checkout ngOnInit - transaction expired, has a void payload or transaction is reconciled, removing CheckoutTransaction, transaction: ',
+            val,
+          );
           removeItem(StorageItem.CheckoutTransaction);
         }
         if (val.linkedTransactions && val.linkedTransactions?.length > 0) {
@@ -307,10 +317,11 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
       this.cd.markForCheck();
     });
 
-    if (getItem(StorageItem.CheckoutTransaction)) {
-      this.transSubscription = this.orderApi
-        .listen(<string>getItem(StorageItem.CheckoutTransaction))
-        .subscribe(<any>this.transaction$);
+    const checkoutTransaction = getCheckoutTransaction();
+    if (checkoutTransaction && checkoutTransaction.transactionId) {
+      this.transSubscription$ = this.orderApi
+        .listen(checkoutTransaction.transactionId)
+        .subscribe(this.transaction$);
     }
 
     // Run ticker.
@@ -327,6 +338,10 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
           );
           if (expiresOn.isBefore(dayjs())) {
             this.expiryTicker$.next(null);
+            console.log(
+              'nft-checkout ngOnInit - expiresOn.isBefore(dayjs()) passed, remove CheckoutTransaction, expiresOn: ',
+              expiresOn,
+            );
             removeItem(StorageItem.CheckoutTransaction);
             int.unsubscribe();
             this.reset();
@@ -430,27 +445,20 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
       params.nft = this.nft.uid;
     }
 
-    // If owner is set CollectionType is not relevant.
     if (this.nft.owner) {
       params.nft = this.nft.uid;
     }
-
-    console.log(
-      '[nft-checkout.component-proceedWithOrder] params being passed for signing: ',
-      params,
-    );
 
     await this.auth.sign(params, (sc, finish) => {
       this.notification
         .processRequest(this.orderApi.orderNft(sc), $localize`Order created.`, finish)
         .subscribe((val: any) => {
-          console.log(
-            '[nft-this.checkoutService.component-proceedWithOrder] val after processing: ',
-            val,
-          );
-          this.transSubscription?.unsubscribe();
-          setItem(StorageItem.CheckoutTransaction, val.uid);
-          this.transSubscription = this.orderApi.listen(val.uid).subscribe(<any>this.transaction$);
+          this.transSubscription$?.unsubscribe();
+          setCheckoutTransaction({
+            transactionId: val.uid,
+            source: 'nftCheckout',
+          });
+          this.transSubscription$ = this.orderApi.listen(val.uid).subscribe(<any>this.transaction$);
           this.pushToHistory(val, val.uid, dayjs(), $localize`Waiting for transaction...`);
         });
     });
@@ -479,6 +487,6 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.transSubscription?.unsubscribe();
+    this.transSubscription$?.unsubscribe();
   }
 }

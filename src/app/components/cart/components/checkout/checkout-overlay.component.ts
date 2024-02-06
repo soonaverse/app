@@ -6,8 +6,9 @@ import {
   ChangeDetectionStrategy,
   Output,
   EventEmitter,
+  OnDestroy,
 } from '@angular/core';
-import { CartItem, CartService } from './../../services/cart.service';
+import { CartItem, CartService } from '@components/cart/services/cart.service';
 import {
   CollectionType,
   Nft,
@@ -17,23 +18,28 @@ import {
   TRANSACTION_AUTO_EXPIRY_MS,
   NftPurchaseRequest,
   Network,
+  DEFAULT_NETWORK,
 } from '@build-5/interfaces';
 import { AuthService } from '@components/auth/services/auth.service';
 import { NotificationService } from '@core/services/notification';
 import { OrderApi } from '@api/order.api';
 import { NftApi } from '@api/nft.api';
-// import { FileApi } from '@api/file.api';
 import { BehaviorSubject, firstValueFrom, interval, Subscription } from 'rxjs';
 import { TransactionService } from '@core/services/transaction';
-import { getItem, removeItem, setItem, StorageItem } from '@core/utils';
+import {
+  removeItem,
+  StorageItem,
+  setCheckoutTransaction,
+  getCheckoutTransaction,
+} from '@core/utils';
 import dayjs from 'dayjs';
 import { HelperService } from '@pages/nft/services/helper.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { NzModalRef } from 'ng-zorro-antd/modal';
 import { ThemeList, ThemeService } from '@core/services/theme';
+import { UnitsService } from '@core/services/units/units.service';
 
 export enum StepType {
   CONFIRM = 'Confirm',
@@ -65,19 +71,17 @@ interface HistoryItem {
   styleUrls: ['./checkout-overlay.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CheckoutOverlayComponent implements OnInit {
+export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   @Input() currentStep = StepType.CONFIRM;
   @Input() items: CartItem[] = [];
-  @Input() set isOpen(value: boolean) {
-    this._isOpen = value;
-    // this.checkoutService.modalOpen$.next(value);
-  }
+  @Input() pendingTransaction: Transaction | undefined;
 
   @Output() wenOnClose = new EventEmitter<void>();
   @Output() wenOnCloseCartCheckout = new EventEmitter<boolean>();
-  groupedCartItems: GroupedCartItem[] = [];
-  unavailableItemCount = 0;
-  cartItemPrices: { [key: string]: { originalPrice: number; discountedPrice: number } } = {};
+
+  public groupedCartItems: GroupedCartItem[] = [];
+  public unavailableItemCount = 0;
+  public cartItemPrices: { [key: string]: { originalPrice: number; discountedPrice: number } } = {};
   public agreeTermsConditions = false;
   public transaction$: BehaviorSubject<Transaction | undefined> = new BehaviorSubject<
     Transaction | undefined
@@ -90,20 +94,20 @@ export class CheckoutOverlayComponent implements OnInit {
   public targetAddress?: string;
   public targetAmount?: number;
   public purchasedNfts?: Nft[] | null;
-  private _isOpen = false;
   public stepType = StepType;
   public selectedNetwork: string | null = null;
   public mintingDataNetwork: Network | undefined;
-  formattedTotalPrice = '';
+  public formattedTotalPrice = '';
   private purchasedTokenSymbol: string | null = null;
-
-  private transSubscription?: Subscription;
+  private transSubscription$?: Subscription;
   public nftPath = ROUTER_UTILS.config.nft.root;
   public collectionPath: string = ROUTER_UTILS.config.collection.root;
+  public expandedGroups = new Set<string>();
+  private currentTransactionSubscription?: Subscription;
 
   public theme = ThemeList;
   constructor(
-    private cartService: CartService,
+    public cartService: CartService,
     private auth: AuthService,
     private notification: NotificationService,
     private orderApi: OrderApi,
@@ -113,8 +117,8 @@ export class CheckoutOverlayComponent implements OnInit {
     private nftApi: NftApi,
     private router: Router,
     private nzNotification: NzNotificationService,
-    private modalRef: NzModalRef,
     public themeService: ThemeService,
+    public unitsService: UnitsService,
   ) {}
 
   public get themes(): typeof ThemeList {
@@ -122,23 +126,24 @@ export class CheckoutOverlayComponent implements OnInit {
   }
 
   ngOnInit() {
-    // console.log('checkout-overlay ngOnInit called, running groupItems code.');
+    this.subscribeToCurrentStep();
+    this.subscribeToCurrentTransaction();
+    this.subscribeToCartItems();
+
     this.groupItems();
     this.receivedTransactions = false;
     const listeningToTransaction: string[] = [];
     this.transaction$.pipe(untilDestroyed(this)).subscribe((val) => {
-      // console.log('transaction val: ', val);
       if (val && val.type === TransactionType.ORDER) {
         this.targetAddress = val.payload.targetAddress;
         this.targetAmount = val.payload.amount;
         const expiresOn: dayjs.Dayjs = dayjs(val.payload.expiresOn!.toDate());
         if (expiresOn.isBefore(dayjs()) || val.payload?.void || val.payload?.reconciled) {
-          // It's expired.
           removeItem(StorageItem.CheckoutTransaction);
         }
         if (val.linkedTransactions && val.linkedTransactions?.length > 0) {
           this.currentStep = StepType.WAIT;
-          // Listen to other transactions.
+          this.updateStep(this.currentStep);
           for (const tranId of val.linkedTransactions) {
             if (listeningToTransaction.indexOf(tranId) > -1) {
               continue;
@@ -152,6 +157,7 @@ export class CheckoutOverlayComponent implements OnInit {
           }
         } else if (!val.linkedTransactions || val.linkedTransactions.length === 0) {
           this.currentStep = StepType.TRANSACTION;
+          this.updateStep(this.currentStep);
         }
 
         this.expiryTicker$.next(expiresOn);
@@ -165,6 +171,10 @@ export class CheckoutOverlayComponent implements OnInit {
           $localize`Payment received.`,
           (<any>val).payload?.chainReference,
         );
+
+        this.currentStep = StepType.COMPLETE;
+        this.updateStep(this.currentStep);
+        this.cd.markForCheck();
       }
 
       if (
@@ -173,7 +183,6 @@ export class CheckoutOverlayComponent implements OnInit {
         val.payload.reconciled === true &&
         (<any>val).payload.invalidPayment === false
       ) {
-        // Let's add delay to achive nice effect.
         setTimeout(() => {
           this.pushToHistory(
             val,
@@ -192,14 +201,11 @@ export class CheckoutOverlayComponent implements OnInit {
           );
           this.receivedTransactions = true;
           this.currentStep = StepType.COMPLETE;
-
-          // console.log('[checkout-overlay.component-purchase] transaction after purchase complete: ', val);
+          this.updateStep(this.currentStep);
           this.removePurchasedGroupItems();
-
           this.cd.markForCheck();
         }, 2000);
 
-        // Load purchased NFTs.
         if (val.payload.nftOrders && val.payload.nftOrders.length > 0) {
           this.purchasedNfts = this.purchasedNfts || [];
           val.payload.nftOrders.forEach((nftOrder) => {
@@ -233,6 +239,7 @@ export class CheckoutOverlayComponent implements OnInit {
       const markInvalid = () => {
         setTimeout(() => {
           this.currentStep = StepType.TRANSACTION;
+          this.updateStep(this.currentStep);
           this.invalidPayment = true;
           this.cd.markForCheck();
         }, 2000);
@@ -268,26 +275,28 @@ export class CheckoutOverlayComponent implements OnInit {
           val.payload?.walletReference?.chainReference,
         );
 
-        // Let's go back to wait. With slight delay so they can see this.
         markInvalid();
       }
 
       this.cd.markForCheck();
     });
 
-    if (getItem(StorageItem.CheckoutTransaction)) {
-      this.transSubscription = this.orderApi
-        .listen(<string>getItem(StorageItem.CheckoutTransaction))
-        .subscribe(<any>this.transaction$);
+    const checkoutTransaction = getCheckoutTransaction();
+    if (checkoutTransaction && checkoutTransaction.transactionId) {
+      this.transSubscription$ = this.orderApi
+        .listen(checkoutTransaction.transactionId)
+        .subscribe((transaction) => {
+          this.transaction$.next(transaction);
+        });
+    } else {
+      this.transSubscription$?.unsubscribe();
     }
 
-    // Run ticker.
     const int: Subscription = interval(1000)
       .pipe(untilDestroyed(this))
       .subscribe(() => {
         this.expiryTicker$.next(this.expiryTicker$.value);
 
-        // If it's in the past.
         if (this.expiryTicker$.value) {
           const expiresOn: dayjs.Dayjs = dayjs(this.expiryTicker$.value).add(
             TRANSACTION_AUTO_EXPIRY_MS,
@@ -301,16 +310,105 @@ export class CheckoutOverlayComponent implements OnInit {
           }
         }
       });
+
+    if (this.currentStep === StepType.CONFIRM) {
+      this.clearNetworkSelection();
+
+      if (this.groupedCartItems.length === 1) {
+        this.setNetworkSelection(this.groupedCartItems[0].tokenSymbol);
+      }
+    } else {
+      const storedNetwork = localStorage.getItem('cartCheckoutSelectedNetwork');
+      if (storedNetwork) {
+        this.selectedNetwork = storedNetwork;
+      }
+    }
+    this.setDefaultGroupVisibility();
   }
 
-  groupItems() {
-    // console.log('groupItems function called.')
+  private subscribeToCartItems() {
+    this.cartService
+      .getCartItems()
+      .pipe(untilDestroyed(this))
+      .subscribe((cartItems) => {
+        this.items = cartItems;
+        this.groupItems();
+        this.cd.markForCheck();
+      });
+  }
+
+  private subscribeToCurrentStep() {
+    this.cartService.currentStep$.pipe(untilDestroyed(this)).subscribe((step) => {
+      this.currentStep = step;
+      this.setDefaultGroupVisibility();
+      this.cd.markForCheck();
+    });
+  }
+
+  private subscribeToCurrentTransaction() {
+    const fetchedCurrentTransaction = this.cartService.getCurrentTransaction();
+
+    if (fetchedCurrentTransaction === undefined) {
+      return;
+    }
+
+    this.currentTransactionSubscription = this.cartService
+      .getCurrentTransaction()
+      .pipe(untilDestroyed(this))
+      .subscribe((transaction) => {
+        this.pendingTransaction = transaction;
+        this.cd.markForCheck();
+      });
+  }
+
+  public setDefaultGroupVisibility() {
+    if (this.currentStep !== this.stepType.CONFIRM && this.selectedNetwork) {
+      this.expandedGroups.add(this.selectedNetwork);
+      this.expandedGroups.clear();
+    } else {
+      if (this.currentStep === this.stepType.CONFIRM && this.groupedCartItems.length === 1) {
+        this.groupedCartItems.forEach((group) => {
+          this.expandedGroups.add(group.tokenSymbol);
+        });
+      }
+    }
+
+    this.cd.markForCheck();
+  }
+
+  public toggleGroup(groupSymbol: string) {
+    if (this.expandedGroups.has(groupSymbol)) {
+      this.expandedGroups.delete(groupSymbol);
+    } else {
+      this.expandedGroups.add(groupSymbol);
+    }
+    this.cd.markForCheck();
+  }
+
+  public isGroupExpanded(groupSymbol: string): boolean {
+    return this.expandedGroups.has(groupSymbol);
+  }
+
+  public setNetworkSelection(networkSymbol: string): void {
+    this.selectedNetwork = networkSymbol;
+    localStorage.setItem('cartCheckoutSelectedNetwork', networkSymbol);
+    this.expandedGroups.clear();
+    this.expandedGroups.add(networkSymbol);
+    this.cd.markForCheck();
+  }
+
+  public clearNetworkSelection(): void {
+    localStorage.removeItem('cartCheckoutSelectedNetwork');
+    this.selectedNetwork = null;
+  }
+
+  public groupItems() {
     const groups: { [tokenSymbol: string]: GroupedCartItem } = {};
     this.items.forEach((item) => {
       const tokenSymbol =
         (item.nft?.placeholderNft
           ? item.collection?.mintingData?.network
-          : item.nft?.mintingData?.network) || 'Unknown';
+          : item.nft?.mintingData?.network) || DEFAULT_NETWORK;
       const discount = this.discount(item);
       const originalPrice = this.calcPrice(item, 1);
       const discountedPrice = this.calcPrice(item, discount);
@@ -320,9 +418,9 @@ export class CheckoutOverlayComponent implements OnInit {
       const network =
         (item.nft?.placeholderNft
           ? item.collection?.mintingData?.network
-          : item.nft?.mintingData?.network) || undefined;
+          : item.nft?.mintingData?.network) || DEFAULT_NETWORK;
 
-      if (this.cartService.isCartItemAvailableForSale(item)) {
+      if (this.cartService.isCartItemAvailableForSale(item).isAvailable) {
         if (!groups[tokenSymbol]) {
           groups[tokenSymbol] = {
             tokenSymbol,
@@ -338,21 +436,19 @@ export class CheckoutOverlayComponent implements OnInit {
       } else {
         this.unavailableItemCount++;
       }
-
-      // console.log('Cart item loop finished, group: ', groups[tokenSymbol])
     });
 
     this.groupedCartItems = Object.values(groups);
+  }
 
-    if (this.groupedCartItems.length === 1) {
-      this.selectedNetwork = this.groupedCartItems[0].tokenSymbol;
-    }
+  public updateStep(step: StepType) {
+    this.cartService.setCurrentStep(step);
   }
 
   private removePurchasedGroupItems(): void {
-    if (this.purchasedTokenSymbol) {
-      this.cartService.removeGroupItemsFromCart(this.purchasedTokenSymbol);
-      this.purchasedTokenSymbol = null;
+    if (this.selectedNetwork) {
+      this.cartService.removeGroupItemsFromCart(this.selectedNetwork);
+      this.clearNetworkSelection();
     }
   }
 
@@ -365,40 +461,40 @@ export class CheckoutOverlayComponent implements OnInit {
   }
 
   public isCartItemAvailableForSale(item: CartItem): any {
-    return this.cartService.isCartItemAvailableForSale(item);
+    return this.cartService.isCartItemAvailableForSale(item).isAvailable;
   }
 
   public reset(): void {
     this.receivedTransactions = false;
-    this.isOpen = false;
     this.currentStep = StepType.CONFIRM;
     this.purchasedNfts = undefined;
+    this.history = [];
     this.cd.markForCheck();
   }
 
-  public close(alsoCloseCartModal = false): void {
-    this.wenOnCloseCartCheckout.emit(alsoCloseCartModal);
-    this.modalRef.close();
+  public handleClose(alsoCloseCartModal = false): void {
+    this.cartService.closeCheckoutOverlay();
+    if (alsoCloseCartModal) {
+      this.cartService.hideCartModal();
+    }
   }
 
-  public goToNft(nftUid: string, alsoCloseCartModal = false): void {
+  public goToNft(nftUid: string): void {
     if (!nftUid) {
-      console.error('No NFT UID provided.');
       return;
     }
+
     this.router.navigate(['/', this.nftPath, nftUid]);
-    this.wenOnCloseCartCheckout.emit(alsoCloseCartModal);
-    this.modalRef.close();
+    this.handleClose(true);
   }
 
-  public goToCollection(colUid: string, alsoCloseCartModal = false): void {
+  public goToCollection(colUid: string): void {
     if (!colUid) {
-      console.error('No Collection UID provided.');
       return;
     }
+
     this.router.navigate(['/', this.collectionPath, colUid]);
-    this.wenOnCloseCartCheckout.emit(alsoCloseCartModal);
-    this.modalRef.close();
+    this.handleClose(true);
   }
 
   public getRecords(): Nft[] | null | undefined {
@@ -436,6 +532,14 @@ export class CheckoutOverlayComponent implements OnInit {
   }
 
   public async initiateBulkOrder(): Promise<void> {
+    if (this.cartService.hasPendingTransaction()) {
+      this.nzNotification.error(
+        'You currently have an open order. Pay for it or let it expire.',
+        '',
+      );
+      return;
+    }
+
     const selectedGroup = this.groupedCartItems.find(
       (group) => group.tokenSymbol === this.selectedNetwork,
     );
@@ -449,7 +553,6 @@ export class CheckoutOverlayComponent implements OnInit {
     }
 
     if (!selectedGroup || selectedGroup.items.length === 0) {
-      console.warn('No network selected or no items in the selected network.');
       this.nzNotification.error(
         $localize`No network selected or no items in the selected network.`,
         '',
@@ -460,7 +563,6 @@ export class CheckoutOverlayComponent implements OnInit {
     const nfts = this.convertGroupedCartItemsToNfts(selectedGroup);
 
     if (nfts.length === 0) {
-      console.warn('No NFTs to purchase.');
       this.nzNotification.error($localize`No NFTs to purchase.`, '');
       return;
     }
@@ -473,16 +575,12 @@ export class CheckoutOverlayComponent implements OnInit {
 
     selectedGroup.items.forEach((item) => {
       if (item.nft && item.collection) {
-        // console.log('[checkout-overlay.component-convertGroupedCartItemsToNfts] looped nft (item): ', item);
-
         for (let i = 0; i < item.quantity; i++) {
-          // console.log('[checkout-overlay.component-convertGroupedCartItemsToNfts] creating bulk order NftPurchaseRequest for item, qty#: ', i)
           const nftData: NftPurchaseRequest = {
             collection: item.collection.uid,
           };
 
           if (item.nft.owner || item.collection.type === CollectionType.CLASSIC) {
-            // console.log('[checkout-overlay.component-convertGroupedCartItemsToNfts] passed item.nft.owner || item.collection.type === CollectionType.CLASSIC.  item.nft.owner: ' + item.nft.owner + '. item.collection.type: ' + item.collection.type + '. item.nft.uid: ' + item.nft.uid);
             nftData.nft = item.nft.uid;
           }
 
@@ -495,12 +593,10 @@ export class CheckoutOverlayComponent implements OnInit {
   }
 
   public async proceedWithBulkOrder(nfts: NftPurchaseRequest[]): Promise<void> {
-    // console.log('[checkout-overlay.component-proceddWithBulkOrder] nfts passed in: ', nfts)
     const selectedGroup = this.groupedCartItems.find(
       (group) => group.tokenSymbol === this.selectedNetwork,
     );
     if (!selectedGroup) {
-      console.warn('No network selected or no items in the selected network.');
       this.nzNotification.error(
         $localize`No network selected or no items in the selected network.`,
         '',
@@ -509,7 +605,6 @@ export class CheckoutOverlayComponent implements OnInit {
     }
 
     if (nfts.length === 0 || !this.agreeTermsConditions) {
-      console.warn('No NFTs to purchase or terms and conditions are not agreed.');
       this.nzNotification.error(
         $localize`No NFTs to purchase or terms and conditions are not agreed.`,
         '',
@@ -521,8 +616,6 @@ export class CheckoutOverlayComponent implements OnInit {
       orders: nfts,
     };
 
-    // console.log('[checkout-overlay.component-proceddWithBulkOrder] params being passed for signing: ', bulkPurchaseRequest);
-
     await this.auth.sign(bulkPurchaseRequest, async (signedRequest, finish) => {
       this.notification
         .processRequest(
@@ -532,9 +625,16 @@ export class CheckoutOverlayComponent implements OnInit {
         )
         .subscribe((transaction: Transaction | undefined) => {
           if (transaction) {
-            this.transSubscription?.unsubscribe();
-            setItem(StorageItem.CheckoutTransaction, transaction.uid);
-            this.transSubscription = this.orderApi
+            this.transSubscription$?.unsubscribe();
+            setCheckoutTransaction({
+              transactionId: transaction.uid,
+              source: 'cartCheckout',
+            });
+            this.cartService.setCurrentTransaction(transaction.uid);
+            this.cartService.setCurrentStep(StepType.TRANSACTION);
+            this.cartService.refreshCartItems();
+            this.cd.markForCheck();
+            this.transSubscription$ = this.orderApi
               .listen(transaction.uid)
               .subscribe(<any>this.transaction$);
             this.pushToHistory(
@@ -544,7 +644,6 @@ export class CheckoutOverlayComponent implements OnInit {
               $localize`Waiting for transaction...`,
             );
           } else {
-            console.error('Transaction failed or did not return a valid transaction.');
             this.nzNotification.error(
               $localize`Transaction failed or did not return a valid transaction.`,
               '',
@@ -552,5 +651,9 @@ export class CheckoutOverlayComponent implements OnInit {
           }
         });
     });
+  }
+
+  ngOnDestroy() {
+    this.currentTransactionSubscription?.unsubscribe();
   }
 }

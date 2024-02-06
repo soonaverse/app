@@ -37,13 +37,13 @@ export class NftCardComponent {
 
   @Input()
   set nft(value: Nft | null | undefined) {
-    if (this.memberApiSubscription) {
-      this.memberApiSubscription.unsubscribe();
+    if (this.memberApiSubscription$) {
+      this.memberApiSubscription$.unsubscribe();
     }
     this._nft = value;
     const owner = this.nft?.owner || this.nft?.createdBy;
     if (owner) {
-      this.memberApiSubscription = this.memberApi
+      this.memberApiSubscription$ = this.memberApi
         .listen(owner)
         .pipe(untilDestroyed(this))
         .subscribe(this.owner$);
@@ -76,7 +76,7 @@ export class NftCardComponent {
   public owner$: BehaviorSubject<Member | undefined> = new BehaviorSubject<Member | undefined>(
     undefined,
   );
-  private memberApiSubscription?: Subscription;
+  private memberApiSubscription$?: Subscription;
   private _nft?: Nft | null;
 
   constructor(
@@ -194,11 +194,8 @@ export class NftCardComponent {
     event.preventDefault();
 
     if (nft && collection) {
-      console.log('[NftCardComponent] Adding item to cart:', nft, collection);
       this.cartService.addToCart({ nft, collection, quantity: 1, salePrice: 0 });
-      // Optionally, provide feedback to the user
     } else {
-      // Handle the case when nft or collection is null or undefined
       console.error('Attempted to add a null or undefined NFT or Collection to the cart');
     }
   }

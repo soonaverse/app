@@ -4,7 +4,7 @@ import {
   DescriptionItem,
   DescriptionItemType,
 } from '@components/description/description.component';
-import { getItem, StorageItem } from '@core/utils';
+import { getCheckoutTransaction } from '@core/utils';
 import {
   Collection,
   CollectionStatus,
@@ -129,39 +129,34 @@ export class HelperService {
 
   public getDate(date: any): any {
     if (!date) {
-      console.warn('getDate called with null or undefined:', date);
       return undefined;
     }
 
     if (typeof date === 'number') {
       return new Date(date);
     } else if (typeof date === 'object') {
-      // Checking if toDate exists and is a function
       if (date.toDate && typeof date.toDate === 'function') {
         try {
           return date.toDate();
-        } catch (e) {
-          console.error('Error calling toDate:', e);
+        } catch {
+          return undefined;
         }
       }
 
-      // Checking if seconds exists and is a number
       if ('seconds' in date && !isNaN(Number(date.seconds))) {
         const seconds = Number(date.seconds);
         return new Date(seconds * 1000);
       }
 
-      // Checking if toMillis exists and is a function
       if (date.toMillis && typeof date.toMillis === 'function') {
         try {
           return new Date(date.toMillis());
-        } catch (e) {
-          console.error('Error calling toMillis:', e);
+        } catch {
+          return undefined;
         }
       }
     }
 
-    console.warn('Unrecognized date format:', date);
     return undefined;
   }
 
@@ -187,12 +182,14 @@ export class HelperService {
       return false;
     }
 
+    const checkoutTransaction = getCheckoutTransaction();
+
     return (
       col.approved === true &&
       ((nft?.locked === true && !exceptMember) ||
         (exceptMember &&
           nft?.locked === true &&
-          nft?.lockedBy !== getItem(StorageItem.CheckoutTransaction)))
+          (!checkoutTransaction || nft?.lockedBy !== checkoutTransaction.transactionId)))
     );
   }
 

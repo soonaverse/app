@@ -122,6 +122,12 @@ module.exports = {
       flex: {
         2: '2 2 0%',
       },
+      marginLeft: {
+        'sm1': '0.1em',
+        'sm25': '0.25em',
+        'sm50': '0.5em',
+        'sm75': '0.75em',
+      }
     },
   },
   plugins: [require('@tailwindcss/line-clamp')],

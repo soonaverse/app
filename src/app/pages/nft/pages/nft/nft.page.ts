@@ -22,7 +22,7 @@ import { SeoService } from '@core/services/seo';
 import { ThemeList, ThemeService } from '@core/services/theme';
 import { TransactionService } from '@core/services/transaction';
 import { UnitsService } from '@core/services/units';
-import { StorageItem, getItem } from '@core/utils';
+import { getCheckoutTransaction } from '@core/utils';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { copyToClipboard } from '@core/utils/tools.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -115,7 +115,7 @@ export class NFTPage implements OnInit, OnDestroy {
     private themeService: ThemeService,
     private seo: SeoService,
     private notification: NotificationService,
-    private cartService: CartService,
+    public cartService: CartService,
   ) {
     // none
   }
@@ -416,10 +416,6 @@ export class NFTPage implements OnInit, OnDestroy {
     if (status === null || status === undefined) {
       return 'Unknown';
     }
-    console.log(
-      '[nft.page-getCollectionStatusString] return collection status: ',
-      CollectionStatus[status],
-    );
     return CollectionStatus[status];
   }
 
@@ -466,7 +462,8 @@ export class NFTPage implements OnInit, OnDestroy {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (getItem(StorageItem.CheckoutTransaction)) {
+    const checkoutTransaction = getCheckoutTransaction();
+    if (checkoutTransaction?.transactionId) {
       this.nzNotification.error('You currently have open order. Pay for it or let it expire.', '');
       return;
     }
@@ -474,12 +471,12 @@ export class NFTPage implements OnInit, OnDestroy {
   }
 
   public buy(event?: MouseEvent): void {
-    console.log('Buy now NFT button pressed, qty to pass: ', this.nftQtySelected);
     if (event) {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (getItem(StorageItem.CheckoutTransaction)) {
+    const checkoutTransaction = getCheckoutTransaction();
+    if (checkoutTransaction?.transactionId) {
       this.nzNotification.error('You currently have open order. Pay for it or let it expire.', '');
       return;
     }
@@ -563,12 +560,6 @@ export class NFTPage implements OnInit, OnDestroy {
             quantity: this.nftQtySelected,
             salePrice: 0,
           });
-          console.log(
-            'Added to cart (nft, collection, qty):',
-            nft,
-            collection,
-            this.nftQtySelected,
-          );
         }
       });
     }

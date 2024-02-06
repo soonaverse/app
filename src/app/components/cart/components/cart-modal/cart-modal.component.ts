@@ -1,23 +1,32 @@
-// cart-modal.component.ts
 import {
   Component,
   OnInit,
   OnDestroy,
   ChangeDetectorRef,
   ChangeDetectionStrategy,
-  EventEmitter,
-  Output,
 } from '@angular/core';
-import { Nft, Collection, MIN_AMOUNT_TO_TRANSFER } from '@build-5/interfaces';
-import { Subscription, forkJoin, map, take, catchError, of } from 'rxjs';
-import { CartService, CartItem } from './../../services/cart.service';
+import {
+  Nft,
+  Collection,
+  MIN_AMOUNT_TO_TRANSFER,
+  Network,
+  DEFAULT_NETWORK,
+} from '@build-5/interfaces';
+import { Subscription, forkJoin, take, map, catchError, of } from 'rxjs';
+import { CartService, CartItem } from '@components/cart/services/cart.service';
 import { AuthService } from '@components/auth/services/auth.service';
 import { Router } from '@angular/router';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
-import { NzModalService } from 'ng-zorro-antd/modal';
-import { CheckoutOverlayComponent } from '../checkout/checkout-overlay.component';
 import { NftApi } from '@api/nft.api';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { UnitsService } from '@core/services/units/units.service';
+
+export enum StepType {
+  CONFIRM = 'Confirm',
+  TRANSACTION = 'Transaction',
+  WAIT = 'Wait',
+  COMPLETE = 'Complete',
+}
 
 @Component({
   selector: 'wen-app-cart-modal',
@@ -26,53 +35,44 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CartModalComponent implements OnInit, OnDestroy {
-  private subscriptions = new Subscription();
+  private subscriptions$ = new Subscription();
   public collectionPath: string = ROUTER_UTILS.config.collection.root;
   public nftPath: string = ROUTER_UTILS.config.nft.root;
   public cartItemsQuantities: number[] = [];
-  cartItemPrices: { [key: string]: { originalPrice: number; discountedPrice: number } } = {};
-  isCartCheckoutOpen = false;
+  public cartItemPrices: {
+    [key: string]: { originalPrice: number; discountedPrice: number; tokenSymbol: Network };
+  } = {};
+  public stepType = StepType;
 
   constructor(
     public cartService: CartService,
     private cd: ChangeDetectorRef,
     public auth: AuthService,
-    private modalService: NzModalService,
     private nftApi: NftApi,
     private notification: NzNotificationService,
     private router: Router,
+    public unitsService: UnitsService,
   ) {}
 
   ngOnInit() {
-    this.subscriptions.add(
-      this.cartService.getCartItems().subscribe((items) => {
-        this.cartItemsStatus = items.map((item) => this.cartItemStatus(item));
-        this.cartItemsQuantities = items.map((item) => this.cartItemSaleAvailableQty(item));
-        items.forEach((item) => {
-          const originalPrice = this.calcPrice(item, 1);
-          const discountedPrice = this.calcPrice(item, this.discount(item.collection, item.nft));
-          this.cartItemPrices[item.nft.uid] = { originalPrice, discountedPrice };
-        });
-      }),
-    );
-
-    this.subscriptions.add(
-      this.cartService.showCart$.subscribe((show) => {
-        if (show) {
+    this.subscriptions$.add(
+      this.cartService.cartModalOpen$.subscribe((isOpen) => {
+        this.cd.markForCheck();
+        if (isOpen) {
           this.refreshCartData();
         }
       }),
     );
   }
 
-  cartItemsStatus: string[] = [];
+  cartItemsStatus: { status: string; message: string }[] = [];
 
   trackByItemId(index: number, item: CartItem): string {
     return item.nft.uid;
   }
 
-  public removeFromCart(itemId: string): void {
-    this.cartService.removeFromCart(itemId);
+  public removeFromCart(item: CartItem): void {
+    this.cartService.removeFromCart(item);
   }
 
   private refreshCartData() {
@@ -98,19 +98,28 @@ export class CartModalComponent implements OnInit, OnDestroy {
         this.cartItemsQuantities = freshCartItems.map((item) =>
           this.cartItemSaleAvailableQty(item),
         );
+
         freshCartItems.forEach((item) => {
           const originalPrice = this.calcPrice(item, 1);
           const discountedPrice = this.calcPrice(item, this.discount(item.collection, item.nft));
-          this.cartItemPrices[item.nft.uid] = { originalPrice, discountedPrice };
+          const tokenSymbol =
+            (item.nft.placeholderNft
+              ? item.collection.mintingData?.network
+              : item.nft.mintingData?.network) ?? DEFAULT_NETWORK;
+          this.cartItemPrices[item.nft.uid] = { originalPrice, discountedPrice, tokenSymbol };
+          this.cd.markForCheck();
         });
 
         this.cd.markForCheck();
       },
       (error) => {
-        console.error('Error while refreshing cart items: ', error);
         this.notification.error($localize`Error while refreshing cart items: ` + error, '');
       },
     );
+  }
+
+  public getSelectedNetwork(): any {
+    return localStorage.getItem('cartCheckoutSelectedNetwork') || '';
   }
 
   public updateQuantity(event: Event, itemId: string): void {
@@ -168,12 +177,12 @@ export class CartModalComponent implements OnInit, OnDestroy {
     return this.calc(itemPrice, discount);
   }
 
-  public cartItemStatus(item: CartItem): any {
-    const itemAvailable = this.cartService.isCartItemAvailableForSale(item);
-    if (itemAvailable) {
-      return 'Available';
+  public cartItemStatus(item: CartItem): { status: string; message: string } {
+    const availabilityResult = this.cartService.isCartItemAvailableForSale(item);
+    if (availabilityResult.isAvailable) {
+      return { status: 'Available', message: '' };
     }
-    return 'Not Available';
+    return { status: 'Not Available', message: availabilityResult.message };
   }
 
   private cartItemSaleAvailableQty(item: CartItem): number {
@@ -182,52 +191,41 @@ export class CartModalComponent implements OnInit, OnDestroy {
   }
 
   public handleClose(): void {
-    this.cartService.hideCart();
+    this.cartService.hideCartModal();
   }
 
   public goToNft(nftUid: string): void {
     if (!nftUid) {
-      console.error('No NFT UID provided.');
       return;
     }
 
     this.router.navigate(['/', this.nftPath, nftUid]);
-    this.cartService.hideCart();
+    this.cartService.hideCartModal();
   }
 
   public goToCollection(colUid: string): void {
     if (!colUid) {
-      console.error('No Collection UID provided.');
       return;
     }
 
     this.router.navigate(['/', this.collectionPath, colUid]);
-    this.cartService.hideCart();
+    this.cartService.hideCartModal();
   }
 
-  public handleCartCheckout(): void {
-    const cartItems = this.cartService.getCartItems().getValue();
-
-    const modalRef = this.modalService.create({
-      nzTitle: 'Checkout',
-      nzContent: CheckoutOverlayComponent,
-      nzComponentParams: { items: cartItems },
-      nzFooter: null,
-      nzWidth: '80%',
-    });
-
-    modalRef.afterClose.subscribe(() => {
-      // this.cartService.hideCart();
-    });
+  async handleCartCheckout(): Promise<void> {
+    this.cartService.openCheckoutOverlay();
   }
 
-  public handleCloseCartCheckout(alsoCloseCartModal: boolean): void {
-    if (alsoCloseCartModal) {
-      this.cartService.hideCart();
-    }
+  public clearCart(): void {
+    this.cartService.clearCart();
+    this.refreshCartData();
+  }
+
+  public closeCheckoutOverlay(): void {
+    this.cartService.closeCheckoutOverlay();
   }
 
   ngOnDestroy() {
-    this.subscriptions.unsubscribe();
+    this.subscriptions$.unsubscribe();
   }
 }

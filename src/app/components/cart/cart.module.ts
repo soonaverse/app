@@ -6,8 +6,6 @@ import { CartModalComponent } from './components/cart-modal/cart-modal.component
 import { IconModule } from '@components/icon/icon.module';
 import { NzNotificationModule } from 'ng-zorro-antd/notification';
 import { FormatTokenModule } from '@core/pipes/formatToken/format-token.module';
-// import { NftRoutingModule } from '@pages/nft/nft-routing.module';
-// import { CollectionRoutingModule } from '@pages/collection/collection-routing.module';
 import { CheckoutOverlayComponent } from './components/checkout/checkout-overlay.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
@@ -25,6 +23,8 @@ import { NetworkModule } from '@components/network/network.module';
 import { RouterModule } from '@angular/router';
 import { WalletDeeplinkModule } from '@components/wallet-deeplink/wallet-deeplink.module';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
+import { UsdBelowTwoDecimalsModule } from '@core/pipes/usd-below-two-decimals/usd-below-two-decimals.module';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 @NgModule({
   declarations: [CartModalComponent, CheckoutOverlayComponent],
@@ -35,8 +35,6 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
     IconModule,
     NzNotificationModule,
     FormatTokenModule,
-    // NftRoutingModule,
-    // CollectionRoutingModule,
     FormsModule,
     NzInputNumberModule,
     ReactiveFormsModule,
@@ -54,6 +52,8 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
     RouterModule,
     WalletDeeplinkModule,
     NzRadioModule,
+    UsdBelowTwoDecimalsModule,
+    NzToolTipModule,
   ],
   exports: [CartModalComponent, CheckoutOverlayComponent],
 })

@@ -32,15 +32,7 @@ import {
   RANKING_TEST,
 } from '@build-5/interfaces';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import {
-  Subject,
-  BehaviorSubject,
-  first,
-  firstValueFrom,
-  skip,
-  Subscription,
-  takeUntil,
-} from 'rxjs';
+import { Subject, BehaviorSubject, first, firstValueFrom, skip, Subscription } from 'rxjs';
 import { DataService } from '../../services/data.service';
 import { NotificationService } from './../../../../@core/services/notification/notification.service';
 

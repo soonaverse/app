@@ -239,24 +239,41 @@
             <wen-icon-wallet class="text-white"></wen-icon-wallet>
           </button>
         </span>
-        <span
-          *ngIf="
-            nft && collection && (!nft.owner || cartService.isNftAvailableForSale(nft, collection))
-          "
-          class="ml-1em"
-          nz-tooltip
-          i18n-nzTooltipTitle
-          [nzTooltipTitle]="'Add to Cart'"
-        >
-          <button
-            nz-button
-            nzType="default"
-            class="flex items-center justify-center p-2 rounded-full"
-            (click)="addToCart($event, nft, collection)"
+        <ng-container *ngIf="nft && collection">
+          <ng-container
+            *ngIf="
+              cartService.isNftAvailableForSale(nft, collection).isAvailable;
+              else unavailableNFT
+            "
           >
-            <wen-icon-cart class="text-white"></wen-icon-cart>
-          </button>
-        </span>
+            <span class="ml-2" nz-tooltip i18n-nzTooltipTitle nzTooltipTitle="Add to Cart">
+              <button
+                nz-button
+                nzType="default"
+                class="flex items-center justify-center p-2 rounded-full"
+                (click)="addToCart($event, nft, collection)"
+              >
+                <wen-icon-cart class="text-white"></wen-icon-cart>
+              </button>
+            </span>
+          </ng-container>
+          <ng-template #unavailableNFT>
+            <span
+              class="ml-2"
+              nz-tooltip
+              [nzTooltipTitle]="cartService.isNftAvailableForSale(nft, collection).message"
+            >
+              <button
+                nz-button
+                nzType="default"
+                class="flex items-center justify-center p-2 rounded-full"
+                disabled
+              >
+                <wen-icon-cart class="text-white"></wen-icon-cart>
+              </button>
+            </span>
+          </ng-template>
+        </ng-container>
       </div>
     </div>
   </a>

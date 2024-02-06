@@ -275,17 +275,41 @@
             </button>
 
             <!-- Add to Cart Button -->
-            <button
-              nz-button
-              nzType="primary"
-              (click)="addToCart(nft)"
-              nzBlock
-              nzSize="large"
-              i18n
-              style="margin-top: 5px; margin-bottom: 5px"
-            >
-              Add to Cart
-            </button>
+            <ng-container *ngIf="nft && collection">
+              <ng-container
+                *ngIf="cartService.isNftAvailableForSale(nft, collection).isAvailable; else unavailableNFT"
+              >
+                <button
+                  nz-button
+                  nzType="primary"
+                  (click)="addToCart(nft)"
+                  nzBlock
+                  nzSize="large"
+                  i18n
+                  style="margin-top: 5px; margin-bottom: 5px"
+                >
+                  Add to Cart
+                </button>
+              </ng-container>
+              <ng-template #unavailableNFT>
+                <span
+                  nz-tooltip
+                  [nzTooltipTitle]="cartService.isNftAvailableForSale(nft, collection).message"
+                >
+                  <button
+                    nz-button
+                    nzType="primary"
+                    nzBlock
+                    nzSize="large"
+                    disabled
+                    i18n
+                    style="margin-top: 5px; margin-bottom: 5px"
+                  >
+                    Add to Cart
+                  </button>
+                </span>
+              </ng-template>
+            </ng-container>
 
             <!-- Connect Wallet Component -->
             <wen-connect-wallet

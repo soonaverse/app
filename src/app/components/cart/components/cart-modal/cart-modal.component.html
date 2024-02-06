@@ -1,35 +1,79 @@
 <ng-container *ngIf="cartService.getCartItems() | async as cartItems">
   <nz-modal
-    [nzVisible]="cartService.showCart$ | async"
+    [nzVisible]="cartService.cartModalOpen$ | async"
     nzClosable="true"
     (nzOnCancel)="handleClose()"
     [nzTitle]="modalHeader"
     [nzWidth]="'75%'"
   >
     <ng-template #modalHeader>
-      <div class="wen-modal-header">
+      <div class="wen-modal-header flex justify-between items-center">
         <h4 class="modal-title">Your Cart</h4>
+        <button
+          *ngIf="cartService.getCurrentStep() === stepType.CONFIRM"
+          nz-button
+          nzType="default"
+          (click)="clearCart()"
+          class="text-red-600 hover:text-red-800"
+        >
+          Clear Cart
+        </button>
       </div>
     </ng-template>
-
     <div class="flex flex-col mt-12 lg:flex-row lg:mt-9">
       <ng-container *nzModalContent>
         <div *ngIf="cartItems.length; else emptyCart" class="relative w-full">
           <div
+            class="flex items-start justify-between mb-2 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:grow rounded-xl pl-4 pr-4 pt-2"
+          >
+            <div class="flex w-full">
+              <!-- Img and Info -->
+              <div class="flex items-start font-semibold text-lg flex-1 mr-4">
+                <div class="w-10 object-cover mr-4"></div>
+                <div>
+                  <div class="font-bold text-foregrounds-secondary underline" i18n>Info</div>
+                </div>
+              </div>
+
+              <!-- Status -->
+              <div class="text-lg font-bold truncate flex-1 mr-4">
+                <div class="font-bold text-foregrounds-secondary underline mb-2" i18n>Status</div>
+              </div>
+
+              <!-- Qty Add/Available -->
+              <div class="text-lg font-bold truncate flex-1 mr-4">
+                <div class="font-bold text-foregrounds-secondary underline mb-2" i18n>
+                  Qty Added / Available
+                </div>
+              </div>
+
+              <!-- Price Ea -->
+              <div class="text-lg font-bold truncate flex-1 mr-4">
+                <div class="font-bold text-foregrounds-secondary underline mb-2" i18n>
+                  Price Each (USD Value)
+                </div>
+              </div>
+
+              <!-- Remove -->
+              <div class="text-lg font-bold truncate flex flex-col items-center">
+                <div class="font-bold text-foregrounds-secondary underline mb-2" i18n>Remove</div>
+              </div>
+            </div>
+          </div>
+
+          <div
             *ngFor="let item of cartItems; let i = index; trackBy: trackByItemId"
-            class="flex items-start justify-between mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-4"
+            class="flex items-start justify-between mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl pl-4 pr-4 pt-2"
           >
             <div class="flex w-full">
               <div class="flex items-start font-semibold text-sm flex-1 mr-4">
                 <img
                   src="{{ item.nft.media }}"
                   alt="{{ item.nft.name }}"
-                  class="w-20 h-20 object-cover mr-4"
+                  class="w-10 h-10 object-cover mr-4"
                 />
                 <div>
-                  <div class="text-xs font-medium text-foregrounds-secondary underline" i18n>
-                    Info
-                  </div>
+                  <!-- <div class="text-xs font-medium text-foregrounds-secondary underline" i18n>Info</div> -->
                   <div>
                     Collection:
                     <span
@@ -53,16 +97,21 @@
               </div>
 
               <div class="text-lg font-bold truncate flex-1 mr-4">
-                <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>
-                  Status
-                </div>
-                {{ cartItemsStatus[i] }}
+                <!-- <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>Status</div> -->
+                <ng-container
+                  *ngIf="cartItemStatus(item).status === 'Available'; else notAvailable"
+                >
+                  {{ cartItemStatus(item).status }}
+                </ng-container>
+                <ng-template #notAvailable>
+                  <span nz-tooltip [nzTooltipTitle]="cartItemStatus(item).message">
+                    {{ cartItemStatus(item).status }}
+                  </span>
+                </ng-template>
               </div>
 
               <div class="text-lg font-bold truncate flex-1 mr-4">
-                <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>
-                  Qty Added / Available
-                </div>
+                <!-- <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>Qty Added / Available</div> -->
                 <div class="flex items-baseline">
                   <nz-form-item class="grow">
                     <nz-form-control
@@ -80,6 +129,7 @@
                           (change)="updateQuantity($event, item.nft.uid)"
                           min="0"
                           max="{{ cartItemsQuantities[i] }}"
+                          [disabled]="item.quantity < 2"
                         />
                         <ng-template #suffixMaxQty>
                           <span>/ {{ cartItemsQuantities[i] }}</span>
@@ -91,9 +141,7 @@
               </div>
 
               <div class="text-lg font-bold truncate flex-1 mr-4">
-                <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>
-                  Price Each
-                </div>
+                <!-- <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>Price Each</div> -->
                 <ng-container *ngIf="cartItemPrices[item.nft.uid]">
                   <div
                     class="mr-2 text-xs font-medium line-through truncate text-foregrounds-secondary"
@@ -109,6 +157,16 @@
                           : true
                         | async
                     }}
+                    &nbsp; ({{
+                      unitsService.getUsd(
+                        cartItemPrices[item.nft.uid].originalPrice,
+                        cartItemPrices[item.nft.uid].tokenSymbol
+                      )
+                        | async
+                        | currency : 'USD'
+                        | UsdBelowTwoDecimals
+                    }}
+                    USD)
                   </div>
                   <div class="text-lg font-bold truncate">
                     {{
@@ -121,6 +179,16 @@
                           : true
                         | async
                     }}
+                    &nbsp; ({{
+                      unitsService.getUsd(
+                        cartItemPrices[item.nft.uid].discountedPrice,
+                        cartItemPrices[item.nft.uid].tokenSymbol
+                      )
+                        | async
+                        | currency : 'USD'
+                        | UsdBelowTwoDecimals
+                    }}
+                    USD)
                   </div>
                 </ng-container>
                 <ng-template #noPrice>
@@ -129,10 +197,23 @@
               </div>
 
               <div class="text-lg font-bold truncate flex flex-col items-center">
-                <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>
-                  Remove
-                </div>
-                <button nz-button nzType="default" (click)="removeFromCart(item.nft.uid)">
+                <!-- <div class="text-xs font-medium text-foregrounds-secondary underline mb-2" i18n>Remove</div> -->
+                <button
+                  nz-button
+                  nzType="default"
+                  [disabled]="
+                    cartService.getCurrentStep() !== stepType.CONFIRM &&
+                    getSelectedNetwork() === cartItemPrices[item.nft.uid].tokenSymbol
+                  "
+                  (click)="removeFromCart(item)"
+                  nz-tooltip
+                  [nzTooltipTitle]="
+                    cartService.getCurrentStep() !== stepType.CONFIRM &&
+                    getSelectedNetwork() === cartItemPrices[item.nft.uid].tokenSymbol
+                      ? 'Item is part of a pending transaction. Please wait for transaction to expire or be completed before removing this item from cart.'
+                      : ''
+                  "
+                >
                   <wen-icon-trash
                     class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
                   ></wen-icon-trash>

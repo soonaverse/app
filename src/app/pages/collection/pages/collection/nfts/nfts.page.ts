@@ -81,12 +81,10 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    console.log('ngOnInit fires');
     this.collectionNftStateService.availableNftsCount$
       .pipe(takeUntil(this.destroy$))
       .subscribe((count) => {
         this.availableNftsCount = count;
-        console.log('[ngOnInit] this.availableNftsCount is set to count: ', count);
         this.cd.markForCheck();
       });
 
@@ -96,7 +94,6 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngOnChanges fires');
     if (changes.collectionId) {
       this.resetComponentState();
       if (this.collectionId) {
@@ -106,20 +103,17 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   }
 
   private resetComponentState(): void {
-    console.log('resetComponentState fires');
     this.availableNftsCount = 0;
     this.sweepCount = 1;
     this.cd.markForCheck();
   }
 
   private loadCollection(collectionId: string): void {
-    console.log(`loadCollection fires for collectionId: ${collectionId}`);
     this.collectionApi
       .getCollectionById(collectionId)
       .pipe(take(1))
       .subscribe({
         next: (collectionData) => {
-          console.log('Full response from getCollectionById:', collectionData);
           if (collectionData) {
             this.collection = collectionData;
             const listedNfts = this.collectionNftStateService.getListedNfts();
@@ -136,9 +130,6 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   }
 
   private initializeAlgoliaFilters(collectionId: string): void {
-    console.log('initializeAlgoliaFilters fires with collectionId: ', collectionId);
-
-    console.log('Current filters:', this.filterStorageService.marketNftsFilters$.value);
     this.filterStorageService.marketNftsFilters$.next({
       ...this.filterStorageService.marketNftsFilters$.value,
       refinementList: {
@@ -146,7 +137,6 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
         collection: [collectionId],
       },
     });
-    console.log('Updated filters:', this.filterStorageService.marketNftsFilters$.value);
 
     this.config = {
       indexName: COL.NFT,
@@ -160,12 +150,9 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   }
 
   public captureOriginalHits(hits: any[]) {
-    console.log('captureOriginalHits fires');
-    // console.log('[nfts.page-captureOriginalHits] function called with following hits (hits, this.collection): ', hits, this.collection);
     if (hits && hits.length > 0 && this.collection) {
       this.originalNfts = hits;
       this.collectionNftStateService.setListedNfts(hits, this.collection);
-      // console.log('[nfts.page-captureOriginalHits] hits if passed, originalNfts set to hits and collectionNftStateService.setListedNfts given (hits, this.collection): ', hits, this.collection);
     }
   }
 
@@ -174,19 +161,14 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   }
 
   public convertAllToSoonaverseModel = (algoliaItems: any[]) => {
-    console.log('convertAllToSoonaverseModel fires');
-    // console.log('[nfts.page-convertAllToSoonaverseModel] function called with following algoliaItems: ', algoliaItems);
     if (this.originalNfts.length !== algoliaItems.length && algoliaItems.length > 0) {
-      // console.log('[nfts.page-convertAllToSoonaverseModel] run captureOriginalHits since aligoliaItems and originalNfts lengths dont match, (alogliaItems.length, originalNfts.length): ', algoliaItems.length, this.originalNfts.length);
       this.captureOriginalHits(algoliaItems);
     }
 
-    console.log('Before processing:', algoliaItems);
     const transformedItems = algoliaItems.map((algolia) => ({
       ...algolia,
       availableFrom: Timestamp.fromMillis(+algolia.availableFrom),
     }));
-    console.log('After processing:', transformedItems);
 
     this.cd.markForCheck();
 
@@ -202,7 +184,6 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   }
 
   public sweepToCart(count: number) {
-    console.log('[nfts.page-sweepToCart] function called with following count: ', count);
     if (!this.collectionId) {
       this.notification.error($localize`Collection ID is not available.`, '');
       return;
@@ -215,17 +196,9 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
         filter((collection): collection is Collection => collection !== undefined),
         switchMap((collection: Collection) => {
           const listedNfts = this.collectionNftStateService.getListedNfts();
-          console.log(
-            '[nfts.page-sweepToCart] listedNfts set to this.collectionNftStateService: ',
-            listedNfts,
-          );
 
-          const nftsForSale = listedNfts.filter((nft) =>
-            this.cartService.isNftAvailableForSale(nft, collection),
-          );
-          console.log(
-            '[nfts.page-sweepToCart] nftsForSale set to filtered listedNfts that pass true for "isNftAvailableForSale", nftsForSale: ',
-            nftsForSale,
+          const nftsForSale = listedNfts.filter(
+            (nft) => this.cartService.isNftAvailableForSale(nft, collection).isAvailable,
           );
 
           const getEffectivePrice = (nft) => nft?.availablePrice || nft?.price || 0;
@@ -235,17 +208,8 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
             const priceB = getEffectivePrice(b);
             return priceA - priceB;
           });
-          console.log(
-            '[nfts.page-sweepToCart] sortedNfts set to nftsToAdd sorted by "effective price" low to high, sortedNfts: ',
-            sortedNfts,
-          );
 
           const nftsToAdd = sortedNfts.slice(0, Math.min(count, sortedNfts.length));
-          console.log(
-            '[nfts.page-sweepToCart] nftsToAdd set to first N sorted NFTs based on price, nftsToAdd: ',
-            nftsToAdd,
-          );
-
           nftsToAdd.forEach((nft) => {
             const cartItem = { nft, collection, quantity: 1, salePrice: 0 };
             this.cartService.addToCart(cartItem);
@@ -268,7 +232,6 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    console.log('ngOnDestroy fires');
     this.destroy$.next();
     this.destroy$.complete();
   }
