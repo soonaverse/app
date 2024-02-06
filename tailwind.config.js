@@ -121,7 +121,7 @@ module.exports = {
       },
       flex: {
         2: '2 2 0%',
-      }
+      },
     },
   },
   plugins: [require('@tailwindcss/line-clamp')],
