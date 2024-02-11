@@ -33,8 +33,7 @@
           <button (click)="toggleGroup($event, group.tokenSymbol)">
             {{ isGroupExpanded(group.tokenSymbol) ? 'Hide' : 'Show' }}
             <span class="uppercase">{{ group.tokenSymbol }}</span> Items
-        </button>
-
+          </button>
         </div>
       </div>
 
@@ -74,33 +73,33 @@
                   <td>
                     <!-- NFT -->
                     <div>
-                      <span class="underline font-bold">
-                        NFT:
-                      </span>
-                      <span class="text-blue-500 hover:text-blue-600 cursor-pointer" (click)="goToNft(item.nft.uid)">
+                      <span class="underline font-bold"> NFT: </span>
+                      <span
+                        class="text-blue-500 hover:text-blue-600 cursor-pointer"
+                        (click)="goToNft(item.nft.uid)"
+                      >
                         {{ item.nft.name }}
                       </span>
                     </div>
 
                     <!-- Collection -->
                     <div>
-                      <span class="underline font-bold">
-                        COL:
-                      </span>
-                      <span class="text-blue-500 hover:text-blue-600 cursor-pointer" (click)="goToCollection(item.collection.uid)">
+                      <span class="underline font-bold"> COL: </span>
+                      <span
+                        class="text-blue-500 hover:text-blue-600 cursor-pointer"
+                        (click)="goToCollection(item.collection.uid)"
+                      >
                         {{ item.collection.name }}
                       </span>
                     </div>
 
                     <!-- Royalties -->
                     <div>
-                      <span class="underline font-bold">
-                        Royalties:
-                      </span>
-                      <span>
-                        {{ (item.collection.royaltiesFee || 0) * 100 }}%
-                      </span>
+                      <span class="underline font-bold"> Royalties: </span>
+                      <span> {{ (item.collection.royaltiesFee || 0) * 100 }}% </span>
                     </div>
+                  </td>
+
                   <td>{{ item.quantity }}</td>
                   <td>
                     {{
@@ -116,7 +115,10 @@
                     <br />
                     ({{
                       unitsService.getUsd(
-                        cartService.valueDivideExponent({ value: item.salePrice || 0, exponents: cartService.getDefaultNetworkDecimals() }),
+                        cartService.valueDivideExponent({
+                          value: item.salePrice || 0,
+                          exponents: cartService.getDefaultNetworkDecimals()
+                        }),
                         group.network
                       )
                         | async
@@ -129,9 +131,7 @@
               </ng-container>
               <tr>
                 <td>
-                  <strong>
-                    Total
-                  </strong>
+                  <strong> Total </strong>
                 </td>
                 <td>
                   <strong>
@@ -206,7 +206,10 @@
                     }}
                     &nbsp; ({{
                       unitsService.getUsd(
-                        cartService.valueDivideExponent({ value: item.salePrice || 0, exponents: cartService.getDefaultNetworkDecimals() }),
+                        cartService.valueDivideExponent({
+                          value: item.salePrice || 0,
+                          exponents: cartService.getDefaultNetworkDecimals()
+                        }),
                         group.network
                       )
                         | async
@@ -228,7 +231,10 @@
                     }}
                     &nbsp; ({{
                       unitsService.getUsd(
-                        cartService.valueDivideExponent({ value: (item.quantity * item.salePrice) || 0, exponents: cartService.getDefaultNetworkDecimals() }),
+                        cartService.valueDivideExponent({
+                          value: item.quantity * item.salePrice || 0,
+                          exponents: cartService.getDefaultNetworkDecimals()
+                        }),
                         group.network
                       )
                         | async
@@ -256,7 +262,6 @@
             </tbody>
           </nz-table>
         </ng-template>
-
       </div>
     </div>
     <nz-divider></nz-divider>

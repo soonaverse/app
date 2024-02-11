@@ -174,10 +174,6 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
         const expiresOn: dayjs.Dayjs = dayjs(val.payload.expiresOn!.toDate());
         if (expiresOn.isBefore(dayjs()) || val.payload?.void || val.payload?.reconciled) {
           // It's expired.
-          console.log(
-            'nft-checkout ngOnInit - transaction expired, has a void payload or transaction is reconciled, removing CheckoutTransaction, transaction: ',
-            val,
-          );
           removeItem(StorageItem.CheckoutTransaction);
         }
         if (val.linkedTransactions && val.linkedTransactions?.length > 0) {
@@ -338,10 +334,6 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
           );
           if (expiresOn.isBefore(dayjs())) {
             this.expiryTicker$.next(null);
-            console.log(
-              'nft-checkout ngOnInit - expiresOn.isBefore(dayjs()) passed, remove CheckoutTransaction, expiresOn: ',
-              expiresOn,
-            );
             removeItem(StorageItem.CheckoutTransaction);
             int.unsubscribe();
             this.reset();

@@ -24,7 +24,15 @@ import { AuthService } from '@components/auth/services/auth.service';
 import { NotificationService } from '@core/services/notification';
 import { OrderApi } from '@api/order.api';
 import { NftApi } from '@api/nft.api';
-import { BehaviorSubject, firstValueFrom, interval, Observable, Subscription, forkJoin, of } from 'rxjs';
+import {
+  BehaviorSubject,
+  firstValueFrom,
+  interval,
+  Observable,
+  Subscription,
+  forkJoin,
+  of,
+} from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { TransactionService } from '@core/services/transaction';
 import {
@@ -406,14 +414,14 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   }
 
   public groupItems() {
-    const availabilityChecks$ = this.items.map(item =>
+    const availabilityChecks$ = this.items.map((item) =>
       this.cartService.isCartItemAvailableForSale(item).pipe(
-        map(result => ({ item, isAvailable: result.isAvailable })),
-        switchMap(result => result ? of(result) : of({ item, isAvailable: false }))
-      )
+        map((result) => ({ item, isAvailable: result.isAvailable })),
+        switchMap((result) => (result ? of(result) : of({ item, isAvailable: false }))),
+      ),
     );
 
-    forkJoin(availabilityChecks$).subscribe(results => {
+    forkJoin(availabilityChecks$).subscribe((results) => {
       const groups: { [tokenSymbol: string]: GroupedCartItem } = {};
       this.unavailableItemCount = 0;
 
@@ -424,7 +432,9 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
         }
 
         const tokenSymbol =
-          (item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network) || DEFAULT_NETWORK;
+          (item.nft?.placeholderNft
+            ? item.collection?.mintingData?.network
+            : item.nft?.mintingData?.network) || DEFAULT_NETWORK;
         const discount = this.discount(item);
         const originalPrice = this.calcPrice(item, 1);
         const discountedPrice = this.calcPrice(item, discount);
@@ -432,10 +442,18 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
         item.salePrice = price;
 
         const network =
-          (item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network) || DEFAULT_NETWORK;
+          (item.nft?.placeholderNft
+            ? item.collection?.mintingData?.network
+            : item.nft?.mintingData?.network) || DEFAULT_NETWORK;
 
         if (!groups[tokenSymbol]) {
-          groups[tokenSymbol] = { tokenSymbol, items: [], totalQuantity: 0, totalPrice: 0, network };
+          groups[tokenSymbol] = {
+            tokenSymbol,
+            items: [],
+            totalQuantity: 0,
+            totalPrice: 0,
+            network,
+          };
         }
 
         groups[tokenSymbol].items.push(item);
@@ -468,9 +486,10 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   }
 
   public isCartItemAvailableForSale(item: CartItem): Observable<boolean> {
-    return this.cartService.isCartItemAvailableForSale(item).pipe(map(result => result.isAvailable));
+    return this.cartService
+      .isCartItemAvailableForSale(item)
+      .pipe(map((result) => result.isAvailable));
   }
-
 
   public reset(): void {
     this.receivedTransactions = false;
@@ -506,10 +525,9 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   }
 
   public goToMemberNfts(): void {
-
     const memberId = this.auth.member$.value?.uid;
 
-    if(!memberId) {
+    if (!memberId) {
       return;
     }
 

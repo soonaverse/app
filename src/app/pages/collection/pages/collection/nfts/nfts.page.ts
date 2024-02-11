@@ -109,21 +109,22 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   }
 
   private loadCollection(collectionId: string): void {
-    this.collectionApi.getCollectionById(collectionId).pipe(
-        take(1)
-    ).subscribe({
+    this.collectionApi
+      .getCollectionById(collectionId)
+      .pipe(take(1))
+      .subscribe({
         next: (collectionData) => {
-            if (collectionData) {
-                this.collection = collectionData;
-                this.initializeAlgoliaFilters(collectionId);
-            } else {
-                this.notification.error($localize`Error occurred while fetching collection.`, '');
-            }
+          if (collectionData) {
+            this.collection = collectionData;
+            this.initializeAlgoliaFilters(collectionId);
+          } else {
+            this.notification.error($localize`Error occurred while fetching collection.`, '');
+          }
         },
         error: (err) => {
-            this.notification.error($localize`Error occurred while fetching collection.`, '');
+          this.notification.error($localize`Error occurred while fetching collection.`, '');
         },
-    });
+      });
   }
 
   private initializeAlgoliaFilters(collectionId: string): void {
@@ -182,35 +183,40 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
 
   public sweepToCart(count: number) {
     if (!this.collectionId) {
-        this.notification.error($localize`Collection ID is not available.`, '');
-        return;
+      this.notification.error($localize`Collection ID is not available.`, '');
+      return;
     }
 
-    this.collectionApi.getCollectionById(this.collectionId)
-        .pipe(
-            take(1),
-            filter((collection): collection is Collection => Boolean(collection)),
-            switchMap((collection) => {
-                // Ensure we're working with a defined collection
-                if (!collection) {
-                    throw new Error('Collection is undefined after filtering');
-                }
-                return this.collectionNftStateService.getListedNftsObservable(collection).pipe(
-                    map(nftsForSale => nftsForSale.slice(0, Math.min(count, nftsForSale.length))),
-                    map(nftsToAdd => ({ nftsToAdd, collection }))
-                );
-            }),
-            takeUntil(this.destroy$),
-        )
-        .subscribe({
-            next: ({ nftsToAdd, collection }) => {
-                nftsToAdd.forEach((nft) => {
-                    this.cartService.addToCart(nft, collection);
-                });
-                this.notification.success($localize`NFTs swept into your cart, open cart to review added items.`, '');
-            },
-            error: (error) => this.notification.error($localize`Error occurred while adding NFTs to cart.`, '')
-        });
+    this.collectionApi
+      .getCollectionById(this.collectionId)
+      .pipe(
+        take(1),
+        filter((collection): collection is Collection => Boolean(collection)),
+        switchMap((collection) => {
+          // Ensure we're working with a defined collection
+          if (!collection) {
+            throw new Error('Collection is undefined after filtering');
+          }
+          return this.collectionNftStateService.getListedNftsObservable(collection).pipe(
+            map((nftsForSale) => nftsForSale.slice(0, Math.min(count, nftsForSale.length))),
+            map((nftsToAdd) => ({ nftsToAdd, collection })),
+          );
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: ({ nftsToAdd, collection }) => {
+          nftsToAdd.forEach((nft) => {
+            this.cartService.addToCart(nft, collection);
+          });
+          this.notification.success(
+            $localize`NFTs swept into your cart, open cart to review added items.`,
+            '',
+          );
+        },
+        error: (error) =>
+          this.notification.error($localize`Error occurred while adding NFTs to cart.`, ''),
+      });
   }
 
   public ngOnDestroy(): void {

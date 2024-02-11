@@ -276,7 +276,9 @@
 
             <!-- Add to Cart Button -->
             <ng-container *ngIf="nft && collection">
-              <ng-container *ngIf="(cartService.isNftAvailableForSale(nft, collection, true) | async) as availability">
+              <ng-container
+                *ngIf="(cartService.isNftAvailableForSale(nft, collection, true) | async) as availability"
+              >
                 <ng-container *ngIf="availability.isAvailable; else unavailableNFT">
                   <button
                     nz-button
@@ -292,7 +294,10 @@
                 </ng-container>
               </ng-container>
               <ng-template #unavailableNFT>
-                <span nz-tooltip [nzTooltipTitle]="(cartService.isNftAvailableForSale(nft, collection, true) | async)?.message">
+                <span
+                  nz-tooltip
+                  [nzTooltipTitle]="(cartService.isNftAvailableForSale(nft, collection, true) | async)?.message"
+                >
                   <button
                     nz-button
                     nzType="primary"

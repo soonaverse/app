@@ -20,17 +20,15 @@ export class CollectionNftStateService {
       switchMap((nfts) =>
         combineLatest(
           nfts.map((nft) =>
-            this.cartService.isNftAvailableForSale(nft, collection, true).pipe(
-              map(availability => ({ nft, isAvailable: availability.isAvailable }))
-            )
-          )
-        )
+            this.cartService
+              .isNftAvailableForSale(nft, collection, true)
+              .pipe(map((availability) => ({ nft, isAvailable: availability.isAvailable }))),
+          ),
+        ),
       ),
-      map(nftsWithAvailability =>
-        nftsWithAvailability
-          .filter(({ isAvailable }) => isAvailable)
-          .map(({ nft }) => nft)
-      )
+      map((nftsWithAvailability) =>
+        nftsWithAvailability.filter(({ isAvailable }) => isAvailable).map(({ nft }) => nft),
+      ),
     );
   }
 
@@ -40,9 +38,11 @@ export class CollectionNftStateService {
   }
 
   private updateAvailableNftsCount(nfts: Nft[], collection: Collection) {
-    this.getListedNftsObservable(collection).pipe(
-      map(nftsForSale => nftsForSale.length),
-      take(1),
-    ).subscribe(count => this.availableNftsCountSubject$.next(count));
+    this.getListedNftsObservable(collection)
+      .pipe(
+        map((nftsForSale) => nftsForSale.length),
+        take(1),
+      )
+      .subscribe((count) => this.availableNftsCountSubject$.next(count));
   }
 }

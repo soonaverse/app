@@ -240,7 +240,12 @@
           </button>
         </span>
         <ng-container *ngIf="nft && collection">
-          <ng-container *ngIf="cartService.isNftAvailableForSale(nft, collection, true) | async as nftAvailabilityStatus">
+          <ng-container
+            *ngIf="
+              cartService.isNftAvailableForSale(nft, collection, true)
+                | async as nftAvailabilityStatus
+            "
+          >
             <span class="ml-2" nz-tooltip [nzTooltipTitle]="nftAvailabilityStatus.message">
               <button
                 nz-button

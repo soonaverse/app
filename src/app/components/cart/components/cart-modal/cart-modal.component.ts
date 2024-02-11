@@ -5,9 +5,7 @@ import {
   ChangeDetectorRef,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import {
-  Network,
-} from '@build-5/interfaces';
+import { Network } from '@build-5/interfaces';
 import { Subscription, take, of, Observable } from 'rxjs';
 import { CartService, CartItem } from '@components/cart/services/cart.service';
 import { AuthService } from '@components/auth/services/auth.service';
@@ -30,7 +28,7 @@ export enum StepType {
   styleUrls: ['./cart-modal.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CartModalComponent implements OnInit, OnDestroy {
+export class CartModalComponent implements OnDestroy {
   private subscriptions$ = new Subscription();
   public collectionPath: string = ROUTER_UTILS.config.collection.root;
   public nftPath: string = ROUTER_UTILS.config.nft.root;
@@ -60,11 +58,7 @@ export class CartModalComponent implements OnInit, OnDestroy {
     private router: Router,
     public unitsService: UnitsService,
     public deviceService: DeviceService,
-  ) {
-
-  }
-
-  ngOnInit() {}
+  ) {}
 
   trackByItemId(index: number, item: CartItem): string {
     return item.nft.uid;
@@ -78,26 +72,29 @@ export class CartModalComponent implements OnInit, OnDestroy {
     const inputElement = event.target as HTMLInputElement;
     let newQuantity = Number(inputElement.value);
 
-    this.cartService.getCartItems().pipe(
-      take(1),
-      switchMap(cartItems => {
-        const item = cartItems.find(item => item.nft.uid === itemId);
-        if (item) {
-          return this.cartService.getAvailableNftQuantity(item).pipe(
-            map(maxQuantity => ({ item, maxQuantity })),
-          );
-        } else {
-          return of(null);
+    this.cartService
+      .getCartItems()
+      .pipe(
+        take(1),
+        switchMap((cartItems) => {
+          const item = cartItems.find((item) => item.nft.uid === itemId);
+          if (item) {
+            return this.cartService
+              .getAvailableNftQuantity(item)
+              .pipe(map((maxQuantity) => ({ item, maxQuantity })));
+          } else {
+            return of(null);
+          }
+        }),
+      )
+      .subscribe((result) => {
+        if (result) {
+          const { maxQuantity } = result;
+          newQuantity = Math.max(1, Math.min(newQuantity, maxQuantity));
+          inputElement.value = String(newQuantity);
+          this.cartService.updateCartItemQuantity(itemId, newQuantity);
         }
-      }),
-    ).subscribe(result => {
-      if (result) {
-        const { maxQuantity } = result;
-        newQuantity = Math.max(1, Math.min(newQuantity, maxQuantity));
-        inputElement.value = String(newQuantity);
-        this.cartService.updateCartItemQuantity(itemId, newQuantity);
-      }
-    });
+      });
   }
 
   public handleClose(): void {

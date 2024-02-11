@@ -9,61 +9,82 @@
     <ng-template #modalHeader>
       <div class="wen-modal-header flex justify-between items-center">
         <h4 class="modal-title">Your Cart</h4>
-
       </div>
     </ng-template>
     <div class="flex flex-col mt-12 lg:flex-row lg:mt-9">
       <ng-container *nzModalContent>
         <div *ngIf="cartItems.length; else emptyCart" class="relative w-full">
           <ng-container *ngIf="deviceService.isMobile$ | async; else isDesktop">
-            <div *ngFor="let item of cartItems; let i = index; trackBy: trackByItemId" class="mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-1">
+            <div
+              *ngFor="let item of cartItems; let i = index; trackBy: trackByItemId"
+              class="mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-1"
+            >
               <!-- First Row: NFT Image and Trash Icon -->
               <div class="flex justify-between items-center">
-                <img src="{{ item.nft.media }}" alt="{{ item.nft.name }}" class="w-20 h-20 object-cover rounded">
-                <button nz-button nzType="default" [disabled]="(cartService.getCurrentStep() !== stepType.CONFIRM && cartService.getSelectedNetwork() === item.pricing.tokenSymbol) || (isLoading$ | async)" (click)="removeFromCart(item)" nz-tooltip [nzTooltipTitle]="cartService.getCurrentStep() !== stepType.CONFIRM && cartService.getSelectedNetwork() === item.pricing.tokenSymbol ? 'Item is part of a pending transaction. Please wait for the transaction to expire or be completed before removing this item from the cart.' : ((isLoading$ | async) ? 'Cart items are loading. Please wait.' : '')">
-                  <wen-icon-trash class="text-foregrounds-primary dark:text-foregrounds-primary-dark"></wen-icon-trash>
+                <img
+                  src="{{ item.nft.media }}"
+                  alt="{{ item.nft.name }}"
+                  class="w-20 h-20 object-cover rounded"
+                />
+                <button
+                  nz-button
+                  nzType="default"
+                  [disabled]="
+                    (cartService.getCurrentStep() !== stepType.CONFIRM &&
+                      cartService.getSelectedNetwork() === item.pricing.tokenSymbol) ||
+                    (isLoading$ | async)
+                  "
+                  (click)="removeFromCart(item)"
+                  nz-tooltip
+                  [nzTooltipTitle]="
+                    cartService.getCurrentStep() !== stepType.CONFIRM &&
+                    cartService.getSelectedNetwork() === item.pricing.tokenSymbol
+                      ? 'Item is part of a pending transaction. Please wait for the transaction to expire or be completed before removing this item from the cart.'
+                      : (isLoading$ | async)
+                      ? 'Cart items are loading. Please wait.'
+                      : ''
+                  "
+                >
+                  <wen-icon-trash
+                    class="text-foregrounds-primary dark:text-foregrounds-primary-dark"
+                  ></wen-icon-trash>
                 </button>
               </div>
 
               <div class="flex mt-2">
                 <div class="flex-1">
-
                   <!-- NFT -->
                   <div>
-                    <div class="underline font-bold">
-                      NFT
-                    </div>
-                    <div class="text-blue-500 hover:text-blue-600 cursor-pointer" (click)="goToNft(item.nft.uid)">
+                    <div class="underline font-bold">NFT</div>
+                    <div
+                      class="text-blue-500 hover:text-blue-600 cursor-pointer"
+                      (click)="goToNft(item.nft.uid)"
+                    >
                       {{ item.nft.name }}
                     </div>
                   </div>
 
                   <!-- Collection -->
                   <div>
-                    <div class="underline font-bold">
-                      Collection
-                    </div>
-                    <div class="text-blue-500 hover:text-blue-600 cursor-pointer" (click)="goToCollection(item.collection.uid)">
+                    <div class="underline font-bold">Collection</div>
+                    <div
+                      class="text-blue-500 hover:text-blue-600 cursor-pointer"
+                      (click)="goToCollection(item.collection.uid)"
+                    >
                       {{ item.collection.name }}
                     </div>
                   </div>
 
                   <!-- Royalties -->
                   <div>
-                    <div class="underline font-bold">
-                      Royalties
-                    </div>
-                    <div>
-                      {{ (item.collection.royaltiesFee || 0) * 100 }}%
-                    </div>
+                    <div class="underline font-bold">Royalties</div>
+                    <div>{{ (item.collection.royaltiesFee || 0) * 100 }}%</div>
                   </div>
 
                   <!-- Status -->
                   <div>
-                    <ng-container *ngIf="(cartService.cartItemStatus(item) | async) as cartStatus">
-                      <div class="underline font-bold">
-                        Status
-                      </div>
+                    <ng-container *ngIf="cartService.cartItemStatus(item) | async as cartStatus">
+                      <div class="underline font-bold">Status</div>
                       <ng-container *ngIf="cartStatus.status === 'Available'; else notAvailable">
                         {{ cartStatus.status }}
                       </ng-container>
@@ -77,11 +98,14 @@
 
                   <!-- Quantity -->
                   <div>
-                    <div class="underline font-bold">
-                      Qty Added / Available
-                    </div>
+                    <div class="underline font-bold">Qty Added / Available</div>
                     <nz-form-item class="grow">
-                      <nz-form-control i18n-nzErrorTip nzErrorTip="Minimum 1 and maximum {{ (cartService.getAvailableNftQuantity(item) | async) }}">
+                      <nz-form-control
+                        i18n-nzErrorTip
+                        nzErrorTip="Minimum 1 and maximum {{
+                          cartService.getAvailableNftQuantity(item) | async
+                        }}"
+                      >
                         <nz-input-group nzSize="default" [nzSuffix]="suffixMaxQty" class="w-40">
                           <input
                             nz-input
@@ -93,9 +117,12 @@
                             (change)="updateQuantity($event, item.nft.uid)"
                             min="1"
                             [max]="(cartService.getAvailableNftQuantity(item) | async) ?? 1"
-                            [disabled]="((cartService.getAvailableNftQuantity(item) | async) ?? 1) <= 1">
+                            [disabled]="
+                              ((cartService.getAvailableNftQuantity(item) | async) ?? 1) <= 1
+                            "
+                          />
                           <ng-template #suffixMaxQty>
-                            <span>/ {{ (cartService.getAvailableNftQuantity(item) | async) }}</span>
+                            <span>/ {{ cartService.getAvailableNftQuantity(item) | async }}</span>
                           </ng-template>
                         </nz-input-group>
                       </nz-form-control>
@@ -104,9 +131,7 @@
 
                   <!-- Pricing -->
                   <div>
-                    <div class="underline font-bold">
-                      Price Each (USD Value)
-                    </div>
+                    <div class="underline font-bold">Price Each (USD Value)</div>
                     <ng-container *ngIf="item.pricing">
                       <div
                         class="mr-2 text-xs font-medium line-through truncate text-foregrounds-secondary"
@@ -114,15 +139,15 @@
                       >
                         {{
                           item.pricing.originalPrice
-                            | formatToken
-                              : item.pricing.tokenSymbol
-                              : true
-                              : true
+                            | formatToken : item.pricing.tokenSymbol : true : true
                             | async
                         }}
                         &nbsp; ({{
                           unitsService.getUsd(
-                            cartService.valueDivideExponent({ value: item.pricing.originalPrice || 0, exponents: cartService.getDefaultNetworkDecimals() }),
+                            cartService.valueDivideExponent({
+                              value: item.pricing.originalPrice || 0,
+                              exponents: cartService.getDefaultNetworkDecimals()
+                            }),
                             item.pricing.tokenSymbol
                           )
                             | async
@@ -134,15 +159,15 @@
                       <div>
                         {{
                           item.pricing.discountedPrice
-                            | formatToken
-                              : item.pricing.tokenSymbol
-                              : true
-                              : true
+                            | formatToken : item.pricing.tokenSymbol : true : true
                             | async
                         }}
                         &nbsp; ({{
                           unitsService.getUsd(
-                            cartService.valueDivideExponent({ value: item.pricing.discountedPrice || 0, exponents: cartService.getDefaultNetworkDecimals() }),
+                            cartService.valueDivideExponent({
+                              value: item.pricing.discountedPrice || 0,
+                              exponents: cartService.getDefaultNetworkDecimals()
+                            }),
                             item.pricing.tokenSymbol
                           )
                             | async
@@ -162,7 +187,9 @@
           </ng-container>
 
           <ng-template #isDesktop>
-            <div class="flex items-start justify-between mb-2 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:grow rounded-xl pl-4 pr-4 pt-2">
+            <div
+              class="flex items-start justify-between mb-2 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark lg:grow rounded-xl pl-4 pr-4 pt-2"
+            >
               <div class="flex w-full">
                 <div class="flex items-start font-semibold text-lg flex-1 mr-4">
                   <div class="w-10 object-cover mr-4"></div>
@@ -228,7 +255,7 @@
                 </div>
 
                 <div class="text-lg font-bold truncate flex-1 mr-4">
-                  <ng-container *ngIf="(cartService.cartItemStatus(item) | async) as cartStatus">
+                  <ng-container *ngIf="cartService.cartItemStatus(item) | async as cartStatus">
                     <ng-container *ngIf="cartStatus.status === 'Available'; else notAvailable">
                       {{ cartStatus.status }}
                     </ng-container>
@@ -243,7 +270,12 @@
                 <div class="text-lg font-bold truncate flex-1 mr-4">
                   <div class="flex items-baseline">
                     <nz-form-item class="grow">
-                      <nz-form-control i18n-nzErrorTip nzErrorTip="Minimum 1 and maximum {{ (cartService.getAvailableNftQuantity(item) | async) }}">
+                      <nz-form-control
+                        i18n-nzErrorTip
+                        nzErrorTip="Minimum 1 and maximum {{
+                          cartService.getAvailableNftQuantity(item) | async
+                        }}"
+                      >
                         <nz-input-group nzSize="default" [nzSuffix]="suffixMaxQty" class="w-30">
                           <input
                             nz-input
@@ -255,9 +287,12 @@
                             (change)="updateQuantity($event, item.nft.uid)"
                             min="1"
                             [max]="(cartService.getAvailableNftQuantity(item) | async) ?? 1"
-                            [disabled]="((cartService.getAvailableNftQuantity(item) | async) ?? 1) <= 1">
+                            [disabled]="
+                              ((cartService.getAvailableNftQuantity(item) | async) ?? 1) <= 1
+                            "
+                          />
                           <ng-template #suffixMaxQty>
-                            <span>/ {{ (cartService.getAvailableNftQuantity(item) | async) }}</span>
+                            <span>/ {{ cartService.getAvailableNftQuantity(item) | async }}</span>
                           </ng-template>
                         </nz-input-group>
                       </nz-form-control>
@@ -273,15 +308,15 @@
                     >
                       {{
                         item.pricing.originalPrice
-                          | formatToken
-                            : item.pricing.tokenSymbol
-                            : true
-                            : true
+                          | formatToken : item.pricing.tokenSymbol : true : true
                           | async
                       }}
                       &nbsp; ({{
                         unitsService.getUsd(
-                          cartService.valueDivideExponent({ value: item.pricing.originalPrice || 0, exponents: cartService.getDefaultNetworkDecimals() }),
+                          cartService.valueDivideExponent({
+                            value: item.pricing.originalPrice || 0,
+                            exponents: cartService.getDefaultNetworkDecimals()
+                          }),
                           item.pricing.tokenSymbol
                         )
                           | async
@@ -293,15 +328,15 @@
                     <div class="text-lg font-bold truncate">
                       {{
                         item.pricing.discountedPrice
-                          | formatToken
-                            : item.pricing.tokenSymbol
-                            : true
-                            : true
+                          | formatToken : item.pricing.tokenSymbol : true : true
                           | async
                       }}
                       &nbsp; ({{
                         unitsService.getUsd(
-                          cartService.valueDivideExponent({ value: item.pricing.discountedPrice || 0, exponents: cartService.getDefaultNetworkDecimals() }),
+                          cartService.valueDivideExponent({
+                            value: item.pricing.discountedPrice || 0,
+                            exponents: cartService.getDefaultNetworkDecimals()
+                          }),
                           item.pricing.tokenSymbol
                         )
                           | async
@@ -322,7 +357,7 @@
                     nzType="default"
                     [disabled]="
                       (cartService.getCurrentStep() !== stepType.CONFIRM &&
-                      cartService.getSelectedNetwork() === item.pricing.tokenSymbol) ||
+                        cartService.getSelectedNetwork() === item.pricing.tokenSymbol) ||
                       (isLoading$ | async)
                     "
                     (click)="removeFromCart(item)"
@@ -330,12 +365,10 @@
                     [nzTooltipTitle]="
                       cartService.getCurrentStep() !== stepType.CONFIRM &&
                       cartService.getSelectedNetwork() === item.pricing.tokenSymbol
-                      ? 'Item is part of a pending transaction. Please wait for the transaction to expire or be completed before removing this item from the cart.'
-                      : (
-                        (isLoading$ | async)
+                        ? 'Item is part of a pending transaction. Please wait for the transaction to expire or be completed before removing this item from the cart.'
+                        : (isLoading$ | async)
                         ? 'Cart items are loading. Please wait.'
                         : ''
-                      )
                     "
                   >
                     <wen-icon-trash
@@ -346,7 +379,6 @@
               </div>
             </div>
           </ng-template>
-
         </div>
         <ng-template #emptyCart>Your cart is empty.</ng-template>
       </ng-container>
@@ -368,7 +400,7 @@
           nz-button
           nzType="default"
           (click)="clearCart()"
-          [disabled]="(isLoading$ | async)"
+          [disabled]="isLoading$ | async"
           nz-tooltip
           [nzTooltipTitle]="(isLoading$ | async) ? 'Waiting for cart items to finish loading' : ''"
           class="text-red-600 hover:text-red-800"
