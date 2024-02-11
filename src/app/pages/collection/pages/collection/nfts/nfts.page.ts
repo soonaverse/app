@@ -23,7 +23,7 @@ import { FilterService } from '@pages/market/services/filter.service';
 import { COL, Timestamp, Collection } from '@build-5/interfaces';
 import { InstantSearchConfig } from 'angular-instantsearch/instantsearch/instantsearch';
 import { Subject, take, filter, takeUntil } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { CartService } from '@components/cart/services/cart.service';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { state } from '@angular/animations';
@@ -109,24 +109,21 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
   }
 
   private loadCollection(collectionId: string): void {
-    this.collectionApi
-      .getCollectionById(collectionId)
-      .pipe(take(1))
-      .subscribe({
+    this.collectionApi.getCollectionById(collectionId).pipe(
+        take(1)
+    ).subscribe({
         next: (collectionData) => {
-          if (collectionData) {
-            this.collection = collectionData;
-            const listedNfts = this.collectionNftStateService.getListedNfts();
-            if (this.originalNfts.length > 0 && listedNfts.length === 0) {
-              this.collectionNftStateService.setListedNfts(this.originalNfts, this.collection);
+            if (collectionData) {
+                this.collection = collectionData;
+                this.initializeAlgoliaFilters(collectionId);
+            } else {
+                this.notification.error($localize`Error occurred while fetching collection.`, '');
             }
-            this.initializeAlgoliaFilters(collectionId);
-          }
         },
         error: (err) => {
-          this.notification.error($localize`Error occurred while fetching collection.`, '');
+            this.notification.error($localize`Error occurred while fetching collection.`, '');
         },
-      });
+    });
   }
 
   private initializeAlgoliaFilters(collectionId: string): void {
@@ -185,50 +182,35 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
 
   public sweepToCart(count: number) {
     if (!this.collectionId) {
-      this.notification.error($localize`Collection ID is not available.`, '');
-      return;
+        this.notification.error($localize`Collection ID is not available.`, '');
+        return;
     }
 
-    this.collectionApi
-      .getCollectionById(this.collectionId)
-      .pipe(
-        take(1),
-        filter((collection): collection is Collection => collection !== undefined),
-        switchMap((collection: Collection) => {
-          const listedNfts = this.collectionNftStateService.getListedNfts();
-
-          const nftsForSale = listedNfts.filter(
-            (nft) => this.cartService.isNftAvailableForSale(nft, collection).isAvailable,
-          );
-
-          const getEffectivePrice = (nft) => nft?.availablePrice || nft?.price || 0;
-
-          const sortedNfts = nftsForSale.sort((a, b) => {
-            const priceA = getEffectivePrice(a);
-            const priceB = getEffectivePrice(b);
-            return priceA - priceB;
-          });
-
-          const nftsToAdd = sortedNfts.slice(0, Math.min(count, sortedNfts.length));
-          nftsToAdd.forEach((nft) => {
-            const cartItem = { nft, collection, quantity: 1, salePrice: 0 };
-            this.cartService.addToCart(cartItem);
-          });
-
-          this.notification.success(
-            $localize`NFTs swept into your cart, open cart to review added items.`,
-            '',
-          );
-
-          return nftsToAdd;
-        }),
-        takeUntil(this.destroy$),
-      )
-      .subscribe({
-        error: (err) => {
-          this.notification.error($localize`Error occurred while fetching collection.`, '');
-        },
-      });
+    this.collectionApi.getCollectionById(this.collectionId)
+        .pipe(
+            take(1),
+            filter((collection): collection is Collection => Boolean(collection)),
+            switchMap((collection) => {
+                // Ensure we're working with a defined collection
+                if (!collection) {
+                    throw new Error('Collection is undefined after filtering');
+                }
+                return this.collectionNftStateService.getListedNftsObservable(collection).pipe(
+                    map(nftsForSale => nftsForSale.slice(0, Math.min(count, nftsForSale.length))),
+                    map(nftsToAdd => ({ nftsToAdd, collection }))
+                );
+            }),
+            takeUntil(this.destroy$),
+        )
+        .subscribe({
+            next: ({ nftsToAdd, collection }) => {
+                nftsToAdd.forEach((nft) => {
+                    this.cartService.addToCart(nft, collection);
+                });
+                this.notification.success($localize`NFTs swept into your cart, open cart to review added items.`, '');
+            },
+            error: (error) => this.notification.error($localize`Error occurred while adding NFTs to cart.`, '')
+        });
   }
 
   public ngOnDestroy(): void {

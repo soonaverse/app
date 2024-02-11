@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { switchMap, map, take } from 'rxjs/operators';
 import { Nft, Collection } from '@build-5/interfaces';
 import { CartService } from '@components/cart/services/cart.service';
 
@@ -14,19 +15,34 @@ export class CollectionNftStateService {
 
   constructor(private cartService: CartService) {}
 
+  public getListedNftsObservable(collection: Collection): Observable<Nft[]> {
+    return this.listedNfts$.pipe(
+      switchMap((nfts) =>
+        combineLatest(
+          nfts.map((nft) =>
+            this.cartService.isNftAvailableForSale(nft, collection, true).pipe(
+              map(availability => ({ nft, isAvailable: availability.isAvailable }))
+            )
+          )
+        )
+      ),
+      map(nftsWithAvailability =>
+        nftsWithAvailability
+          .filter(({ isAvailable }) => isAvailable)
+          .map(({ nft }) => nft)
+      )
+    );
+  }
+
   public setListedNfts(nfts: Nft[], collection: Collection) {
     this.listedNftsSubject$.next(nfts);
     this.updateAvailableNftsCount(nfts, collection);
   }
 
   private updateAvailableNftsCount(nfts: Nft[], collection: Collection) {
-    const availableNftsCount = nfts.filter(
-      (nft) => this.cartService.isNftAvailableForSale(nft, collection).isAvailable,
-    ).length;
-    this.availableNftsCountSubject$.next(availableNftsCount);
-  }
-
-  public getListedNfts(): Nft[] {
-    return this.listedNftsSubject$.getValue();
+    this.getListedNftsObservable(collection).pipe(
+      map(nftsForSale => nftsForSale.length),
+      take(1),
+    ).subscribe(count => this.availableNftsCountSubject$.next(count));
   }
 }

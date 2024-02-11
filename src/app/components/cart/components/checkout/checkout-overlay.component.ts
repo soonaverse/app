@@ -24,7 +24,8 @@ import { AuthService } from '@components/auth/services/auth.service';
 import { NotificationService } from '@core/services/notification';
 import { OrderApi } from '@api/order.api';
 import { NftApi } from '@api/nft.api';
-import { BehaviorSubject, firstValueFrom, interval, Subscription } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, interval, Observable, Subscription, forkJoin, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { TransactionService } from '@core/services/transaction';
 import {
   removeItem,
@@ -40,6 +41,7 @@ import { Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { ThemeList, ThemeService } from '@core/services/theme';
 import { UnitsService } from '@core/services/units/units.service';
+import { DeviceService } from '@core/services/device';
 
 export enum StepType {
   CONFIRM = 'Confirm',
@@ -81,7 +83,6 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
 
   public groupedCartItems: GroupedCartItem[] = [];
   public unavailableItemCount = 0;
-  public cartItemPrices: { [key: string]: { originalPrice: number; discountedPrice: number } } = {};
   public agreeTermsConditions = false;
   public transaction$: BehaviorSubject<Transaction | undefined> = new BehaviorSubject<
     Transaction | undefined
@@ -101,11 +102,11 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   private purchasedTokenSymbol: string | null = null;
   private transSubscription$?: Subscription;
   public nftPath = ROUTER_UTILS.config.nft.root;
-  public collectionPath: string = ROUTER_UTILS.config.collection.root;
+  public collectionPath = ROUTER_UTILS.config.collection.root;
   public expandedGroups = new Set<string>();
   private currentTransactionSubscription?: Subscription;
-
   public theme = ThemeList;
+
   constructor(
     public cartService: CartService,
     private auth: AuthService,
@@ -119,6 +120,7 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
     private nzNotification: NzNotificationService,
     public themeService: ThemeService,
     public unitsService: UnitsService,
+    public deviceService: DeviceService,
   ) {}
 
   public get themes(): typeof ThemeList {
@@ -376,7 +378,8 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
     this.cd.markForCheck();
   }
 
-  public toggleGroup(groupSymbol: string) {
+  public toggleGroup(event: MouseEvent, groupSymbol: string): void {
+    event.stopPropagation();
     if (this.expandedGroups.has(groupSymbol)) {
       this.expandedGroups.delete(groupSymbol);
     } else {
@@ -403,42 +406,46 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   }
 
   public groupItems() {
-    const groups: { [tokenSymbol: string]: GroupedCartItem } = {};
-    this.items.forEach((item) => {
-      const tokenSymbol =
-        (item.nft?.placeholderNft
-          ? item.collection?.mintingData?.network
-          : item.nft?.mintingData?.network) || DEFAULT_NETWORK;
-      const discount = this.discount(item);
-      const originalPrice = this.calcPrice(item, 1);
-      const discountedPrice = this.calcPrice(item, discount);
-      const price = this.discount(item) < 1 ? discountedPrice : originalPrice;
-      item.salePrice = price;
+    const availabilityChecks$ = this.items.map(item =>
+      this.cartService.isCartItemAvailableForSale(item).pipe(
+        map(result => ({ item, isAvailable: result.isAvailable })),
+        switchMap(result => result ? of(result) : of({ item, isAvailable: false }))
+      )
+    );
 
-      const network =
-        (item.nft?.placeholderNft
-          ? item.collection?.mintingData?.network
-          : item.nft?.mintingData?.network) || DEFAULT_NETWORK;
+    forkJoin(availabilityChecks$).subscribe(results => {
+      const groups: { [tokenSymbol: string]: GroupedCartItem } = {};
+      this.unavailableItemCount = 0;
 
-      if (this.cartService.isCartItemAvailableForSale(item).isAvailable) {
-        if (!groups[tokenSymbol]) {
-          groups[tokenSymbol] = {
-            tokenSymbol,
-            items: [],
-            totalQuantity: 0,
-            totalPrice: 0,
-            network,
-          };
+      results.forEach(({ item, isAvailable }) => {
+        if (!isAvailable) {
+          this.unavailableItemCount++;
+          return;
         }
+
+        const tokenSymbol =
+          (item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network) || DEFAULT_NETWORK;
+        const discount = this.discount(item);
+        const originalPrice = this.calcPrice(item, 1);
+        const discountedPrice = this.calcPrice(item, discount);
+        const price = discount < 1 ? discountedPrice : originalPrice;
+        item.salePrice = price;
+
+        const network =
+          (item.nft?.placeholderNft ? item.collection?.mintingData?.network : item.nft?.mintingData?.network) || DEFAULT_NETWORK;
+
+        if (!groups[tokenSymbol]) {
+          groups[tokenSymbol] = { tokenSymbol, items: [], totalQuantity: 0, totalPrice: 0, network };
+        }
+
         groups[tokenSymbol].items.push(item);
         groups[tokenSymbol].totalQuantity += item.quantity;
         groups[tokenSymbol].totalPrice += item.quantity * item.salePrice;
-      } else {
-        this.unavailableItemCount++;
-      }
-    });
+      });
 
-    this.groupedCartItems = Object.values(groups);
+      this.groupedCartItems = Object.values(groups);
+      this.cd.markForCheck();
+    });
   }
 
   public updateStep(step: StepType) {
@@ -453,16 +460,17 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   }
 
   private calcPrice(item: CartItem, discount: number): number {
-    return this.cartService.calcPrice(item, discount);
+    return this.cartService.calcPrice(item.nft, discount);
   }
 
   private discount(item: CartItem): number {
     return this.cartService.discount(item.collection, item.nft);
   }
 
-  public isCartItemAvailableForSale(item: CartItem): any {
-    return this.cartService.isCartItemAvailableForSale(item).isAvailable;
+  public isCartItemAvailableForSale(item: CartItem): Observable<boolean> {
+    return this.cartService.isCartItemAvailableForSale(item).pipe(map(result => result.isAvailable));
   }
+
 
   public reset(): void {
     this.receivedTransactions = false;
@@ -494,6 +502,18 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
     }
 
     this.router.navigate(['/', this.collectionPath, colUid]);
+    this.handleClose(true);
+  }
+
+  public goToMemberNfts(): void {
+
+    const memberId = this.auth.member$.value?.uid;
+
+    if(!memberId) {
+      return;
+    }
+
+    this.router.navigate(['/member', memberId, 'nfts']);
     this.handleClose(true);
   }
 
@@ -651,6 +671,11 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
           }
         });
     });
+  }
+
+  public getSelectedNetwork(): any {
+    const selectedNetwork = localStorage.getItem('cartCheckoutSelectedNetwork') || '';
+    return selectedNetwork;
   }
 
   ngOnDestroy() {

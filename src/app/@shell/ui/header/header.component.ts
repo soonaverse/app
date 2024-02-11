@@ -113,7 +113,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    this.member$.pipe(untilDestroyed(this)).subscribe((obj) => {
+     this.member$.pipe(untilDestroyed(this)).subscribe((obj) => {
       if (obj?.uid) {
         this.cancelAccessSubscriptions();
         this.accessSubscriptions$.push(
@@ -259,7 +259,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       switch (checkoutTransaction.source) {
         case 'cartCheckout': {
           if (!this.cartService.isCheckoutOverlayOpen()) {
-            this.cartService.openCartAndCheckoutOverlay();
+            this.cartService.openCheckoutOverlay();
             this.cd.markForCheck();
           }
           break;

@@ -553,14 +553,7 @@ export class NFTPage implements OnInit, OnDestroy {
   public addToCart(nft: Nft): void {
     if (nft && this.data.collection$) {
       this.data.collection$.pipe(take(1)).subscribe((collection) => {
-        if (collection) {
-          this.cartService.addToCart({
-            nft,
-            collection,
-            quantity: this.nftQtySelected,
-            salePrice: 0,
-          });
-        }
+        if (collection) { this.cartService.addToCart(nft, collection); }
       });
     }
   }

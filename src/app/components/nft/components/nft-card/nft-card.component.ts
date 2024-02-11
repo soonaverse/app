@@ -194,7 +194,7 @@ export class NftCardComponent {
     event.preventDefault();
 
     if (nft && collection) {
-      this.cartService.addToCart({ nft, collection, quantity: 1, salePrice: 0 });
+      this.cartService.addToCart(nft, collection);
     } else {
       console.error('Attempted to add a null or undefined NFT or Collection to the cart');
     }

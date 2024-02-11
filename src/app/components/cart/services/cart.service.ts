@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subscription, map } from 'rxjs';
+import { Injectable, NgZone } from '@angular/core';
+import { BehaviorSubject, Observable, Subscription, map, of, take, tap, catchError, finalize, combineLatest } from 'rxjs';
 import {
   Nft,
   Collection,
@@ -7,27 +7,39 @@ import {
   MIN_AMOUNT_TO_TRANSFER,
   TRANSACTION_AUTO_EXPIRY_MS,
   DEFAULT_NETWORK,
-  Space,
-  Award,
+  getDefDecimalIfNotSet,
   CollectionStatus,
+  DEFAULT_NETWORK_DECIMALS,
+  Network,
 } from '@build-5/interfaces';
-import { getItem, setItem, removeItem, StorageItem, getCheckoutTransaction } from '@core/utils';
+import { getItem, removeItem, StorageItem, getCheckoutTransaction } from '@core/utils';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { HelperService } from '@pages/nft/services/helper.service';
 import { AuthService } from '@components/auth/services/auth.service';
 import { NzModalRef, NzModalService } from 'ng-zorro-antd/modal';
-import { CheckoutOverlayComponent } from '../components/checkout/checkout-overlay.component';
+import { CheckoutOverlayComponent } from '@components/cart/components/checkout/checkout-overlay.component';
 import { OrderApi } from '@api/order.api';
 import { SpaceApi } from '@api/space.api';
 import { MemberApi } from '@api/member.api';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import dayjs from 'dayjs';
+import { NftApi } from '@api/nft.api';
 
 export interface CartItem {
   nft: Nft;
   collection: Collection;
   quantity: number;
   salePrice: number;
+  pricing: {
+    originalPrice: number;
+    discountedPrice: number;
+    tokenSymbol: Network;
+  };
+}
+
+export interface ConvertValue {
+  value: number | null | undefined;
+  exponents: number | null | undefined;
 }
 
 export enum StepType {
@@ -36,6 +48,8 @@ export enum StepType {
   WAIT = 'Wait',
   COMPLETE = 'Complete',
 }
+
+export const CART_STORAGE_KEY = 'App/cartItems';
 
 @Injectable({
   providedIn: 'root',
@@ -53,10 +67,12 @@ export class CartService {
   private pendingTransaction$: BehaviorSubject<Transaction | undefined> = new BehaviorSubject<
     Transaction | undefined
   >(undefined);
-  private memberSpaces: string[] = [];
-  private memberGuardianSpaces: string[] = [];
-  private memberAwards: string[] = [];
+  private memberSpacesSubject$ = new BehaviorSubject<string[]>([]);
+  private memberGuardianSpacesSubject$ = new BehaviorSubject<string[]>([]);
+  private memberAwardsSubject$ = new BehaviorSubject<string[]>([]);
   private guardianSpaceSubscriptions$: { [key: string]: Subscription } = {};
+  private isLoadingSubject$ = new BehaviorSubject<boolean>(false);
+  public isLoading$ = this.isLoadingSubject$.asObservable();
 
   constructor(
     private notification: NzNotificationService,
@@ -66,8 +82,22 @@ export class CartService {
     private orderApi: OrderApi,
     private spaceApi: SpaceApi,
     private memberApi: MemberApi,
+    private zone: NgZone,
+    private nftApi: NftApi,
   ) {
     this.subscribeToMemberChanges();
+    this.listenToStorageChanges();
+  }
+
+  private listenToStorageChanges(): void {
+    window.addEventListener('storage', (event) => {
+      if (event.storageArea === localStorage && event.key === CART_STORAGE_KEY) {
+        this.zone.run(() => {
+          const updatedCartItems = JSON.parse(event.newValue || '[]');
+          this.cartItemsSubject$.next(updatedCartItems);
+        });
+      }
+    });
   }
 
   private subscribeToMemberChanges() {
@@ -90,44 +120,29 @@ export class CartService {
   }
 
   private resetMemberData() {
-    this.memberSpaces = [];
-    this.memberGuardianSpaces = [];
-    this.memberAwards = [];
+    this.memberSpacesSubject$.next([]);
+    this.memberGuardianSpacesSubject$.next([]);
+    this.memberAwardsSubject$.next([]);
     this.cleanupGuardianSubscriptions();
   }
 
   private loadMemberSpaces(memberId: string): void {
-    this.memberApi
-      .allSpacesAsMember(memberId)
-      .pipe(untilDestroyed(this))
-      .subscribe((spaces) => {
-        if (spaces) {
-          this.memberSpaces = spaces.map((space) => space.uid);
-          this.updateMemberSpaces(this.memberSpaces);
-        }
-      });
+    this.memberApi.allSpacesAsMember(memberId).pipe(
+      untilDestroyed(this),
+      map(spaces => spaces.map(space => space.uid)),
+    ).subscribe(spaceIds => {
+      this.memberSpacesSubject$.next(spaceIds);
+      spaceIds.forEach(spaceId => this.updateMemberGuardianStatus(spaceId));
+    });
   }
 
   private loadMemberAwards(memberId: string): void {
-    this.memberApi
-      .topAwardsCompleted(memberId)
-      .pipe(untilDestroyed(this))
-      .subscribe((awards) => {
-        if (awards) {
-          this.memberAwards = awards.map((award) => award.uid);
-          this.updateMemberAwards(this.memberAwards);
-        }
-      });
-  }
-
-  private updateMemberSpaces(spaces: string[]) {
-    this.memberSpaces = spaces.map((space) => space);
-    this.memberGuardianSpaces = [];
-    spaces.forEach((space) => this.updateMemberGuardianStatus(space));
-  }
-
-  private updateMemberAwards(awards: string[]) {
-    this.memberAwards = awards.map((award) => award);
+    this.memberApi.topAwardsCompleted(memberId).pipe(
+      untilDestroyed(this),
+      map(awards => awards.map(award => award.uid)),
+    ).subscribe(awardIds => {
+      this.memberAwardsSubject$.next(awardIds);
+    });
   }
 
   private updateMemberGuardianStatus(spaceId: string) {
@@ -137,13 +152,19 @@ export class CartService {
         .isGuardianWithinSpace(spaceId, this.auth.member$.value?.uid)
         .pipe(untilDestroyed(this))
         .subscribe((isGuardian) => {
-          if (isGuardian && !this.memberGuardianSpaces.includes(spaceId)) {
-            this.memberGuardianSpaces.push(spaceId);
-          } else if (!isGuardian && this.memberGuardianSpaces.includes(spaceId)) {
-            this.memberGuardianSpaces = this.memberGuardianSpaces.filter((id) => id !== spaceId);
-          }
+          this.updateGuardianSpaces(isGuardian, spaceId);
         });
     }
+  }
+
+  private updateGuardianSpaces(isGuardian: boolean, spaceId: string) {
+    let currentGuardianSpaces = this.memberGuardianSpacesSubject$.getValue();
+    if (isGuardian && !currentGuardianSpaces.includes(spaceId)) {
+      currentGuardianSpaces.push(spaceId);
+    } else if (!isGuardian && currentGuardianSpaces.includes(spaceId)) {
+      currentGuardianSpaces = currentGuardianSpaces.filter((id) => id !== spaceId);
+    }
+    this.memberGuardianSpacesSubject$.next(currentGuardianSpaces);
   }
 
   private cleanupGuardianSubscriptions() {
@@ -151,6 +172,18 @@ export class CartService {
       subscription.unsubscribe(),
     );
     this.guardianSpaceSubscriptions$ = {};
+  }
+
+  get memberSpaces$(): Observable<string[]> {
+    return this.memberSpacesSubject$.asObservable();
+  }
+
+  get memberGuardianSpaces$(): Observable<string[]> {
+    return this.memberGuardianSpacesSubject$.asObservable();
+  }
+
+  get memberAwards$(): Observable<string[]> {
+    return this.memberAwardsSubject$.asObservable();
   }
 
   public hasPendingTransaction(): boolean {
@@ -185,7 +218,30 @@ export class CartService {
   }
 
   public showCartModal(): void {
-    this.cartModalOpenSubject$.next(true);
+    this.isLoadingSubject$.next(true);
+
+    const cartItems = this.cartItemsSubject$.getValue();
+    if (cartItems.length === 0) {
+      this.isLoadingSubject$.next(false);
+      this.cartModalOpenSubject$.next(true);
+      return;
+    }
+
+    const freshDataObservables = cartItems.map(item =>
+      this.nftApi.getNftById(item.nft.uid).pipe(
+        take(1),
+        map(freshNft => freshNft ? { ...item, nft: freshNft } : item),
+        catchError(() => of(item))
+      )
+    );
+
+    combineLatest(freshDataObservables).pipe(
+      take(1),
+      finalize(() => this.isLoadingSubject$.next(false))
+    ).subscribe(updatedCartItems => {
+      this.cartItemsSubject$.next(updatedCartItems);
+      this.cartModalOpenSubject$.next(true);
+    });
   }
 
   public hideCartModal(): void {
@@ -197,64 +253,66 @@ export class CartService {
   }
 
   public openCheckoutOverlay(): void {
+
     if (!this.checkoutOverlayOpenSubject$.getValue()) {
+
       const checkoutTransaction = getCheckoutTransaction();
 
       if (checkoutTransaction && checkoutTransaction.transactionId) {
         if (checkoutTransaction.source === 'nftCheckout') {
-          this.notification.error(
-            'You currently have an open order. Pay for it or let it expire.',
-            '',
-          );
+          this.notification.error('You currently have an open order. Pay for it or let it expire.', '');
           return;
         }
 
         if (checkoutTransaction.source === 'cartCheckout') {
           this.setCurrentTransaction(checkoutTransaction.transactionId);
-          const currentTransaction = this.pendingTransaction$.getValue();
+          this.getCurrentTransaction().pipe(take(1)).subscribe(currentTransaction => {
+            if (currentTransaction && currentTransaction.uid) {
+              const expiresOn: dayjs.Dayjs = dayjs(currentTransaction.createdOn!.toDate()).add(TRANSACTION_AUTO_EXPIRY_MS, 'ms');
 
-          if (currentTransaction && currentTransaction.uid) {
-            const expiresOn: dayjs.Dayjs = dayjs(currentTransaction.createdOn!.toDate()).add(
-              TRANSACTION_AUTO_EXPIRY_MS,
-              'ms',
-            );
-
-            if (
-              expiresOn.isBefore(dayjs()) ||
-              currentTransaction.payload?.void ||
-              currentTransaction.payload?.reconciled
-            ) {
-              removeItem(StorageItem.CheckoutTransaction);
-              this.pendingTransaction$.next(undefined);
-              this.setCurrentStep(StepType.CONFIRM);
+              if (expiresOn.isBefore(dayjs()) || currentTransaction.payload?.void || currentTransaction.payload?.reconciled) {
+                removeItem(StorageItem.CheckoutTransaction);
+                this.pendingTransaction$.next(undefined);
+                this.setCurrentStep(StepType.CONFIRM);
+                this.openModal();
+              } else {
+                this.openModal();
+              }
+            } else {
+              this.openModal();
             }
-          }
+          });
         } else {
-          this.notification.error(
-            'CheckoutTransaction exists and source is not nftCheckout, the checkout-overlay is not open and the pending transaction not expired or complete and the source is not cartCheckout, this should never happen.',
-            '',
-          );
+          this.notification.error('CheckoutTransaction exists and source is not nftCheckout, the checkout-overlay is not open and the pending transaction not expired or complete and the source is not cartCheckout, this should never happen.', '');
           return;
         }
+      } else {
+        this.openModal();
       }
-
-      const cartItems = this.getCartItems().getValue();
-
-      this.checkoutOverlayModalRef = this.modalService.create({
-        nzTitle: 'Checkout',
-        nzContent: CheckoutOverlayComponent,
-        nzComponentParams: { items: cartItems },
-        nzFooter: null,
-        nzWidth: '80%',
-      });
-
-      this.checkoutOverlayModalRef.afterClose.subscribe(() => {
-        this.closeCheckoutOverlay();
-      });
-
-      this.checkoutOverlayOpenSubject$.next(true);
     }
   }
+
+  private openModal(): void {
+    this.getCartItems().pipe(take(1)).subscribe(cartItems => {
+      if (cartItems.length > 0) {
+        this.checkoutOverlayModalRef = this.modalService.create({
+          nzTitle: 'Checkout',
+          nzContent: CheckoutOverlayComponent,
+          nzComponentParams: { items: cartItems },
+          nzFooter: null,
+          nzWidth: '80%',
+        });
+
+        this.checkoutOverlayModalRef.afterClose.subscribe(() => {
+          this.closeCheckoutOverlay();
+        });
+
+        this.checkoutOverlayOpenSubject$.next(true);
+      }
+    });
+  }
+
+
 
   public closeCheckoutOverlay(): void {
     const checkoutTransaction = getCheckoutTransaction();
@@ -340,32 +398,83 @@ export class CartService {
     }
   }
 
-  public getCartItems(): BehaviorSubject<CartItem[]> {
-    return this.cartItemsSubject$;
+  public getCartItems(): Observable<CartItem[]> {
+    return this.cartItemsSubject$.asObservable();
   }
 
-  public addToCart(cartItem: CartItem): void {
-    const currentItems = this.cartItemsSubject$.value;
-    if (currentItems.length >= 100) {
-      this.notification.error(
-        $localize`Your cart is full. Please remove items before adding more.`,
-        '',
+  public cartItemStatus(item: CartItem): Observable<{ status: string; message: string }> {
+    return this.isCartItemAvailableForSale(item)
+      .pipe(
+        map(availabilityResult => ({
+          status: availabilityResult.isAvailable ? 'Available' : 'Not Available',
+          message: availabilityResult.message
+        }))
       );
+  }
+
+  public addToCart(nft: Nft, collection: Collection, quantity: number = 1): void {
+    const currentItems = this.cartItemsSubject$.getValue();
+    const existingItemIndex = currentItems.findIndex(item => item.nft.uid === nft.uid);
+
+    if (existingItemIndex > -1) {
+      this.notification.error('This NFT already exists in your cart.', '');
       return;
     }
 
-    const isItemAlreadyInCart = currentItems.some((item) => item.nft.uid === cartItem.nft.uid);
-    if (!isItemAlreadyInCart) {
-      const updatedCartItems = [...currentItems, cartItem];
-      this.cartItemsSubject$.next(updatedCartItems);
-      this.saveCartItems();
-      this.notification.success(
-        $localize`NFT ${cartItem.nft.name} from collection ${cartItem.collection.name} has been added to your cart.`,
-        '',
-      );
-    } else {
-      this.notification.error($localize`This NFT already exists in your cart.`, '');
+    const discountRate = this.discount(collection, nft);
+    const originalPrice = this.calcPrice(nft, 1);
+    const discountedPrice = this.calcPrice(nft, discountRate);
+    const tokenSymbol = (nft.placeholderNft ? collection.mintingData?.network : nft.mintingData?.network) || DEFAULT_NETWORK;
+
+    const cartItem: CartItem = {
+      nft: nft,
+      collection: collection,
+      quantity: quantity,
+      salePrice: discountRate < 1 ? discountedPrice : originalPrice,
+      pricing: {
+        originalPrice,
+        discountedPrice,
+        tokenSymbol,
+      },
+    };
+
+    const updatedCartItems = [...currentItems, cartItem];
+    this.cartItemsSubject$.next(updatedCartItems);
+    this.saveCartItems();
+
+    this.notification.success(`NFT ${nft.name} from collection ${collection.name} has been added to your cart.`, '');
+  }
+
+
+  public discount(collection?: Collection | null, nft?: Nft | null): number {
+    if (!collection?.space || !this.auth.member$.value || nft?.owner) {
+      return 1;
     }
+
+    const spaceRewards = (this.auth.member$.value.spaces || {})[collection.space];
+    const descDiscounts = [...(collection.discounts || [])].sort((a, b) => b.amount - a.amount);
+    for (const discount of descDiscounts) {
+      const awardStat = (spaceRewards?.awardStat || {})[discount.tokenUid!];
+      const memberTotalReward = awardStat?.totalReward || 0;
+      if (memberTotalReward >= discount.tokenReward) {
+        return 1 - discount.amount;
+      }
+    }
+    return 1;
+  }
+
+  public calc(amount: number | null | undefined, discount: number): number {
+    let finalPrice = Math.ceil((amount || 0) * discount);
+    if (finalPrice < MIN_AMOUNT_TO_TRANSFER) {
+      finalPrice = MIN_AMOUNT_TO_TRANSFER;
+    }
+
+    return finalPrice;
+  }
+
+  public calcPrice(nft: Nft, discount: number): number {
+    const itemPrice = nft?.availablePrice || nft?.price || 0;
+    return this.calc(itemPrice, discount);
   }
 
   public refreshCartItems(): void {
@@ -404,23 +513,67 @@ export class CartService {
     this.saveCartItems();
   }
 
+  public updateCartItemQuantity(itemId: string, newQuantity: number): void {
+    this.cartItemsSubject$.pipe(
+      take(1),
+      tap(cartItems => {
+        const updatedCartItems = cartItems.map(item => {
+          if (item.nft.uid === itemId) {
+            return { ...item, quantity: newQuantity };
+          }
+          return item;
+        });
+
+        this.cartItemsSubject$.next(updatedCartItems);
+
+        this.saveCartItems();
+      })
+    ).subscribe();
+  }
+
+  public getSelectedNetwork(): any {
+    return localStorage.getItem('cartCheckoutSelectedNetwork') || '';
+  }
+
   public isNftAvailableForSale(
     nft: Nft,
     collection: Collection,
-  ): { isAvailable: boolean; message: string } {
+    checkCartPresence: boolean = false
+  ): Observable<{ isAvailable: boolean; message: string }> {
     let message = 'NFT is available for sale.';
     const conditions: string[] = [];
 
     let isAvailable = false;
 
+    const memberSpaces = this.memberSpacesSubject$.getValue();
+    const memberGuardianSpaces = this.memberGuardianSpacesSubject$.getValue();
+    const memberAwards = this.memberAwardsSubject$.getValue();
+
+    if (checkCartPresence) {
+      const isNftInCart = this.cartItemsSubject$.getValue().some(cartItem => cartItem.nft.uid === nft.uid);
+      if (isNftInCart) {
+          message = 'This NFT is already in your cart.';
+          return of({
+            isAvailable,
+            message
+          });
+      }
+    }
+
     if (!collection) {
       message = 'Internal Error: Collection data is null or undefined.';
-      return { isAvailable, message };
+      return of({
+        isAvailable,
+        message
+      });
     }
 
     if (!nft?.availableFrom) {
       message = 'Internal Error: Nft and/or NFT Available From date is null or undefined.';
-      return { isAvailable, message };
+      return of({
+        isAvailable,
+        message
+      });
     }
 
     let validAvailableFromDate =
@@ -454,23 +607,23 @@ export class CartService {
     if (isOwner) conditions.push('You are the owner of this NFT.');
 
     const availableValue = +nft?.available;
-    const nftAvailable = availableValue === 1 || availableValue === 3;
+    const nftAvailable = availableValue === 1 || availableValue === 3 || nft?.available === null || nft?.available === undefined;
     if (!nftAvailable) conditions.push('NFT is not marked as available.');
 
     const spaceMemberAccess =
       collection?.access !== 1 ||
-      (collection?.access === 1 && this.memberSpaces.includes(collection?.space ?? ''));
+      (collection?.access === 1 && memberSpaces.includes(collection?.space ?? ''));
     if (!spaceMemberAccess) conditions.push('Member does not have access to this space.');
 
     const spaceGuardianAccess =
       collection?.access !== 2 ||
-      (collection?.access === 2 && this.memberGuardianSpaces.includes(collection?.space ?? ''));
+      (collection?.access === 2 && memberGuardianSpaces.includes(collection?.space ?? ''));
     if (!spaceGuardianAccess) conditions.push('Member is not a guardian of this space.');
 
     const spaceAwardAccess =
       collection?.access !== 3 ||
       (collection?.access === 3 &&
-        collection?.accessAwards?.some((award) => this.memberAwards.includes(award)));
+        collection?.accessAwards?.some((award) => memberAwards.includes(award)));
     if (!spaceAwardAccess) conditions.push('Member does not have the required awards for access.');
 
     isAvailable =
@@ -490,7 +643,22 @@ export class CartService {
         'NFT is not available for sale due to the following conditions: ' + conditions.join(' ');
     }
 
-    return { isAvailable, message };
+    return of({
+      isAvailable,
+      message
+    });
+  }
+
+  public isCartItemAvailableForSale(cartItem: CartItem, checkCartPresence: boolean = false): Observable<{ isAvailable: boolean; message: string }> {
+    return this.isNftAvailableForSale(cartItem.nft, cartItem.collection, checkCartPresence)
+      .pipe(
+        map(result => {
+          return {
+            isAvailable: result.isAvailable,
+            message: result.message
+          };
+        })
+      );
   }
 
   public clearCart(): void {
@@ -499,33 +667,22 @@ export class CartService {
     this.notification.success($localize`All items have been removed from your cart.`, '');
   }
 
-  public isCartItemAvailableForSale(cartItem: CartItem): { isAvailable: boolean; message: string } {
-    const isAvailable = this.isNftAvailableForSale(cartItem.nft, cartItem.collection).isAvailable;
-    const message = this.isNftAvailableForSale(cartItem.nft, cartItem.collection).message;
-    return { isAvailable, message };
-  }
 
-  public getAvailableNftQuantity(cartItem: CartItem): number {
-    const isAvailableForSale = this.helperService.isAvailableForSale(
-      cartItem.nft,
-      cartItem.collection,
+  public getAvailableNftQuantity(cartItem: CartItem): Observable<number> {
+    return this.isCartItemAvailableForSale(cartItem).pipe(
+      map(result => {
+        if (result.isAvailable) {
+          return cartItem.nft.placeholderNft ? (cartItem.collection.availableNfts || 0) : 1;
+        } else {
+          return 0;
+        }
+      }),
+      map(quantity => quantity === null ? 0 : quantity)
     );
-
-    if (cartItem.nft.placeholderNft && isAvailableForSale) {
-      return cartItem.collection.availableNfts || 0;
-    } else if (isAvailableForSale) {
-      return 1;
-    }
-    return 0;
-  }
-
-  public updateCartItems(updatedItems: CartItem[]): void {
-    this.cartItemsSubject$.next(updatedItems);
-    this.saveCartItems();
   }
 
   public saveCartItems(): void {
-    setItem(StorageItem.CartItems, this.cartItemsSubject$.value);
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.cartItemsSubject$.getValue()));
   }
 
   public loadCartItems(): CartItem[] {
@@ -533,34 +690,16 @@ export class CartService {
     return items || [];
   }
 
-  public discount(collection?: Collection | null, nft?: Nft | null): number {
-    if (!collection?.space || !this.auth.member$.value || nft?.owner) {
-      return 1;
+  public valueDivideExponent(value: ConvertValue): number {
+    if (value.exponents === 0 || value.value === null || value.value === undefined) {
+      return value.value!;
+    } else {
+      return value.value! / Math.pow(10, getDefDecimalIfNotSet(value.exponents));
     }
-
-    const spaceRewards = (this.auth.member$.value.spaces || {})[collection.space];
-    const descDiscounts = [...(collection.discounts || [])].sort((a, b) => b.amount - a.amount);
-    for (const discount of descDiscounts) {
-      const awardStat = (spaceRewards?.awardStat || {})[discount.tokenUid!];
-      const memberTotalReward = awardStat?.totalReward || 0;
-      if (memberTotalReward >= discount.tokenReward) {
-        return 1 - discount.amount;
-      }
-    }
-    return 1;
   }
 
-  public calc(amount: number | null | undefined, discount: number): number {
-    let finalPrice = Math.ceil((amount || 0) * discount);
-    if (finalPrice < MIN_AMOUNT_TO_TRANSFER) {
-      finalPrice = MIN_AMOUNT_TO_TRANSFER;
-    }
-
-    return finalPrice;
+  public getDefaultNetworkDecimals(): number {
+    return DEFAULT_NETWORK_DECIMALS;
   }
 
-  public calcPrice(item: CartItem, discount: number): number {
-    const itemPrice = item.nft?.availablePrice || item.nft?.price || 0;
-    return this.calc(itemPrice, discount);
-  }
 }
