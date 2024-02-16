@@ -419,7 +419,7 @@ export class NFTPage implements OnInit, OnDestroy {
       this.data.collection$.value,
       this.data.nft$.value,
     );
-    let parsedQuantity = Math.round(Number(this.nftQtySelected));
+    const parsedQuantity = Math.round(Number(this.nftQtySelected));
 
     if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
       this.nftQtySelected = 1;
@@ -441,7 +441,7 @@ export class NFTPage implements OnInit, OnDestroy {
 
     if (event.clipboardData) {
       const pastedData = event.clipboardData.getData('text/plain');
-      let parsedQuantity = Math.round(Number(pastedData));
+      const parsedQuantity = Math.round(Number(pastedData));
 
       const maxQuantity = this.getAvailableNftQuantity(
         this.data.collection$.value,
