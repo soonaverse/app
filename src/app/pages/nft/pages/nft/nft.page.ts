@@ -419,15 +419,44 @@ export class NFTPage implements OnInit, OnDestroy {
       this.data.collection$.value,
       this.data.nft$.value,
     );
-    const parsedQuantity = Number(this.nftQtySelected);
-    if (isNaN(parsedQuantity) || parsedQuantity < 1) {
+    let parsedQuantity = Math.round(Number(this.nftQtySelected));
+
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
       this.nftQtySelected = 1;
-      this.resetInput();
     } else if (parsedQuantity > maxQuantity) {
       this.nftQtySelected = maxQuantity;
-      this.resetInput();
     } else {
       this.nftQtySelected = parsedQuantity;
+    }
+
+    if (parsedQuantity === this.nftQtySelected) {
+      return;
+    } else {
+      this.resetInput();
+    }
+  }
+
+  public forceValidRange(event: ClipboardEvent): void {
+    event.preventDefault();
+
+    if (event.clipboardData) {
+      const pastedData = event.clipboardData.getData('text/plain');
+      let parsedQuantity = Math.round(Number(pastedData));
+
+      const maxQuantity = this.getAvailableNftQuantity(
+        this.data.collection$.value,
+        this.data.nft$.value,
+      );
+
+      if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+        this.nftQtySelected = 1;
+      } else if (parsedQuantity > maxQuantity) {
+        this.nftQtySelected = maxQuantity;
+      } else {
+        this.nftQtySelected = parsedQuantity;
+      }
+
+      this.resetInput();
     }
   }
 
