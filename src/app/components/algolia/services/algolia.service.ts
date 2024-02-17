@@ -27,6 +27,33 @@ export class AlgoliaService {
     });
   }
 
+  public fetchAllOwnedNfts(memberId: string, indexName: string): Promise<any[]> {
+    const index = this.searchClient.initIndex(indexName);
+    let page = 0;
+    const hitsPerPage = 20;
+    const allHits: any[] = [];
+
+    return new Promise((resolve, reject) => {
+      const fetchPage = () => {
+        index.search('', {
+          filters: `owner:${memberId}`,
+          hitsPerPage,
+          page,
+        }).then(response => {
+          allHits.push(...response.hits);
+          if (page < response.nbPages - 1) {
+            page++;
+            fetchPage();
+          } else {
+            resolve(allHits);
+          }
+        }).catch(reject);
+      };
+
+      fetchPage();
+    });
+  }
+
   public convertToAccessName(algoliaItems: any[]) {
     return algoliaItems.map((algolia) => {
       let label = $localize`Open`;

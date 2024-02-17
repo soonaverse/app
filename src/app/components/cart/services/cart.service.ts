@@ -22,6 +22,8 @@ import {
   CollectionStatus,
   DEFAULT_NETWORK_DECIMALS,
   Network,
+  COL,
+  Timestamp,
 } from '@build-5/interfaces';
 import { getItem, removeItem, StorageItem, getCheckoutTransaction } from '@core/utils';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
@@ -35,6 +37,9 @@ import { MemberApi } from '@api/member.api';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import dayjs from 'dayjs';
 import { NftApi } from '@api/nft.api';
+import { FilterStorageService } from '@core/services/filter-storage';
+import { AlgoliaService } from '@components/algolia/services/algolia.service';
+import { InstantSearchConfig } from 'angular-instantsearch/instantsearch/instantsearch';
 
 export interface CartItem {
   nft: Nft;
@@ -81,9 +86,11 @@ export class CartService {
   private memberSpacesSubject$ = new BehaviorSubject<string[]>([]);
   private memberGuardianSpacesSubject$ = new BehaviorSubject<string[]>([]);
   private memberAwardsSubject$ = new BehaviorSubject<string[]>([]);
+  private memberNftCollectionIdsSubject$ = new BehaviorSubject<string[]>([]);
   private guardianSpaceSubscriptions$: { [key: string]: Subscription } = {};
   private isLoadingSubject$ = new BehaviorSubject<boolean>(false);
   public isLoading$ = this.isLoadingSubject$.asObservable();
+  public config?: InstantSearchConfig;
 
   constructor(
     private notification: NzNotificationService,
@@ -95,6 +102,8 @@ export class CartService {
     private memberApi: MemberApi,
     private zone: NgZone,
     private nftApi: NftApi,
+    public filterStorageService: FilterStorageService,
+    public readonly algoliaService: AlgoliaService,
   ) {
     this.subscribeToMemberChanges();
     this.listenToStorageChanges();
@@ -122,11 +131,13 @@ export class CartService {
   }
 
   private refreshMemberData() {
-    if (this.auth.member$.value?.uid) {
-      this.loadMemberSpaces(this.auth.member$.value?.uid);
-      this.loadMemberAwards(this.auth.member$.value?.uid);
+    const memberId = this.auth.member$.value?.uid;
+    if (memberId) {
+        this.loadMemberSpaces(memberId);
+        this.loadMemberAwards(memberId);
+        this.loadMemberNfts(memberId);
     } else {
-      this.resetMemberData();
+        this.resetMemberData();
     }
   }
 
@@ -134,6 +145,7 @@ export class CartService {
     this.memberSpacesSubject$.next([]);
     this.memberGuardianSpacesSubject$.next([]);
     this.memberAwardsSubject$.next([]);
+    this.memberNftCollectionIdsSubject$.next([]);
     this.cleanupGuardianSubscriptions();
   }
 
@@ -160,6 +172,28 @@ export class CartService {
       .subscribe((awardIds) => {
         this.memberAwardsSubject$.next(awardIds);
       });
+  }
+
+  private loadMemberNfts(memberId: string): void {
+    this.algoliaService.fetchAllOwnedNfts(memberId, COL.NFT).then(nfts => {
+      const results = this.convertAllToSoonaverseModel(nfts);
+
+      const collectionIds = results.map(hit => hit.collection)
+                                  .filter((value, index, self) => self.indexOf(value) === index);
+      const currentIds = this.memberNftCollectionIdsSubject$.getValue();
+      const allIds = [...new Set([...currentIds, ...collectionIds])];
+      this.memberNftCollectionIdsSubject$.next(allIds);
+    }).catch(error => {
+      console.error('Error fetching owned NFTs:', error);
+    });
+
+  }
+
+  public convertAllToSoonaverseModel(algoliaItems: any[]) {
+    return algoliaItems.map((algolia) => ({
+      ...algolia,
+      availableFrom: Timestamp.fromMillis(+algolia.availableFrom),
+    }));
   }
 
   private updateMemberGuardianStatus(spaceId: string) {
@@ -443,8 +477,14 @@ export class CartService {
     );
   }
 
-  public addToCart(nft: Nft, collection: Collection, quantity = 1): void {
+  public addToCart(nft: Nft, collection: Collection, quantity = 1, hideNotif = false): void {
     const currentItems = this.cartItemsSubject$.getValue();
+
+    if (currentItems.length >= 100) {
+      this.notification.error('You cannot add more than 100 unique NFTs to your cart.', '');
+      return;
+    }
+
     const existingItemIndex = currentItems.findIndex((item) => item.nft.uid === nft.uid);
 
     if (existingItemIndex > -1) {
@@ -475,10 +515,12 @@ export class CartService {
     this.cartItemsSubject$.next(updatedCartItems);
     this.saveCartItems();
 
-    this.notification.success(
-      `NFT ${nft.name} from collection ${collection.name} has been added to your cart.`,
-      '',
-    );
+    if (hideNotif === false) {
+      this.notification.success(
+        `NFT ${nft.name} from collection ${collection.name} has been added to your cart.`,
+        '',
+      );
+    }
   }
 
   public discount(collection?: Collection | null, nft?: Nft | null): number {
@@ -522,10 +564,6 @@ export class CartService {
     );
     this.cartItemsSubject$.next(updatedCartItems);
     this.saveCartItems();
-    this.notification.success(
-      $localize`NFT ${cartItem.nft.name} from collection ${cartItem.collection.name} has been removed from your cart.`,
-      '',
-    );
   }
 
   public removeItemsFromCart(itemIds: string[]): void {
@@ -576,6 +614,7 @@ export class CartService {
     nft: Nft,
     collection: Collection,
     checkCartPresence = false,
+    checkPendingTransaction = true,
   ): Observable<{ isAvailable: boolean; message: string }> {
     let message = 'NFT is available for sale.';
     const conditions: string[] = [];
@@ -585,6 +624,18 @@ export class CartService {
     const memberSpaces = this.memberSpacesSubject$.getValue();
     const memberGuardianSpaces = this.memberGuardianSpacesSubject$.getValue();
     const memberAwards = this.memberAwardsSubject$.getValue();
+    const memberNftCollectionIds = this.memberNftCollectionIdsSubject$.getValue();
+
+    if (checkPendingTransaction) {
+      const pendingTrx = this.hasPendingTransaction();
+      if (pendingTrx) {
+        message = 'Finish pending cart checkout transaction or wait for it to expire before adding more items to cart.';
+        return of({
+          isAvailable,
+          message,
+        });
+      }
+    }
 
     if (checkCartPresence) {
       const isNftInCart = this.cartItemsSubject$
@@ -653,21 +704,34 @@ export class CartService {
       nft?.available === undefined;
     if (!nftAvailable) conditions.push('NFT is not marked as available.');
 
-    const spaceMemberAccess =
-      collection?.access !== 1 ||
-      (collection?.access === 1 && memberSpaces.includes(collection?.space ?? ''));
-    if (!spaceMemberAccess) conditions.push('Member does not have access to this space.');
+    let spaceMemberAccess = true;
+    let spaceGuardianAccess = true;
+    let spaceAwardAccess = true;
+    let nftOwnedAccess = true;
 
-    const spaceGuardianAccess =
-      collection?.access !== 2 ||
-      (collection?.access === 2 && memberGuardianSpaces.includes(collection?.space ?? ''));
-    if (!spaceGuardianAccess) conditions.push('Member is not a guardian of this space.');
+    if (nft?.isOwned === false) {
+      spaceMemberAccess =
+        collection?.access !== 1 ||
+        (collection?.access === 1 && memberSpaces.includes(collection?.space ?? ''));
+      if (!spaceMemberAccess) conditions.push('Member does not have access to this space.');
 
-    const spaceAwardAccess =
-      collection?.access !== 3 ||
-      (collection?.access === 3 &&
-        collection?.accessAwards?.some((award) => memberAwards.includes(award)));
-    if (!spaceAwardAccess) conditions.push('Member does not have the required awards for access.');
+      spaceGuardianAccess =
+        collection?.access !== 2 ||
+        (collection?.access === 2 && memberGuardianSpaces.includes(collection?.space ?? ''));
+      if (!spaceGuardianAccess) conditions.push('Member is not a guardian of this space.');
+
+      spaceAwardAccess =
+        collection?.access !== 3 ||
+        (collection?.access === 3 &&
+          collection?.accessAwards?.some((award) => memberAwards.includes(award)));
+      if (!spaceAwardAccess) conditions.push('Member does not have the required awards for access.');
+
+      nftOwnedAccess =
+    collection?.access !== 4 ||
+    (collection?.access === 4 &&
+      collection?.accessCollections?.every((coll) => memberNftCollectionIds.includes(coll)));
+      if (!nftOwnedAccess) conditions.push('Member does not own at least one NFT from each of the required access collections.');
+    }
 
     isAvailable =
       !collectionStatusMinting &&
@@ -679,7 +743,8 @@ export class CartService {
       nftAvailable &&
       spaceMemberAccess &&
       spaceGuardianAccess &&
-      spaceAwardAccess;
+      spaceAwardAccess &&
+      nftOwnedAccess;
 
     if (!isAvailable && conditions.length > 0) {
       message =
@@ -696,7 +761,7 @@ export class CartService {
     cartItem: CartItem,
     checkCartPresence = false,
   ): Observable<{ isAvailable: boolean; message: string }> {
-    return this.isNftAvailableForSale(cartItem.nft, cartItem.collection, checkCartPresence).pipe(
+    return this.isNftAvailableForSale(cartItem.nft, cartItem.collection, checkCartPresence, false).pipe(
       map((result) => {
         return {
           isAvailable: result.isAvailable,

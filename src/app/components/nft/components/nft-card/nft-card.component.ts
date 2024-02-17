@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FileApi } from '@api/file.api';
 import { MemberApi } from '@api/member.api';
@@ -31,7 +31,8 @@ import { BehaviorSubject, Subscription, take } from 'rxjs';
   styleUrls: ['./nft-card.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NftCardComponent {
+export class NftCardComponent implements OnInit, OnDestroy {
+  private cartSubscription$!: Subscription;
   @Input() fullWidth?: boolean;
   @Input() enableWithdraw?: boolean;
 
@@ -92,6 +93,13 @@ export class NftCardComponent {
     private cache: CacheService,
     public cartService: CartService,
   ) {}
+
+  ngOnInit(): void {
+    this.cartSubscription$ = this.cartService.getCartItems().subscribe(() => {
+      this.cd.markForCheck();
+    });
+  }
+
 
   public onBuy(event: MouseEvent): void {
     event.stopPropagation();
@@ -198,5 +206,9 @@ export class NftCardComponent {
     } else {
       console.error('Attempted to add a null or undefined NFT or Collection to the cart');
     }
+  }
+
+  ngOnDestroy() {
+    this.cartSubscription$.unsubscribe();
   }
 }

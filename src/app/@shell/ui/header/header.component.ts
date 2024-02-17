@@ -131,7 +131,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
 
     this.cartItemsSubscription$ = this.cartService.getCartItems().subscribe((items) => {
-      this.cartItemCount = items.length;
+      let count = 0;
+      items.forEach((nft) => {
+        count += nft.quantity
+      });
+      this.cartItemCount = count;
     });
 
     const memberRoute = `/${ROUTER_UTILS.config.member.root}/`;
@@ -241,7 +245,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
 
     this.cartItemsSubscription$ = this.cartService.getCartItems().subscribe((items) => {
-      this.cartItemCount = items.length;
+      let count = 0;
+      items.forEach((nft) => {
+        count += nft.quantity
+      });
+      this.cartItemCount = count;
     });
 
     this.cartService.checkoutOverlayOpen$.pipe(untilDestroyed(this)).subscribe((isOpen) => {

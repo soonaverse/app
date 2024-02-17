@@ -117,7 +117,7 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
 
   constructor(
     public cartService: CartService,
-    private auth: AuthService,
+    public auth: AuthService,
     private notification: NotificationService,
     private orderApi: OrderApi,
     public transactionService: TransactionService,

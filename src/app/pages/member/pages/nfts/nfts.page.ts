@@ -80,7 +80,7 @@ export class NFTsPage implements OnInit {
   }
 
   public convertAllToSoonaverseModel(algoliaItems: any[]) {
-    return algoliaItems.map((algolia) => ({
+   return algoliaItems.map((algolia) => ({
       ...algolia,
       availableFrom: Timestamp.fromMillis(+algolia.availableFrom),
     }));

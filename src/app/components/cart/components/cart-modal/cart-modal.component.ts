@@ -12,7 +12,7 @@ import { AuthService } from '@components/auth/services/auth.service';
 import { Router } from '@angular/router';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UnitsService } from '@core/services/units/units.service';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { DeviceService } from '@core/services/device';
 
 export enum StepType {
@@ -70,7 +70,9 @@ export class CartModalComponent implements OnDestroy {
 
   public updateQuantity(event: Event, itemId: string): void {
     const inputElement = event.target as HTMLInputElement;
-    let newQuantity = Number(inputElement.value);
+    let newQuantity = Math.round(Number(inputElement.value));
+
+    newQuantity = Math.max(1, newQuantity);
 
     this.cartService
       .getCartItems()
@@ -81,7 +83,13 @@ export class CartModalComponent implements OnDestroy {
           if (item) {
             return this.cartService
               .getAvailableNftQuantity(item)
-              .pipe(map((maxQuantity) => ({ item, maxQuantity })));
+              .pipe(
+                map((maxQuantity) => ({ item, maxQuantity })),
+                tap(({ maxQuantity }) => {
+                  newQuantity = Math.min(newQuantity, maxQuantity);
+                  inputElement.value = String(newQuantity);
+                })
+              );
           } else {
             return of(null);
           }
@@ -89,9 +97,6 @@ export class CartModalComponent implements OnDestroy {
       )
       .subscribe((result) => {
         if (result) {
-          const { maxQuantity } = result;
-          newQuantity = Math.max(1, Math.min(newQuantity, maxQuantity));
-          inputElement.value = String(newQuantity);
           this.cartService.updateCartItemQuantity(itemId, newQuantity);
         }
       });

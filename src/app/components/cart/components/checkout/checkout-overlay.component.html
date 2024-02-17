@@ -26,7 +26,7 @@
         <div nz-col nzSpan="20">
           <h3 nz-typography nzTitle level="4" class="mb-2">
             Network: <span class="uppercase">{{ group.tokenSymbol }}</span> -
-            <span class="font-bold">{{ group.items.length }}</span> NFTs in network group.
+            <span class="font-bold">{{ group.items.length }}</span> unique NFTs in network group with total Price of {{ group.totalPrice | formatToken : group.network : true : true | async }} ({{ unitsService.getUsd(cartService.valueDivideExponent({ value: group.totalPrice || 0, exponents: cartService.getDefaultNetworkDecimals() }), group.network) | async | currency : 'USD' | UsdBelowTwoDecimals }} USD)
           </h3>
         </div>
         <div nz-col nzSpan="4" *ngIf="currentStep !== stepType.CONFIRM">
@@ -141,6 +141,20 @@
                 <td>
                   <strong>
                     {{ group.totalPrice | formatToken : group.network : true : true | async }}
+                    <br />
+                    ({{
+                      unitsService.getUsd(
+                        cartService.valueDivideExponent({
+                          value: group.totalPrice || 0,
+                          exponents: cartService.getDefaultNetworkDecimals()
+                        }),
+                        group.network
+                      )
+                        | async
+                        | currency : 'USD'
+                        | UsdBelowTwoDecimals
+                    }}
+                    USD)
                   </strong>
                 </td>
               </tr>
@@ -256,6 +270,7 @@
                 <td>
                   <strong>
                     {{ group.totalPrice | formatToken : group.network : true : true | async }}
+                    &nbsp; ({{ unitsService.getUsd(cartService.valueDivideExponent({ value: group.totalPrice || 0, exponents: cartService.getDefaultNetworkDecimals() }), group.network) | async | currency : 'USD' | UsdBelowTwoDecimals }} USD)
                   </strong>
                 </td>
               </tr>
@@ -320,14 +335,22 @@
       nzSize="large"
       class="w-full mt-6 lg:w-auto"
       [disabled]="!agreeTermsConditions"
+      *ngIf="auth.isLoggedIn$ | async"
       i18n
       (click)="initiateBulkOrder()"
     >
       Confirm and Lock
     </button>
 
+    <wen-connect-wallet
+      class="w-full"
+      wrapperClass="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+      *ngIf="(auth.isLoggedIn$ | async) !== true"
+    ></wen-connect-wallet>
+
     <div
       class="mt-4 text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+      *ngIf="auth.isLoggedIn$ | async"
     >
       <span i18n>Your NFTs will be locked for purchase for</span> {{ lockTime }}
       <span i18n>minutes</span>.

@@ -207,7 +207,7 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
       .subscribe({
         next: ({ nftsToAdd, collection }) => {
           nftsToAdd.forEach((nft) => {
-            this.cartService.addToCart(nft, collection);
+            this.cartService.addToCart(nft, collection, 1, true);
           });
           this.notification.success(
             $localize`NFTs swept into your cart, open cart to review added items.`,
@@ -217,6 +217,8 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
         error: (error) =>
           this.notification.error($localize`Error occurred while adding NFTs to cart.`, ''),
       });
+
+    this.cd.markForCheck();
   }
 
   public ngOnDestroy(): void {

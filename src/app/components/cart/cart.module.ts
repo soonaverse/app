@@ -25,6 +25,9 @@ import { WalletDeeplinkModule } from '@components/wallet-deeplink/wallet-deeplin
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { UsdBelowTwoDecimalsModule } from '@core/pipes/usd-below-two-decimals/usd-below-two-decimals.module';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { ConnectWalletModule } from '@components/connect-wallet/connect-wallet.module';
+//import { DataService } from '@pages/member/services/data.service';
+//import { AlgoliaModule } from '@components/algolia/algolia.module';
 
 @NgModule({
   declarations: [CartModalComponent, CheckoutOverlayComponent],
@@ -54,6 +57,9 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
     NzRadioModule,
     UsdBelowTwoDecimalsModule,
     NzToolTipModule,
+    ConnectWalletModule,
+    //DataService,
+    //AlgoliaModule,
   ],
   exports: [CartModalComponent, CheckoutOverlayComponent],
 })
