@@ -254,7 +254,7 @@
               [nzDirectory]="false"
               nzType="drag"
               [nzLimit]="1"
-              [nzCustomRequest]="newService.uploadFile.bind(newService, 'token_icon')"
+              [nzCustomRequest]="newService.uploadFile.bind(newService)"
               (nzChange)="newService.uploadChangeIcon($event)"
               nzFileType="image/png,image/jpg,image/jpeg,image/webp"
               [nzShowUploadList]="true"
