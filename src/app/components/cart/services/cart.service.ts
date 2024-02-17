@@ -133,11 +133,11 @@ export class CartService {
   private refreshMemberData() {
     const memberId = this.auth.member$.value?.uid;
     if (memberId) {
-        this.loadMemberSpaces(memberId);
-        this.loadMemberAwards(memberId);
-        this.loadMemberNfts(memberId);
+      this.loadMemberSpaces(memberId);
+      this.loadMemberAwards(memberId);
+      this.loadMemberNfts(memberId);
     } else {
-        this.resetMemberData();
+      this.resetMemberData();
     }
   }
 
@@ -175,18 +175,21 @@ export class CartService {
   }
 
   private loadMemberNfts(memberId: string): void {
-    this.algoliaService.fetchAllOwnedNfts(memberId, COL.NFT).then(nfts => {
-      const results = this.convertAllToSoonaverseModel(nfts);
+    this.algoliaService
+      .fetchAllOwnedNfts(memberId, COL.NFT)
+      .then((nfts) => {
+        const results = this.convertAllToSoonaverseModel(nfts);
 
-      const collectionIds = results.map(hit => hit.collection)
-                                  .filter((value, index, self) => self.indexOf(value) === index);
-      const currentIds = this.memberNftCollectionIdsSubject$.getValue();
-      const allIds = [...new Set([...currentIds, ...collectionIds])];
-      this.memberNftCollectionIdsSubject$.next(allIds);
-    }).catch(error => {
-      console.error('Error fetching owned NFTs:', error);
-    });
-
+        const collectionIds = results
+          .map((hit) => hit.collection)
+          .filter((value, index, self) => self.indexOf(value) === index);
+        const currentIds = this.memberNftCollectionIdsSubject$.getValue();
+        const allIds = [...new Set([...currentIds, ...collectionIds])];
+        this.memberNftCollectionIdsSubject$.next(allIds);
+      })
+      .catch((error) => {
+        console.error('Error fetching owned NFTs:', error);
+      });
   }
 
   public convertAllToSoonaverseModel(algoliaItems: any[]) {
@@ -629,7 +632,8 @@ export class CartService {
     if (checkPendingTransaction) {
       const pendingTrx = this.hasPendingTransaction();
       if (pendingTrx) {
-        message = 'Finish pending cart checkout transaction or wait for it to expire before adding more items to cart.';
+        message =
+          'Finish pending cart checkout transaction or wait for it to expire before adding more items to cart.';
         return of({
           isAvailable,
           message,
@@ -724,13 +728,17 @@ export class CartService {
         collection?.access !== 3 ||
         (collection?.access === 3 &&
           collection?.accessAwards?.some((award) => memberAwards.includes(award)));
-      if (!spaceAwardAccess) conditions.push('Member does not have the required awards for access.');
+      if (!spaceAwardAccess)
+        conditions.push('Member does not have the required awards for access.');
 
       nftOwnedAccess =
-    collection?.access !== 4 ||
-    (collection?.access === 4 &&
-      collection?.accessCollections?.every((coll) => memberNftCollectionIds.includes(coll)));
-      if (!nftOwnedAccess) conditions.push('Member does not own at least one NFT from each of the required access collections.');
+        collection?.access !== 4 ||
+        (collection?.access === 4 &&
+          collection?.accessCollections?.every((coll) => memberNftCollectionIds.includes(coll)));
+      if (!nftOwnedAccess)
+        conditions.push(
+          'Member does not own at least one NFT from each of the required access collections.',
+        );
     }
 
     isAvailable =
@@ -761,7 +769,12 @@ export class CartService {
     cartItem: CartItem,
     checkCartPresence = false,
   ): Observable<{ isAvailable: boolean; message: string }> {
-    return this.isNftAvailableForSale(cartItem.nft, cartItem.collection, checkCartPresence, false).pipe(
+    return this.isNftAvailableForSale(
+      cartItem.nft,
+      cartItem.collection,
+      checkCartPresence,
+      false,
+    ).pipe(
       map((result) => {
         return {
           isAvailable: result.isAvailable,

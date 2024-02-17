@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { FileApi } from '@api/file.api';
 import { MemberApi } from '@api/member.api';
@@ -99,7 +106,6 @@ export class NftCardComponent implements OnInit, OnDestroy {
       this.cd.markForCheck();
     });
   }
-
 
   public onBuy(event: MouseEvent): void {
     event.stopPropagation();

@@ -133,7 +133,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.cartItemsSubscription$ = this.cartService.getCartItems().subscribe((items) => {
       let count = 0;
       items.forEach((nft) => {
-        count += nft.quantity
+        count += nft.quantity;
       });
       this.cartItemCount = count;
     });
@@ -247,7 +247,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.cartItemsSubscription$ = this.cartService.getCartItems().subscribe((items) => {
       let count = 0;
       items.forEach((nft) => {
-        count += nft.quantity
+        count += nft.quantity;
       });
       this.cartItemCount = count;
     });

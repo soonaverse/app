@@ -35,19 +35,22 @@ export class AlgoliaService {
 
     return new Promise((resolve, reject) => {
       const fetchPage = () => {
-        index.search('', {
-          filters: `owner:${memberId}`,
-          hitsPerPage,
-          page,
-        }).then(response => {
-          allHits.push(...response.hits);
-          if (page < response.nbPages - 1) {
-            page++;
-            fetchPage();
-          } else {
-            resolve(allHits);
-          }
-        }).catch(reject);
+        index
+          .search('', {
+            filters: `owner:${memberId}`,
+            hitsPerPage,
+            page,
+          })
+          .then((response) => {
+            allHits.push(...response.hits);
+            if (page < response.nbPages - 1) {
+              page++;
+              fetchPage();
+            } else {
+              resolve(allHits);
+            }
+          })
+          .catch(reject);
       };
 
       fetchPage();

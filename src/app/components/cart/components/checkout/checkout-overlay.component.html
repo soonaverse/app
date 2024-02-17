@@ -26,7 +26,21 @@
         <div nz-col nzSpan="20">
           <h3 nz-typography nzTitle level="4" class="mb-2">
             Network: <span class="uppercase">{{ group.tokenSymbol }}</span> -
-            <span class="font-bold">{{ group.items.length }}</span> unique NFTs in network group with total Price of {{ group.totalPrice | formatToken : group.network : true : true | async }} ({{ unitsService.getUsd(cartService.valueDivideExponent({ value: group.totalPrice || 0, exponents: cartService.getDefaultNetworkDecimals() }), group.network) | async | currency : 'USD' | UsdBelowTwoDecimals }} USD)
+            <span class="font-bold">{{ group.items.length }}</span> unique NFTs in network group
+            with total Price of
+            {{ group.totalPrice | formatToken : group.network : true : true | async }} ({{
+              unitsService.getUsd(
+                cartService.valueDivideExponent({
+                  value: group.totalPrice || 0,
+                  exponents: cartService.getDefaultNetworkDecimals()
+                }),
+                group.network
+              )
+                | async
+                | currency : 'USD'
+                | UsdBelowTwoDecimals
+            }}
+            USD)
           </h3>
         </div>
         <div nz-col nzSpan="4" *ngIf="currentStep !== stepType.CONFIRM">
@@ -270,7 +284,19 @@
                 <td>
                   <strong>
                     {{ group.totalPrice | formatToken : group.network : true : true | async }}
-                    &nbsp; ({{ unitsService.getUsd(cartService.valueDivideExponent({ value: group.totalPrice || 0, exponents: cartService.getDefaultNetworkDecimals() }), group.network) | async | currency : 'USD' | UsdBelowTwoDecimals }} USD)
+                    &nbsp; ({{
+                      unitsService.getUsd(
+                        cartService.valueDivideExponent({
+                          value: group.totalPrice || 0,
+                          exponents: cartService.getDefaultNetworkDecimals()
+                        }),
+                        group.network
+                      )
+                        | async
+                        | currency : 'USD'
+                        | UsdBelowTwoDecimals
+                    }}
+                    USD)
                   </strong>
                 </td>
               </tr>

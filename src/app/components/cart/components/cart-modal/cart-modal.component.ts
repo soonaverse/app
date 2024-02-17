@@ -81,15 +81,13 @@ export class CartModalComponent implements OnDestroy {
         switchMap((cartItems) => {
           const item = cartItems.find((item) => item.nft.uid === itemId);
           if (item) {
-            return this.cartService
-              .getAvailableNftQuantity(item)
-              .pipe(
-                map((maxQuantity) => ({ item, maxQuantity })),
-                tap(({ maxQuantity }) => {
-                  newQuantity = Math.min(newQuantity, maxQuantity);
-                  inputElement.value = String(newQuantity);
-                })
-              );
+            return this.cartService.getAvailableNftQuantity(item).pipe(
+              map((maxQuantity) => ({ item, maxQuantity })),
+              tap(({ maxQuantity }) => {
+                newQuantity = Math.min(newQuantity, maxQuantity);
+                inputElement.value = String(newQuantity);
+              }),
+            );
           } else {
             return of(null);
           }
