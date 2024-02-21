@@ -261,6 +261,29 @@
             *ngIf="!helper.isLocked(nft, collection, true) && helper.isAvailableForSale(nft, collection) && (!nft.owner || nft.owner !== (auth.member$ | async)?.uid)"
             class="mt-10"
           >
+            <!-- If Multiple Available Set Quantity -->
+            <div *ngIf="getAvailableNftQuantity(collection, nft) > 1">
+              <nz-form-item>
+                <nz-form-control
+                  i18n-nzErrorTip
+                  nzErrorTip="Minimum 1 and maximum {{ getAvailableNftQuantity(collection, nft) }}."
+                >
+                  <nz-input-group nzAddOnBefore="Set NFT Purchase Quantity:">
+                    <input
+                      nz-input
+                      type="number"
+                      [(ngModel)]="nftQtySelected"
+                      (ngModelChange)="updateQuantity()"
+                      #quantityInput="ngModel"
+                      (paste)="forceValidRange($event)"
+                      min="1"
+                      max="{{ getAvailableNftQuantity(collection, nft) }}"
+                    />
+                  </nz-input-group>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+
             <!-- Buy Now Button -->
             <button
               nz-button

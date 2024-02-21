@@ -28,6 +28,7 @@ import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   Collection,
+  CollectionType,
   FILE_SIZES,
   Member,
   Nft,
@@ -81,6 +82,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public isCheckoutOverlayOpen = false;
   public currentCheckoutNft?: Nft;
   public currentCheckoutCollection?: Collection;
+  public nftQty?: number;
   public notifications$: BehaviorSubject<Notification[]> = new BehaviorSubject<Notification[]>([]);
   private notificationRef?: NzNotificationRef;
   public expiryTicker$: BehaviorSubject<dayjs.Dayjs | null> =

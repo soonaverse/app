@@ -4,6 +4,7 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CollectionApi } from '@api/collection.api';
@@ -48,6 +49,7 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { BehaviorSubject, Subscription, combineLatest, interval, map, skip, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { DataService } from '../../services/data.service';
+import { NgModel } from '@angular/forms';
 import { CartService } from '@components/cart/services/cart.service';
 
 export enum ListingType {
@@ -64,6 +66,7 @@ export enum ListingType {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NFTPage implements OnInit, OnDestroy {
+  @ViewChild('quantityInput', { static: false }) quantityInput!: NgModel;
   public collectionPath: string = ROUTER_UTILS.config.collection.root;
   public isCheckoutOpen = false;
   public isBidOpen = false;
@@ -429,6 +432,62 @@ export class NFTPage implements OnInit, OnDestroy {
 
   public canSetItForSale(nft?: Nft | null): boolean {
     return !!nft?.owner && nft?.owner === this.auth.member$.value?.uid;
+  }
+
+  public getAvailableNftQuantity(col?: Collection | null, nft?: Nft | null): number {
+    return this.helper.getAvailNftQty(nft, col);
+  }
+
+  public updateQuantity(): void {
+    const maxQuantity = this.getAvailableNftQuantity(
+      this.data.collection$.value,
+      this.data.nft$.value,
+    );
+    const parsedQuantity = Math.round(Number(this.nftQtySelected));
+
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+      this.nftQtySelected = 1;
+    } else if (parsedQuantity > maxQuantity) {
+      this.nftQtySelected = maxQuantity;
+    } else {
+      this.nftQtySelected = parsedQuantity;
+    }
+
+    if (parsedQuantity === this.nftQtySelected) {
+      return;
+    } else {
+      this.resetInput();
+    }
+  }
+
+  public forceValidRange(event: ClipboardEvent): void {
+    event.preventDefault();
+
+    if (event.clipboardData) {
+      const pastedData = event.clipboardData.getData('text/plain');
+      const parsedQuantity = Math.round(Number(pastedData));
+
+      const maxQuantity = this.getAvailableNftQuantity(
+        this.data.collection$.value,
+        this.data.nft$.value,
+      );
+
+      if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+        this.nftQtySelected = 1;
+      } else if (parsedQuantity > maxQuantity) {
+        this.nftQtySelected = maxQuantity;
+      } else {
+        this.nftQtySelected = parsedQuantity;
+      }
+
+      this.resetInput();
+    }
+  }
+
+  private resetInput() {
+    if (this.quantityInput) {
+      this.quantityInput.reset(this.nftQtySelected);
+    }
   }
 
   public discount(collection?: Collection | null, nft?: Nft | null): number {
