@@ -1,3 +1,7 @@
+:root {
+  --alerts-error-dark: #d94b08;
+}
+
 .ant-card {
   @apply bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark;
 }
@@ -16,6 +20,13 @@
 
 .wen-card {
   @apply filter transition-all drop-shadow-none;
+}
+
+.wen-card-selected {
+  @apply border-card;
+  border-color: var(--alerts-error-dark);
+  @apply rounded-card;
+  box-shadow: 1px 1px 5px;
 }
 
 .wen-cards-wrapper {

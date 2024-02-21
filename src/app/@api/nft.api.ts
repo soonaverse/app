@@ -15,6 +15,7 @@ import {
   NftWithdrawRequest,
   NftDepositRequest,
   NftStakeRequest,
+  NftTransferRequest,
 } from '@build-5/interfaces';
 import { Observable, switchMap } from 'rxjs';
 import { BaseApi } from './base.api';
@@ -61,6 +62,13 @@ export class NftApi extends BaseApi<Nft> {
 
   public stakeNft = (req: Build5Request<NftStakeRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.stakeNft, req);
+
+  public getNftById(nftId: string): Observable<Nft | undefined> {
+    return this.listen(nftId);
+  }
+
+  public transferNft = (req: Build5Request<NftTransferRequest>): Observable<{ [key: string]: number } | undefined> =>
+    this.request(WEN_FUNC.nftTransfer, req);
 
   public successfullOrders(
     nftId: string,

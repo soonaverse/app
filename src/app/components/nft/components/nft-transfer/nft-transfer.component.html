@@ -1,0 +1,72 @@
+<div class="nft-transfer-modal-content">
+  <div *ngIf="selectedNfts.length > 0">
+    <form #transferForm="ngForm" (ngSubmit)="onSubmit()">
+      <nz-row class="nft-header underline font-bold" nzGutter="[16, 16]">
+        <nz-col nzSpan="6">Image</nz-col>
+        <nz-col nzSpan="6">Name</nz-col>
+        <nz-col nzSpan="6">Network</nz-col>
+        <nz-col nzSpan="3">Transfer</nz-col>
+        <nz-col nzSpan="3">Withdraw</nz-col>
+      </nz-row>
+      <nz-row *ngFor="let nft of selectedNfts; let i = index" class="nft-row mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-1" nzGutter="[16, 16]">
+        <nz-col nzSpan="6" nzXs="24" nzSm="12" nzMd="6">
+          <img [src]="nft.media" [alt]="nft.name" class="w-10 h-10 object-cover rounded">
+        </nz-col>
+        <nz-col nzSpan="6" nzXs="24" nzSm="12" nzMd="6">
+          <span>{{ nft.name }}</span>
+        </nz-col>
+        <nz-col nzSpan="6" nzXs="24" nzSm="12" nzMd="6">
+          <span>{{ nft.mintingData?.network }}</span>
+        </nz-col>
+        <nz-col nzSpan="3" nzXs="12" nzSm="6" nzMd="3">
+          <label nz-checkbox [(ngModel)]="nft.transfer" name="transfer-{{i}}" (ngModelChange)="updateNetworkSelection(nft)" [nzDisabled]="!isTransferEnabled(nft)"></label>
+        </nz-col>
+        <nz-col nzSpan="3" nzXs="12" nzSm="6" nzMd="3">
+          <label nz-checkbox [(ngModel)]="nft.withdraw" name="withdraw-{{i}}" [nzDisabled]="!nft.transfer"></label>
+        </nz-col>
+      </nz-row>
+      <nz-row nzGutter="16">
+        <nz-col nzSpan="24">
+          <input
+            nz-input
+            class="m-2"
+            [(ngModel)]="recipientAddress"
+            name="recipientAddress"
+            placeholder="Recipient Wallet Address"
+            required
+          >
+        </nz-col>
+        <nz-col nzSpan="24">
+          <button
+            nz-button
+            nzType="text"
+            nzType="default"
+            class="wen-btn-link m-2"
+            (click)="handleCancel()"
+            i18n
+          >
+            Close
+          </button>
+
+          <button
+            *ngIf="auth.isLoggedIn$ | async"
+            nz-button
+            nzType="primary"
+            class="m-2"
+            [disabled]="!canSubmit()"
+            nz-tooltip
+            [nzTooltipTitle]="getSubmitButtonTooltip()"
+          >
+            Transfer NFTs
+          </button>
+
+          <wen-connect-wallet
+            class="w-3/10 m-2"
+            wrapperClass="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+            *ngIf="(auth.isLoggedIn$ | async) !== true"
+          ></wen-connect-wallet>
+        </nz-col>
+      </nz-row>
+    </form>
+  </div>
+</div>

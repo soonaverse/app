@@ -26,6 +26,8 @@ export class NFTsPage implements OnInit {
   public paginationItems = defaultPaginationItems;
   public isDepositNftVisible = false;
 
+  public selectedNfts: any[] = [];
+
   constructor(
     public deviceService: DeviceService,
     public cache: CacheService,
@@ -84,5 +86,13 @@ export class NFTsPage implements OnInit {
       ...algolia,
       availableFrom: Timestamp.fromMillis(+algolia.availableFrom),
     }));
+  }
+
+  public handleNftSelectionChange(event: { nft: any; selected: boolean }) {
+    if (event.selected) {
+      this.selectedNfts.push(event.nft);
+    } else {
+      this.selectedNfts = this.selectedNfts.filter(nft => nft.id !== event.nft.id);
+    }
   }
 }
