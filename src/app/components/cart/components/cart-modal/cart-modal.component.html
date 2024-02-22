@@ -98,7 +98,7 @@
 
                   <!-- Quantity -->
                   <div>
-                    <div class="underline font-bold">Qty Added / Available</div>
+                    <div class="underline font-bold">Qty / Available</div>
                     <nz-form-item class="grow">
                       <nz-form-control
                         i18n-nzErrorTip
@@ -106,7 +106,7 @@
                           cartService.getAvailableNftQuantity(item) | async
                         }}"
                       >
-                        <nz-input-group nzSize="default" [nzSuffix]="suffixMaxQty" class="w-40">
+                        <nz-input-group nzSize="default" [nzSuffix]="suffixMaxQty" class="w-full">
                           <input
                             nz-input
                             type="number"
@@ -267,7 +267,7 @@
                   </ng-container>
                 </div>
 
-                <div class="text-lg font-bold truncate flex-1 mr-4">
+                <div class="font-bold truncate flex-1 mr-4">
                   <div class="flex items-baseline">
                     <nz-form-item class="grow">
                       <nz-form-control
@@ -276,7 +276,7 @@
                           cartService.getAvailableNftQuantity(item) | async
                         }}"
                       >
-                        <nz-input-group nzSize="default" [nzSuffix]="suffixMaxQty" class="w-30">
+                        <nz-input-group nzSize="default" [nzSuffix]="suffixMaxQty" class="w-full">
                           <input
                             nz-input
                             type="number"

@@ -443,6 +443,7 @@ export class NFTPage implements OnInit, OnDestroy {
       this.data.collection$.value,
       this.data.nft$.value,
     );
+    const startingValue = this.nftQtySelected;
     const parsedQuantity = Math.round(Number(this.nftQtySelected));
 
     if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
@@ -453,7 +454,9 @@ export class NFTPage implements OnInit, OnDestroy {
       this.nftQtySelected = parsedQuantity;
     }
 
-    if (parsedQuantity === this.nftQtySelected) {
+    this.cd.markForCheck();
+
+    if (startingValue === this.nftQtySelected) {
       return;
     } else {
       this.resetInput();
@@ -613,7 +616,7 @@ export class NFTPage implements OnInit, OnDestroy {
     if (nft && this.data.collection$) {
       this.data.collection$.pipe(take(1)).subscribe((collection) => {
         if (collection) {
-          this.cartService.addToCart(nft, collection);
+          this.cartService.addToCart(nft, collection, this.nftQtySelected);
         }
       });
     }

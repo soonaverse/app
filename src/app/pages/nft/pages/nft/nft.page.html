@@ -77,24 +77,35 @@
           <div class="text-xs font-medium text-foregrounds-secondary" i18n>Current price</div>
           <div class="flex items-center mt-2">
             <ng-container
-              *ngIf="((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price); else noPrice"
+              *ngIf="(data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price; else noPrice"
             >
               <div
                 class="mr-2 text-xs font-medium line-through truncate text-foregrounds-secondary"
                 *ngIf="discount(data.collection$ | async, data.nft$ | async) < 1"
               >
-                {{(((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price) |
+                {{ (((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price) |
                 formatToken: ((data.nft$ | async)?.placeholderNft ? (data.collection$ |
-                async)?.mintingData?.network : (data.nft$ | async)?.mintingData?.network): true |
-                async)}}
+                async)?.mintingData?.network : (data.nft$ | async)?.mintingData?.network):true) |
+                async }} ({{ unitsService.getUsd(cartService.valueDivideExponent({ value:
+                ((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price) || 0, exponents:
+                cartService.getDefaultNetworkDecimals() }), ((data.nft$ | async)?.placeholderNft ?
+                (data.collection$ | async)?.mintingData?.network : (data.nft$ |
+                async)?.mintingData?.network)) | async | currency: 'USD':'symbol':'1.0-2' }} USD)
               </div>
               <div class="text-lg font-bold truncate">
-                {{(calc(((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price),
+                {{ (calc(((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price),
                 discount(data.collection$ | async, data.nft$ | async)) | formatToken: ((data.nft$ |
                 async)?.placeholderNft ? (data.collection$ | async)?.mintingData?.network :
-                (data.nft$ | async)?.mintingData?.network): true | async)}}
+                (data.nft$ | async)?.mintingData?.network):true) | async }} ({{
+                unitsService.getUsd(cartService.valueDivideExponent({ value: calc(((data.nft$ |
+                async)?.availablePrice || (data.nft$ | async)?.price), discount(data.collection$ |
+                async, data.nft$ | async)) || 0, exponents: cartService.getDefaultNetworkDecimals()
+                }), ((data.nft$ | async)?.placeholderNft ? (data.collection$ |
+                async)?.mintingData?.network : (data.nft$ | async)?.mintingData?.network)) | async |
+                currency: 'USD':'symbol':'1.0-2' }} USD)
               </div>
             </ng-container>
+
             <ng-template #noPrice>
               <div class="text-lg font-bold truncate">-</div>
             </ng-template>

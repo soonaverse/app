@@ -21,9 +21,7 @@ import { PreviewImageService } from '@core/services/preview-image';
 import { TransactionService } from '@core/services/transaction';
 import { UnitsService } from '@core/services/units';
 import {
-  getItem,
   removeItem,
-  setItem,
   StorageItem,
   setCheckoutTransaction,
   getCheckoutTransaction,
@@ -45,6 +43,7 @@ import {
 } from '@build-5/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, firstValueFrom, interval, Subscription, take } from 'rxjs';
+import { CartService } from '@components/cart/services/cart.service';
 
 export enum StepType {
   CONFIRM = 'Confirm',
@@ -72,7 +71,6 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
   @Input() currentStep = StepType.CONFIRM;
 
   @Input() set isOpen(value: boolean) {
-    // console.log('Is Open changed:', value);
     this._isOpen = value;
     this.checkoutService.modalOpen$.next(value);
   }
@@ -95,7 +93,6 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
 
       if (this.currentStep === StepType.CONFIRM) {
         this.targetPrice = this._nft.availablePrice || this._nft.price || 0;
-        // console.log('targetPrice set, _nft.availablePrice, _nft.price, targetPrice: ', this._nft.availablePrice,  this._nft.price, this.targetPrice);
       }
     }
   }
@@ -165,17 +162,16 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
     private nftApi: NftApi,
     private fileApi: FileApi,
     private cache: CacheService,
+    public cartService: CartService,
   ) {}
 
   public ngOnInit(): void {
-    // console.log('[nft-checkout] loaded, qty passed in: ', this.nftQuantity);
     this.receivedTransactions = false;
     const listeningToTransaction: string[] = [];
     this.transaction$.pipe(untilDestroyed(this)).subscribe((val) => {
       if (val && val.type === TransactionType.ORDER) {
         this.targetAddress = val.payload.targetAddress;
         this.targetAmount = val.payload.amount;
-        // console.log('target amount set using val.payload.amount.  val: ', val);
         const expiresOn: dayjs.Dayjs = dayjs(val.payload.expiresOn!.toDate());
         if (expiresOn.isBefore(dayjs()) || val.payload?.void || val.payload?.reconciled) {
           // It's expired.
@@ -457,9 +453,12 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
         this.notification
           .processRequest(this.orderApi.orderNfts(sc), $localize`Order created.`, finish)
           .subscribe((val: any) => {
-            this.transSubscription?.unsubscribe();
-            setItem(StorageItem.CheckoutTransaction, val.uid);
-            this.transSubscription = this.orderApi
+            this.transSubscription$?.unsubscribe();
+            setCheckoutTransaction({
+              transactionId: val.uid,
+              source: 'nftCheckout',
+            });
+            this.transSubscription$ = this.orderApi
               .listen(val.uid)
               .subscribe(<any>this.transaction$);
             this.pushToHistory(val, val.uid, dayjs(), $localize`Waiting for transaction...`);
@@ -474,23 +473,26 @@ export class NftCheckoutComponent implements OnInit, OnDestroy {
         params.nft = this.nft.uid;
       }
 
-    if (this.nft.owner) {
-      params.nft = this.nft.uid;
-    }
+      if (this.nft.owner) {
+        params.nft = this.nft.uid;
+      }
 
-    await this.auth.sign(params, (sc, finish) => {
-      this.notification
-        .processRequest(this.orderApi.orderNft(sc), $localize`Order created.`, finish)
-        .subscribe((val: any) => {
-          this.transSubscription$?.unsubscribe();
-          setCheckoutTransaction({
-            transactionId: val.uid,
-            source: 'nftCheckout',
+      await this.auth.sign(params, (sc, finish) => {
+        this.notification
+          .processRequest(this.orderApi.orderNft(sc), $localize`Order created.`, finish)
+          .subscribe((val: any) => {
+            this.transSubscription$?.unsubscribe();
+            setCheckoutTransaction({
+              transactionId: val.uid,
+              source: 'nftCheckout',
+            });
+            this.transSubscription$ = this.orderApi
+              .listen(val.uid)
+              .subscribe(<any>this.transaction$);
+            this.pushToHistory(val, val.uid, dayjs(), $localize`Waiting for transaction...`);
           });
-          this.transSubscription$ = this.orderApi.listen(val.uid).subscribe(<any>this.transaction$);
-          this.pushToHistory(val, val.uid, dayjs(), $localize`Waiting for transaction...`);
-        });
-    });
+      });
+    }
   }
 
   public getTitle(): any {
