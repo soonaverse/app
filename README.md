@@ -52,6 +52,8 @@ Soonaverse is governed through SOON token. SOON Tokens are used to reward effort
 - @shonuff
 - @TangleAccountant
 - @garrett1314
+- @Izay
+- @Lord_SciFi
 
 # Design
 - [WebApp Figma](https://www.figma.com/file/vYJByA2q3c13oAjJ3IHfk1/Soonaverse---WebApp?type=design&node-id=2736%3A37764&mode=design&t=FVgSq8fJghvHAVPS-1)
