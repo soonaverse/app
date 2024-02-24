@@ -27,14 +27,68 @@
       </nz-row>
       <nz-row nzGutter="16">
         <nz-col nzSpan="24">
+          <div class="flex flex-col justify-between mt-5 space-y-4 lg:space-y-0 lg:flex-row lg:space-x-4">
+            <div
+              class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+              i18n
+            >
+              Recipient Select
+            </div>
+            <div class="flex space-x-4">
+              <div
+                class="target-access-option"
+                (click)="targetAccessOption$.next(targetAccess.OPEN)"
+                [ngClass]="{
+                  'target-access-option__selected': (targetAccessOption$ | async) === targetAccess.OPEN
+                }"
+                i18n
+              >
+                Wallet Address
+              </div>
+              <div
+                class="target-access-option"
+                (click)="targetAccessOption$.next(targetAccess.MEMBERS)"
+                [ngClass]="{
+                  'target-access-option__selected': (targetAccessOption$ | async) === targetAccess.MEMBERS
+                }"
+                i18n
+              >
+                Specific member
+              </div>
+            </div>
+          </div>
+        </nz-col>
+        <nz-col nzSpan="24" *ngIf="(targetAccessOption$ | async) === targetAccess.OPEN">
           <input
             nz-input
-            class="m-2"
+            class="w-full mt-2 mb-4"
+            nzSize="large"
             [(ngModel)]="recipientAddress"
             name="recipientAddress"
             placeholder="Recipient Wallet Address"
             required
           >
+        </nz-col>
+        <nz-col nzSpan="24" *ngIf="(targetAccessOption$ | async) === targetAccess.MEMBERS">
+          <nz-form-item class="mt-2">
+            <nz-form-control>
+              <nz-select
+                class="w-full"
+                nzMode="default"
+                nzSize="large"
+                [nzOptions]="(filteredMembers$ | async) || []"
+                [nzServerSearch]="true"
+                [formControl]="transferMemberControl"
+                nzShowSearch
+                nzAllowClear
+                i18n-nzPlaceHolder
+                [nzPlaceHolder]="'Select member'"
+                (nzOnSearch)="searchMember($event)"
+                [nzDisabled]="(targetAccessOption$ | async) === targetAccess.OPEN"
+              >
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
         </nz-col>
         <nz-col nzSpan="24">
           <button
