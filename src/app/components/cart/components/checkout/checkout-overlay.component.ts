@@ -7,6 +7,7 @@ import {
   Output,
   EventEmitter,
   OnDestroy,
+  NgZone,
 } from '@angular/core';
 import { CartItem, CartService } from '@components/cart/services/cart.service';
 import {
@@ -129,6 +130,7 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
     public themeService: ThemeService,
     public unitsService: UnitsService,
     public deviceService: DeviceService,
+    private zone: NgZone,
   ) {}
 
   public get themes(): typeof ThemeList {
@@ -139,6 +141,7 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
     this.subscribeToCurrentStep();
     this.subscribeToCurrentTransaction();
     this.subscribeToCartItems();
+    this.listenToStorageForStepChanges();
 
     this.groupItems();
     this.receivedTransactions = false;
@@ -288,6 +291,11 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
         markInvalid();
       }
 
+      this.cartService.selectedNetwork$.subscribe(network => {
+        this.selectedNetwork = network;
+        this.cd.markForCheck();
+      });
+
       this.cd.markForCheck();
     });
 
@@ -322,18 +330,30 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
       });
 
     if (this.currentStep === StepType.CONFIRM) {
-      this.clearNetworkSelection();
-
       if (this.groupedCartItems.length === 1) {
-        this.setNetworkSelection(this.groupedCartItems[0].tokenSymbol);
+        this.cartService.setNetworkSelection(this.groupedCartItems[0].tokenSymbol);
       }
     } else {
-      const storedNetwork = localStorage.getItem('cartCheckoutSelectedNetwork');
+      const storedNetwork = this.cartService.getSelectedNetwork();
       if (storedNetwork) {
         this.selectedNetwork = storedNetwork;
       }
     }
     this.setDefaultGroupVisibility();
+  }
+
+  private listenToStorageForStepChanges() {
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'cartCheckoutCurrentStep') {
+        const updatedStep = event.newValue as StepType;
+        if (updatedStep && updatedStep !== this.currentStep) {
+          this.zone.run(() => {
+            this.currentStep = updatedStep;
+            this.cd.markForCheck();
+          });
+        }
+      }
+    });
   }
 
   private subscribeToCartItems() {
@@ -402,14 +422,14 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
 
   public setNetworkSelection(networkSymbol: string): void {
     this.selectedNetwork = networkSymbol;
-    localStorage.setItem('cartCheckoutSelectedNetwork', networkSymbol);
+    this.cartService.setNetworkSelection(networkSymbol);
     this.expandedGroups.clear();
     this.expandedGroups.add(networkSymbol);
     this.cd.markForCheck();
   }
 
   public clearNetworkSelection(): void {
-    localStorage.removeItem('cartCheckoutSelectedNetwork');
+    this.cartService.clearNetworkSelection();
     this.selectedNetwork = null;
   }
 
@@ -473,7 +493,7 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   private removePurchasedGroupItems(): void {
     if (this.selectedNetwork) {
       this.cartService.removeGroupItemsFromCart(this.selectedNetwork);
-      this.clearNetworkSelection();
+      this.cartService.clearNetworkSelection();
     }
   }
 
@@ -631,9 +651,11 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   }
 
   public async proceedWithBulkOrder(nfts: NftPurchaseRequest[]): Promise<void> {
+
     const selectedGroup = this.groupedCartItems.find(
       (group) => group.tokenSymbol === this.selectedNetwork,
     );
+
     if (!selectedGroup) {
       this.nzNotification.error(
         $localize`No network selected or no items in the selected network.`,
@@ -692,11 +714,12 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   }
 
   public getSelectedNetwork(): any {
-    const selectedNetwork = localStorage.getItem('cartCheckoutSelectedNetwork') || '';
+    const selectedNetwork = this.cartService.getSelectedNetwork();
     return selectedNetwork;
   }
 
   ngOnDestroy() {
     this.currentTransactionSubscription?.unsubscribe();
+    window.removeEventListener('storage', this.listenToStorageForStepChanges);
   }
 }

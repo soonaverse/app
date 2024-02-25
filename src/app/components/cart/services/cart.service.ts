@@ -91,6 +91,8 @@ export class CartService {
   private isLoadingSubject$ = new BehaviorSubject<boolean>(false);
   public isLoading$ = this.isLoadingSubject$.asObservable();
   public config?: InstantSearchConfig;
+  private selectedNetworkSubject$ = new BehaviorSubject<string | null>(this.getSelectedNetwork());
+  public selectedNetwork$ = this.selectedNetworkSubject$.asObservable();
 
   constructor(
     private notification: NzNotificationService,
@@ -107,6 +109,7 @@ export class CartService {
   ) {
     this.subscribeToMemberChanges();
     this.listenToStorageChanges();
+    this.listenToNetworkSelectionChanges();
   }
 
   private listenToStorageChanges(): void {
@@ -115,6 +118,17 @@ export class CartService {
         this.zone.run(() => {
           const updatedCartItems = JSON.parse(event.newValue || '[]');
           this.cartItemsSubject$.next(updatedCartItems);
+        });
+      }
+    });
+  }
+
+  private listenToNetworkSelectionChanges(): void {
+    window.addEventListener('storage', (event) => {
+      if (event.storageArea === localStorage && event.key === 'cartCheckoutSelectedNetwork') {
+        this.zone.run(() => {
+          const updatedNetwork = localStorage.getItem('cartCheckoutSelectedNetwork');
+          this.selectedNetworkSubject$.next(updatedNetwork);
         });
       }
     });
@@ -265,6 +279,7 @@ export class CartService {
 
   public setCurrentStep(step: StepType): void {
     this.currentStepSubject$.next(step);
+    localStorage.setItem('cartCheckoutCurrentStep', step);
   }
 
   public getCurrentStep(): StepType {
@@ -609,10 +624,6 @@ export class CartService {
       .subscribe();
   }
 
-  public getSelectedNetwork(): any {
-    return localStorage.getItem('cartCheckoutSelectedNetwork') || '';
-  }
-
   public isNftAvailableForSale(
     nft: Nft,
     collection: Collection,
@@ -822,5 +833,20 @@ export class CartService {
 
   public getDefaultNetworkDecimals(): number {
     return DEFAULT_NETWORK_DECIMALS;
+  }
+
+  public getSelectedNetwork(): string | null {
+    const selectedNetwork = localStorage.getItem('cartCheckoutSelectedNetwork');
+    return selectedNetwork;
+  }
+
+  public setNetworkSelection(networkSymbol: string): void {
+    localStorage.setItem('cartCheckoutSelectedNetwork', networkSymbol);
+    this.selectedNetworkSubject$.next(networkSymbol);
+  }
+
+  public clearNetworkSelection(): void {
+    localStorage.removeItem('cartCheckoutSelectedNetwork');
+    this.selectedNetworkSubject$.next(null);
   }
 }
