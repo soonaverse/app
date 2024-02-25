@@ -291,7 +291,7 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
         markInvalid();
       }
 
-      this.cartService.selectedNetwork$.subscribe(network => {
+      this.cartService.selectedNetwork$.subscribe((network) => {
         this.selectedNetwork = network;
         this.cd.markForCheck();
       });
@@ -651,7 +651,6 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   }
 
   public async proceedWithBulkOrder(nfts: NftPurchaseRequest[]): Promise<void> {
-
     const selectedGroup = this.groupedCartItems.find(
       (group) => group.tokenSymbol === this.selectedNetwork,
     );
