@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NftApi } from '@api/nft.api';
 import { defaultPaginationItems } from '@components/algolia/algolia.options';
 import { AlgoliaService } from '@components/algolia/services/algolia.service';
@@ -12,6 +12,7 @@ import { DataService } from '@pages/member/services/data.service';
 import { COL, Member, Timestamp } from '@build-5/interfaces';
 import { InstantSearchConfig } from 'angular-instantsearch/instantsearch/instantsearch';
 import { BehaviorSubject } from 'rxjs';
+import { NftSelectionService } from '@core/services/nft-selection/nft-selection.service';
 
 @UntilDestroy()
 // eslint-disable-next-line @angular-eslint/prefer-on-push-component-change-detection
@@ -39,6 +40,8 @@ export class NFTsPage implements OnInit {
     private cd: ChangeDetectorRef,
     private auth: AuthService,
     private route: ActivatedRoute,
+    private router: Router,
+    private nftSelectionService: NftSelectionService,
   ) {}
 
   public ngOnInit(): void {
@@ -70,6 +73,7 @@ export class NFTsPage implements OnInit {
           setInterval(() => this.cd.markForCheck(), 200);
         }
       });
+
     });
   }
 

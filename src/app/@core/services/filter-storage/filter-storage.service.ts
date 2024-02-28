@@ -73,6 +73,7 @@ export interface MemberNftsFilters {
     collection?: string[];
     owner?: string[];
   };
+  refresh?: number;
 }
 
 export type Filters =

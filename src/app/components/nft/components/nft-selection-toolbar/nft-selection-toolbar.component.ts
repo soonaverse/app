@@ -57,7 +57,11 @@ export class NftSelectionToolbarComponent implements OnInit {
     });
 
     modal.afterClose.subscribe(result => {
-      console.log('Transfer modal closed', result);
+      const componentInstance = modal.getContentComponent();
+      componentInstance.onModalClose();
+      this.nftSelectionService.notifyModalClosed();
     });
   }
+
+
 }

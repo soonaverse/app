@@ -2,30 +2,34 @@
   <div *ngIf="selectedNfts.length > 0">
     <form #transferForm="ngForm" (ngSubmit)="onSubmit()">
       <nz-row class="nft-header underline font-bold" nzGutter="[16, 16]">
-        <nz-col nzSpan="6">Image</nz-col>
-        <nz-col nzSpan="6">Name</nz-col>
-        <nz-col nzSpan="6">Network</nz-col>
+        <nz-col nzSpan="5">Image</nz-col>
+        <nz-col nzSpan="5">Name</nz-col>
+        <nz-col nzSpan="5">Network</nz-col>
         <nz-col nzSpan="3">Transfer</nz-col>
         <nz-col nzSpan="3">Withdraw</nz-col>
+        <nz-col nzSpan="3">Status</nz-col>
       </nz-row>
-      <nz-row *ngFor="let nft of selectedNfts; let i = index" class="nft-row mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-1" nzGutter="[16, 16]">
-        <nz-col nzSpan="6" nzXs="24" nzSm="12" nzMd="6">
-          <img [src]="nft.media" [alt]="nft.name" class="w-10 h-10 object-cover rounded">
+      <nz-row *ngFor="let nft of selectedNfts; let i = index" [class.disabled]="nft.disabled" class="nft-row mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-1" nzGutter="[16, 16]">
+        <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
+            <img [src]="nft.media" [alt]="nft.name" class="w-10 h-10 object-cover rounded">
         </nz-col>
-        <nz-col nzSpan="6" nzXs="24" nzSm="12" nzMd="6">
-          <span>{{ nft.name }}</span>
+        <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
+            <span [ngClass]="{'strikethrough': nft.disabled}">{{ nft.name }}</span>
         </nz-col>
-        <nz-col nzSpan="6" nzXs="24" nzSm="12" nzMd="6">
-          <span>{{ nft.mintingData?.network }}</span>
+        <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
+            <span [ngClass]="{'strikethrough': nft.disabled}" class="uppercase">{{ nft.mintingData?.network }}</span>
         </nz-col>
         <nz-col nzSpan="3" nzXs="12" nzSm="6" nzMd="3">
-          <label nz-checkbox [(ngModel)]="nft.transfer" name="transfer-{{i}}" (ngModelChange)="updateNetworkSelection(nft)" [nzDisabled]="!isTransferEnabled(nft)"></label>
+            <label nz-checkbox [(ngModel)]="nft.transfer" name="transfer-{{i}}" (ngModelChange)="updateNetworkSelection(nft)" [nzDisabled]="!isTransferEnabled(nft) || nft.disabled"></label>
         </nz-col>
         <nz-col nzSpan="3" nzXs="12" nzSm="6" nzMd="3">
-          <label nz-checkbox [(ngModel)]="nft.withdraw" name="withdraw-{{i}}" [nzDisabled]="!nft.transfer"></label>
+            <label nz-checkbox [(ngModel)]="nft.withdraw" name="withdraw-{{i}}" [nzDisabled]="!nft.transfer || nft.disabled"></label>
+        </nz-col>
+        <nz-col nzSpan="3" nzXs="24" nzSm="12" nzMd="3">
+            <span>{{ nft.statusMessage }}</span>
         </nz-col>
       </nz-row>
-      <nz-row nzGutter="16">
+      <nz-row nzGutter="16" class="pb-2">
         <nz-col nzSpan="24">
           <div class="flex flex-col justify-between mt-5 space-y-4 lg:space-y-0 lg:flex-row lg:space-x-4">
             <div
@@ -93,7 +97,7 @@
         <nz-col nzSpan="24">
           <button
             nz-button
-            nzType="text"
+            type="button"
             nzType="default"
             class="wen-btn-link m-2"
             (click)="handleCancel()"

@@ -47,7 +47,6 @@ export class BaseApi<T> {
 
   protected request<T>(func: WEN_FUNC, req: Build5Request<any>): Observable<T | undefined> {
     const origin = environment.production ? BUILD5_PROD_ADDRESS_API : BUILD5_TEST_ADDRESS_API;
-    console.log('base.api request - origin: ', origin);
     return <any>this.httpClient.post(origin + func, req);
   }
 }
