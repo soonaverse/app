@@ -9,9 +9,5 @@ import { AuthService } from '@components/auth/services/auth.service';
 })
 export class FooterComponent {
   // No need to inject NftSelectionService or maintain selectedCount$
-  constructor(
-    public auth: AuthService,
-  ) {
-
-  }
+  constructor(public auth: AuthService) {}
 }

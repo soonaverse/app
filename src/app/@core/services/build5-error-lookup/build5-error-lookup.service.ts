@@ -6,11 +6,7 @@ import { AuthService } from '@components/auth/services/auth.service';
   providedIn: 'root',
 })
 export class Build5ErrorLookupService {
-  constructor(
-    public auth: AuthService,
-  ) {
-
-  }
+  constructor(public auth: AuthService) {}
 
   public getErrorMessage(errorCode: number): string {
     // Convert WenError object to an array and find the entry by error code
