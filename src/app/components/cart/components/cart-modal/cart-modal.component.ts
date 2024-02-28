@@ -1,12 +1,6 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ChangeDetectorRef,
-  ChangeDetectionStrategy,
-} from '@angular/core';
-import { Network } from '@build-5/interfaces';
-import { Subscription, take, of, Observable } from 'rxjs';
+import { Component, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Network, Transaction } from '@build-5/interfaces';
+import { Subscription, take, of, Observable, BehaviorSubject } from 'rxjs';
 import { CartService, CartItem } from '@components/cart/services/cart.service';
 import { AuthService } from '@components/auth/services/auth.service';
 import { Router } from '@angular/router';
@@ -14,6 +8,7 @@ import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UnitsService } from '@core/services/units/units.service';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { DeviceService } from '@core/services/device';
+import { HelperService } from '@pages/nft/services/helper.service';
 
 export enum StepType {
   CONFIRM = 'Confirm',
@@ -58,6 +53,7 @@ export class CartModalComponent implements OnDestroy {
     private router: Router,
     public unitsService: UnitsService,
     public deviceService: DeviceService,
+    public helper: HelperService,
   ) {}
 
   trackByItemId(index: number, item: CartItem): string {

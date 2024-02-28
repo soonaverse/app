@@ -80,7 +80,7 @@ export class CartService {
   private currentStepSubject$ = new BehaviorSubject<StepType>(StepType.CONFIRM);
   public currentStep$ = this.currentStepSubject$.asObservable();
   private checkoutOverlayModalRef: NzModalRef | null = null;
-  private pendingTransaction$: BehaviorSubject<Transaction | undefined> = new BehaviorSubject<
+  public pendingTransaction$: BehaviorSubject<Transaction | undefined> = new BehaviorSubject<
     Transaction | undefined
   >(undefined);
   private memberSpacesSubject$ = new BehaviorSubject<string[]>([]);

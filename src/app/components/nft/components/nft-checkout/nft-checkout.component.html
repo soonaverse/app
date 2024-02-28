@@ -70,7 +70,7 @@
         >
           <ng-container *ngIf="!nftQuantity || nftQuantity <= 1">
             <div
-              class="text-xxs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+              class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
               i18n
             >
               Total price
@@ -178,7 +178,7 @@
               <!-- Price Each -->
               <div class="flex flex-col items-center mr-4">
                 <div
-                  class="text-xxs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark underline"
+                  class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark underline"
                   i18n
                 >
                   Price
@@ -188,7 +188,7 @@
                   *ngIf="discount() < 1 && currentStep === stepType.CONFIRM"
                 >
                   <div
-                    class="mr-2 font-bold line-through text-foregrounds-tertiary alignCenter text-xxs"
+                    class="mr-2 font-bold line-through text-foregrounds-tertiary alignCenter text-xs"
                   >
                     {{
                       targetPrice | formatToken : collection?.mintingData?.network : true | async
@@ -209,7 +209,7 @@
                       }})
                     </span>
                   </div>
-                  <div class="mr-2 font-bold truncate alignCenter text-xxs">
+                  <div class="mr-2 font-bold truncate alignCenter text-xs">
                     {{
                       calc(targetPrice, discount())
                         | formatToken : collection?.mintingData?.network : true
@@ -236,7 +236,7 @@
                   class="flex items-center mt-2 text-sm"
                   *ngIf="discount() === 1 || currentStep !== stepType.CONFIRM"
                 >
-                  <div class="mr-2 font-bold truncate alignCenter text-xxs">
+                  <div class="mr-2 font-bold truncate alignCenter text-xs">
                     {{
                       (currentStep !== stepType.CONFIRM ? pricePerItem : targetPrice)
                         | formatToken : collection?.mintingData?.network : true
@@ -265,7 +265,7 @@
               <!-- Order Qty -->
               <div class="flex flex-col items-center mr-4">
                 <div
-                  class="text-xxs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark underline"
+                  class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark underline"
                   i18n
                 >
                   Quantity
@@ -281,7 +281,7 @@
               <!-- Total Price -->
               <div class="flex flex-col items-center">
                 <div
-                  class="text-xxs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark underline"
+                  class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark underline"
                   i18n
                 >
                   Total
@@ -291,7 +291,7 @@
                   *ngIf="discount() < 1 && currentStep === stepType.CONFIRM && targetPrice !== null"
                 >
                   <div
-                    class="mr-2 font-bold line-through text-foregrounds-tertiary alignCenter text-xxs"
+                    class="mr-2 font-bold line-through text-foregrounds-tertiary alignCenter text-xs"
                   >
                     {{
                       targetPrice * nftQuantity
@@ -314,7 +314,7 @@
                       }})
                     </span>
                   </div>
-                  <div class="mr-2 font-bold truncate alignCenter text-xxs">
+                  <div class="mr-2 font-bold truncate alignCenter text-xs">
                     {{
                       calc(targetPrice, discount()) * nftQuantity
                         | formatToken : collection?.mintingData?.network : true
@@ -344,7 +344,7 @@
                     (currentStep !== stepType.CONFIRM && targetAmount !== null)
                   "
                 >
-                  <div class="mr-2 font-bold truncate alignCenter text-xxs">
+                  <div class="mr-2 font-bold truncate alignCenter text-xs">
                     {{
                       (currentStep !== stepType.CONFIRM && targetAmount !== null
                         ? targetAmount
@@ -396,7 +396,7 @@
                 <div class="flex flex-col items-center mr-4">
                   <div class="flex flex-col items-center mr-4">
                     <div
-                      class="text-xxs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
                       i18n
                     >
                       Target Price
@@ -410,7 +410,7 @@
                 <div class="flex flex-col items-center mr-4">
                   <div class="flex flex-col items-center mr-4">
                     <div
-                      class="text-xxs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
                       i18n
                     >
                       Target Amount
@@ -424,7 +424,7 @@
                 <div class="flex flex-col items-center mr-4">
                   <div class="flex flex-col items-center mr-4">
                     <div
-                      class="text-xxs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
                       i18n
                     >
                       Quantity Selected
@@ -438,7 +438,7 @@
                 <div class="flex flex-col items-center mr-4">
                   <div class="flex flex-col items-center mr-4">
                     <div
-                      class="text-xxs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
                       i18n
                     >
                       Discount
@@ -452,7 +452,7 @@
                 <div class="flex flex-col items-center mr-4">
                   <div class="flex flex-col items-center mr-4">
                     <div
-                      class="text-xxs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
                       i18n
                     >
                       Purchase Workflow Step

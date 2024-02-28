@@ -310,7 +310,7 @@
 
   <nz-divider></nz-divider>
 
-  <div [ngSwitch]="currentStep" class="w-full">
+  <div [ngSwitch]="currentStep" class="w-full pb-2">
     <ng-container *ngSwitchCase="stepType.CONFIRM">
       <ng-container *ngTemplateOutlet="confirmTemplate"></ng-container>
     </ng-container>

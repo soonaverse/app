@@ -357,6 +357,7 @@
                     nzType="default"
                     [disabled]="
                       (cartService.getCurrentStep() !== stepType.CONFIRM &&
+                        !helper.isExpired(cartService.pendingTransaction$ | async) &&
                         cartService.getSelectedNetwork() === item.pricing.tokenSymbol) ||
                       (isLoading$ | async)
                     "
@@ -364,6 +365,7 @@
                     nz-tooltip
                     [nzTooltipTitle]="
                       cartService.getCurrentStep() !== stepType.CONFIRM &&
+                      !helper.isExpired(cartService.pendingTransaction$ | async) &&
                       cartService.getSelectedNetwork() === item.pricing.tokenSymbol
                         ? 'Item is part of a pending transaction. Please wait for the transaction to expire or be completed before removing this item from the cart.'
                         : (isLoading$ | async)
