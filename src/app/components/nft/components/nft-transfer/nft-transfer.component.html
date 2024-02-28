@@ -9,29 +9,49 @@
         <nz-col nzSpan="3">Withdraw</nz-col>
         <nz-col nzSpan="3">Status</nz-col>
       </nz-row>
-      <nz-row *ngFor="let nft of selectedNfts; let i = index" [class.disabled]="nft.disabled" class="nft-row mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-1" nzGutter="[16, 16]">
+      <nz-row
+        *ngFor="let nft of selectedNfts; let i = index"
+        [class.disabled]="nft.disabled"
+        class="nft-row mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-1"
+        nzGutter="[16, 16]"
+      >
         <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
-            <img [src]="nft.media" [alt]="nft.name" class="w-10 h-10 object-cover rounded">
+          <img [src]="nft.media" [alt]="nft.name" class="w-10 h-10 object-cover rounded" />
         </nz-col>
         <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
-            <span [ngClass]="{'strikethrough': nft.disabled}">{{ nft.name }}</span>
+          <span [ngClass]="{ strikethrough: nft.disabled }">{{ nft.name }}</span>
         </nz-col>
         <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
-            <span [ngClass]="{'strikethrough': nft.disabled}" class="uppercase">{{ nft.mintingData?.network }}</span>
+          <span [ngClass]="{ strikethrough: nft.disabled }" class="uppercase">{{
+            nft.mintingData?.network
+          }}</span>
         </nz-col>
         <nz-col nzSpan="3" nzXs="12" nzSm="6" nzMd="3">
-            <label nz-checkbox [(ngModel)]="nft.transfer" name="transfer-{{i}}" (ngModelChange)="updateNetworkSelection(nft)" [nzDisabled]="!isTransferEnabled(nft) || nft.disabled"></label>
+          <label
+            nz-checkbox
+            [(ngModel)]="nft.transfer"
+            name="transfer-{{ i }}"
+            (ngModelChange)="updateNetworkSelection(nft)"
+            [nzDisabled]="!isTransferEnabled(nft) || nft.disabled"
+          ></label>
         </nz-col>
         <nz-col nzSpan="3" nzXs="12" nzSm="6" nzMd="3">
-            <label nz-checkbox [(ngModel)]="nft.withdraw" name="withdraw-{{i}}" [nzDisabled]="!nft.transfer || nft.disabled"></label>
+          <label
+            nz-checkbox
+            [(ngModel)]="nft.withdraw"
+            name="withdraw-{{ i }}"
+            [nzDisabled]="!nft.transfer || nft.disabled"
+          ></label>
         </nz-col>
         <nz-col nzSpan="3" nzXs="24" nzSm="12" nzMd="3">
-            <span>{{ nft.statusMessage }}</span>
+          <span>{{ nft.statusMessage }}</span>
         </nz-col>
       </nz-row>
       <nz-row nzGutter="16" class="pb-2">
         <nz-col nzSpan="24">
-          <div class="flex flex-col justify-between mt-5 space-y-4 lg:space-y-0 lg:flex-row lg:space-x-4">
+          <div
+            class="flex flex-col justify-between mt-5 space-y-4 lg:space-y-0 lg:flex-row lg:space-x-4"
+          >
             <div
               class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
               i18n
@@ -43,7 +63,8 @@
                 class="target-access-option"
                 (click)="targetAccessOption$.next(targetAccess.OPEN)"
                 [ngClass]="{
-                  'target-access-option__selected': (targetAccessOption$ | async) === targetAccess.OPEN
+                  'target-access-option__selected':
+                    (targetAccessOption$ | async) === targetAccess.OPEN
                 }"
                 i18n
               >
@@ -53,7 +74,8 @@
                 class="target-access-option"
                 (click)="targetAccessOption$.next(targetAccess.MEMBERS)"
                 [ngClass]="{
-                  'target-access-option__selected': (targetAccessOption$ | async) === targetAccess.MEMBERS
+                  'target-access-option__selected':
+                    (targetAccessOption$ | async) === targetAccess.MEMBERS
                 }"
                 i18n
               >
@@ -71,7 +93,7 @@
             name="recipientAddress"
             placeholder="Recipient Wallet Address"
             required
-          >
+          />
         </nz-col>
         <nz-col nzSpan="24" *ngIf="(targetAccessOption$ | async) === targetAccess.MEMBERS">
           <nz-form-item class="mt-2">

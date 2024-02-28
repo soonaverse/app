@@ -14,9 +14,7 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 
 @NgModule({
-  declarations: [
-    TransferModalComponent
-  ],
+  declarations: [TransferModalComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -32,8 +30,6 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
     NzRadioModule,
     NzSelectModule,
   ],
-  exports: [
-    TransferModalComponent
-  ]
+  exports: [TransferModalComponent],
 })
-export class NftTransferModule { }
+export class NftTransferModule {}

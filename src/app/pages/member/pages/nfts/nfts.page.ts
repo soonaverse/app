@@ -73,7 +73,6 @@ export class NFTsPage implements OnInit {
           setInterval(() => this.cd.markForCheck(), 200);
         }
       });
-
     });
   }
 
@@ -96,7 +95,7 @@ export class NFTsPage implements OnInit {
     if (event.selected) {
       this.selectedNfts.push(event.nft);
     } else {
-      this.selectedNfts = this.selectedNfts.filter(nft => nft.id !== event.nft.id);
+      this.selectedNfts = this.selectedNfts.filter((nft) => nft.id !== event.nft.id);
     }
   }
 }

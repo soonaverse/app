@@ -5,10 +5,7 @@ import { NftSelectionToolbarModule } from '@components/nft/components/nft-select
 
 @NgModule({
   declarations: [FooterComponent],
-  imports: [
-    CommonModule,
-    NftSelectionToolbarModule,
-  ],
+  imports: [CommonModule, NftSelectionToolbarModule],
   exports: [FooterComponent],
 })
 export class FooterModule {}

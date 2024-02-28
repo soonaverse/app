@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { AuthService } from '@components/auth/services/auth.service';
 
 @Component({
   selector: 'wen-footer',
@@ -8,5 +9,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 })
 export class FooterComponent {
   // No need to inject NftSelectionService or maintain selectedCount$
-  constructor() { }
+  constructor(
+    public auth: AuthService,
+  ) {
+
+  }
 }

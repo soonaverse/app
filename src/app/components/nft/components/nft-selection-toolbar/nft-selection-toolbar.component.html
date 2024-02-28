@@ -1,7 +1,11 @@
-<div *ngIf="selectedCount$ | async as selectedCount" @slideFromBottom class="fixed inset-x-0 bottom-0 bg-gray-100 text-gray-800 py-2 shadow bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark pb-7 font-bold text-lg ml-20 mr-20 border-4 rounded-tl-lg rounded-tr-lg text-foregrounds-primary dark:text-foregrounds-primary-dark toolbar-box-shadow">
+<div
+  *ngIf="selectedCount$ | async as selectedCount"
+  @slideFromBottom
+  class="fixed inset-x-0 bottom-0 bg-gray-100 text-gray-800 py-2 shadow bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark pb-7 font-bold text-lg ml-20 mr-20 border-4 rounded-tl-lg rounded-tr-lg text-foregrounds-primary dark:text-foregrounds-primary-dark toolbar-box-shadow"
+>
   <div *ngIf="selectedCount > 0">
     <div class="max-w-screen-xl mx-auto px-4 flex justify-between items-center">
-      <span class="text-lg">{{selectedCount}} item(s) selected</span>
+      <span class="text-lg">{{ selectedCount }} item(s) selected</span>
       <div class="flex space-x-2">
         <button nz-button nzType="link" class="text-lg" (click)="clearSelection()">Clear</button>
         <button nz-button nzType="default" (click)="openTransferModal()">Transfer</button>

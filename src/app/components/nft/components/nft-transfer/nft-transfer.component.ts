@@ -1,8 +1,29 @@
 import { ChangeDetectionStrategy, Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { NftSelectionService } from '@core/services/nft-selection/nft-selection.service';
-import { Nft, NftTransferRequest, Transaction, Timestamp, COL, Member, NftAccess, WenError, RETRY_UNCOFIRMED_PAYMENT_DELAY } from '@build-5/interfaces';
-import { BehaviorSubject, Subscription, catchError, forkJoin, from, map, of, switchMap, take, tap } from 'rxjs';
+import {
+  Nft,
+  NftTransferRequest,
+  Transaction,
+  Timestamp,
+  COL,
+  Member,
+  NftAccess,
+  WenError,
+  RETRY_UNCOFIRMED_PAYMENT_DELAY,
+} from '@build-5/interfaces';
+import {
+  BehaviorSubject,
+  Subscription,
+  catchError,
+  forkJoin,
+  from,
+  map,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import { NftApi } from '@api/nft.api';
 import { OrderApi } from '@api/order.api';
 import { AuthService } from '@components/auth/services/auth.service';
@@ -40,7 +61,7 @@ interface HistoryItem {
 })
 export class TransferModalComponent implements OnInit {
   public selectedNfts: TransNft[] = [];
-  public recipientAddress: string = '';
+  public recipientAddress = '';
   private nftSelectionSubscription$: Subscription = new Subscription();
   public selectedNetwork: string | null = null;
   private transSubscription$?: Subscription;
@@ -81,32 +102,37 @@ export class TransferModalComponent implements OnInit {
     this.nftSelectionSubscription$.add(
       this.nftSelectionService.selectedNftIds$
         .pipe(
-          switchMap(ids => {
+          switchMap((ids) => {
             if (ids.length === 0) {
               return of([]);
             }
-            return forkJoin(ids.map(id => this.nftApi.getNftById(id).pipe(
-              take(1),
-              catchError(error => {
-                console.error(`Error fetching NFT with ID ${id}:`, error);
-                return of(null);
-              })
-            )));
+            return forkJoin(
+              ids.map((id) =>
+                this.nftApi.getNftById(id).pipe(
+                  take(1),
+                  catchError((error) => {
+                    console.error(`Error fetching NFT with ID ${id}:`, error);
+                    return of(null);
+                  }),
+                ),
+              ),
+            );
           }),
-          map(nfts => nfts.filter((nft): nft is Nft => nft !== null && nft !== undefined)
-            .map(nft => ({
-              ...nft,
-              transfer: false,
-              withdraw: false,
-              disabled: false,
-            }))
-          )
+          map((nfts) =>
+            nfts
+              .filter((nft): nft is Nft => nft !== null && nft !== undefined)
+              .map((nft) => ({
+                ...nft,
+                transfer: false,
+                withdraw: false,
+                disabled: false,
+              })),
+          ),
         )
-        .subscribe(nfts => {
+        .subscribe((nfts) => {
           this.selectedNfts = this.sortNfts(nfts);
           this.cd.markForCheck();
-        })
-
+        }),
     );
 
     this.targetAccessOption$.pipe(untilDestroyed(this)).subscribe((targetAccessOption) => {
@@ -129,7 +155,6 @@ export class TransferModalComponent implements OnInit {
             value: member.uid,
           };
         }),
-
       );
     });
   }
@@ -147,7 +172,7 @@ export class TransferModalComponent implements OnInit {
   public updateNetworkSelection(selectedNft: any): void {
     if (selectedNft.transfer) {
       this.selectedNetwork = selectedNft.mintingData?.network;
-    } else if (this.selectedNfts.every(nft => !nft.transfer)) {
+    } else if (this.selectedNfts.every((nft) => !nft.transfer)) {
       this.selectedNetwork = null;
     }
   }
@@ -157,31 +182,38 @@ export class TransferModalComponent implements OnInit {
   }
 
   public getSubmitButtonTooltip(): string {
-    const addressTrue = (this.selectedAccessControl.value === 0 && !!this.recipientAddress) || (this.selectedAccessControl.value === 1 && !!this.transferMemberControl.value);
+    const addressTrue =
+      (this.selectedAccessControl.value === 0 && !!this.recipientAddress) ||
+      (this.selectedAccessControl.value === 1 && !!this.transferMemberControl.value);
     if (!addressTrue) {
       return 'Input address or choose member to allow transfer of NFTs';
     }
-    if (this.selectedNfts.every(nft => !nft.transfer)) {
+    if (this.selectedNfts.every((nft) => !nft.transfer)) {
       return 'Select which NFT(s) to transfer';
     }
     return '';
   }
 
   public canSubmit(): boolean {
-    const addressTrue = (this.selectedAccessControl.value === 0 && !!this.recipientAddress) || (this.selectedAccessControl.value === 1 && !!this.transferMemberControl.value);
-    return addressTrue && this.selectedNfts.some(nft => nft.transfer);
+    const addressTrue =
+      (this.selectedAccessControl.value === 0 && !!this.recipientAddress) ||
+      (this.selectedAccessControl.value === 1 && !!this.transferMemberControl.value);
+    return addressTrue && this.selectedNfts.some((nft) => nft.transfer);
   }
 
   public async onSubmit(): Promise<void> {
-    const sendToAddress = (this.selectedAccessControl.value === 0) ? this.recipientAddress : this.transferMemberControl.value;
+    const sendToAddress =
+      this.selectedAccessControl.value === 0
+        ? this.recipientAddress
+        : this.transferMemberControl.value;
     const request: NftTransferRequest = {
       transfers: this.selectedNfts
-        .filter(nft => nft.transfer)
-        .map(nft => ({
+        .filter((nft) => nft.transfer)
+        .map((nft) => ({
           nft: nft.uid,
           target: sendToAddress,
-          withdraw: nft.withdraw || undefined
-        }))
+          withdraw: nft.withdraw || undefined,
+        })),
     };
 
     const params = request;
@@ -191,7 +223,7 @@ export class TransferModalComponent implements OnInit {
         .subscribe((val: any) => {
           if (val && typeof val === 'object') {
             Object.entries(val).forEach(([nftId, responseCode]) => {
-              const nftIndex = this.selectedNfts.findIndex(nft => nft.uid === nftId);
+              const nftIndex = this.selectedNfts.findIndex((nft) => nft.uid === nftId);
               if (nftIndex !== -1) {
                 if (responseCode === 200) {
                   this.selectedNfts[nftIndex].transfer = false;
@@ -241,11 +273,13 @@ export class TransferModalComponent implements OnInit {
   }
 
   onModalClose(): void {
-    const idsOfTransferredNfts = this.selectedNfts.filter(nft => nft.disabled).map(nft => nft.uid);
+    const idsOfTransferredNfts = this.selectedNfts
+      .filter((nft) => nft.disabled)
+      .map((nft) => nft.uid);
     if (idsOfTransferredNfts.length > 0) {
-      this.selectedNfts = this.selectedNfts.filter(nft => !nft.disabled);
+      this.selectedNfts = this.selectedNfts.filter((nft) => !nft.disabled);
 
-      idsOfTransferredNfts.forEach(nftId => {
+      idsOfTransferredNfts.forEach((nftId) => {
         this.nftSelectionService.deselectNft(nftId);
       });
 
@@ -254,15 +288,13 @@ export class TransferModalComponent implements OnInit {
         const expectedPath = `/member/${memberId}/nfts`;
         const currentPath = this.router.url;
         if (currentPath === expectedPath) {
-
           this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-              window.location.href = `/member/${memberId}/nfts`;
+            window.location.href = `/member/${memberId}/nfts`;
           });
         }
       }
     }
   }
-
 
   private sortNfts(nfts: TransNft[]): TransNft[] {
     return nfts.sort((a, b) => {

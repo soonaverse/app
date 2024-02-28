@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NftSelectionService {
   private selectedNftIdsSubject = new BehaviorSubject<string[]>([]);
@@ -18,7 +18,9 @@ export class NftSelectionService {
   }
 
   public deselectNft(nftId: string) {
-    const updatedSelectedNftIds = this.selectedNftIdsSubject.getValue().filter(id => id !== nftId);
+    const updatedSelectedNftIds = this.selectedNftIdsSubject
+      .getValue()
+      .filter((id) => id !== nftId);
     this.selectedNftIdsSubject.next(updatedSelectedNftIds);
   }
 

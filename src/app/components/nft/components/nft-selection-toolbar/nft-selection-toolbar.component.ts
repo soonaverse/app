@@ -4,7 +4,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { NzModalRef, NzModalService } from 'ng-zorro-antd/modal';
-import { TransferModalComponent } from '@components/nft/components/nft-transfer/nft-transfer.component'
+import { TransferModalComponent } from '@components/nft/components/nft-transfer/nft-transfer.component';
 
 @Component({
   selector: 'wen-nft-selection-toolbar',
@@ -14,11 +14,9 @@ import { TransferModalComponent } from '@components/nft/components/nft-transfer/
     trigger('slideFromBottom', [
       transition(':enter', [
         style({ transform: 'translateY(100%)' }),
-        animate('300ms ease-out', style({ transform: 'translateY(0)' }))
+        animate('300ms ease-out', style({ transform: 'translateY(0)' })),
       ]),
-      transition(':leave', [
-        animate('300ms ease-in', style({ transform: 'translateY(100%)' }))
-      ])
+      transition(':leave', [animate('300ms ease-in', style({ transform: 'translateY(100%)' }))]),
     ]),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,9 +31,7 @@ export class NftSelectionToolbarComponent implements OnInit {
 
   ngOnInit(): void {
     // Observable for the count of selected NFTs remains the same
-    this.selectedCount$ = this.nftSelectionService.selectedNftIds$.pipe(
-      map(ids => ids.length)
-    );
+    this.selectedCount$ = this.nftSelectionService.selectedNftIds$.pipe(map((ids) => ids.length));
   }
 
   public clearSelection() {
@@ -49,19 +45,15 @@ export class NftSelectionToolbarComponent implements OnInit {
       nzClassName: 'nft-transfer-modal',
       nzFooter: null,
       nzWidth: '75%',
-      nzComponentParams: {
-
-      },
-      nzOnOk: () => new Promise(resolve => setTimeout(resolve, 1000)),
+      nzComponentParams: {},
+      nzOnOk: () => new Promise((resolve) => setTimeout(resolve, 1000)),
       nzOnCancel: () => console.log('Cancel transfer'),
     });
 
-    modal.afterClose.subscribe(result => {
+    modal.afterClose.subscribe((result) => {
       const componentInstance = modal.getContentComponent();
       componentInstance.onModalClose();
       this.nftSelectionService.notifyModalClosed();
     });
   }
-
-
 }

@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { FileApi } from '@api/file.api';
 import { MemberApi } from '@api/member.api';
@@ -22,8 +32,7 @@ import {
   NftAccess,
 } from '@build-5/interfaces';
 import { BehaviorSubject, Subscription, combineLatest, map, startWith, take } from 'rxjs';
-import { NftSelectionService } from '@core/services/nft-selection/nft-selection.service'
-
+import { NftSelectionService } from '@core/services/nft-selection/nft-selection.service';
 
 @UntilDestroy()
 @Component({
@@ -70,15 +79,12 @@ export class NftCardComponent implements OnInit, OnDestroy {
 
   @Input() collection?: Collection | null;
 
-  //@Input() nftSelectable: boolean = false;
-  public nftSelectable: boolean = false;
-  //public showCheckbox: boolean = false;
+  public nftSelectable = false;
   @Output() selectionChange = new EventEmitter<any>();
-  public nftSelected: boolean = false;
+  public nftSelected = false;
   private nftSelectionSubscription$: Subscription = new Subscription();
 
   public mediaType: 'video' | 'image' | undefined;
-  //public isCheckoutOpen = false;
   public isBidOpen = false;
   public path = ROUTER_UTILS.config.nft.root;
   public owner$: BehaviorSubject<Member | undefined> = new BehaviorSubject<Member | undefined>(
@@ -103,26 +109,22 @@ export class NftCardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.nftSelectionSubscription$.add(
-      this.nftSelectionService.selectedNftIds$
-        .subscribe(selectedIds => {
-          this.nftSelected = selectedIds.includes(this.nft?.uid || '');
-          this.cd.markForCheck();
-        })
+      this.nftSelectionService.selectedNftIds$.subscribe((selectedIds) => {
+        this.nftSelected = selectedIds.includes(this.nft?.uid || '');
+        this.cd.markForCheck();
+      }),
     );
 
-    const nftSelectableSub = combineLatest([
-      this.owner$,
-      this.auth.member$.pipe(startWith(null))
-    ])
-    .pipe(
-      map(([owner, member]) => {
-        return owner !== null && member !== null && owner?.uid === member?.uid;
-      })
-    )
-    .subscribe(isOwner => {
-      this.nftSelectable = isOwner && this.nft?.locked === false;
-      this.cd.markForCheck(); // Trigger change detection
-    });
+    const nftSelectableSub = combineLatest([this.owner$, this.auth.member$.pipe(startWith(null))])
+      .pipe(
+        map(([owner, member]) => {
+          return owner !== null && member !== null && owner?.uid === member?.uid;
+        }),
+      )
+      .subscribe((isOwner) => {
+        this.nftSelectable = isOwner && this.nft?.locked === false;
+        this.cd.markForCheck(); // Trigger change detection
+      });
 
     this.nftSelectionSubscription$.add(nftSelectableSub);
   }
@@ -221,20 +223,19 @@ export class NftCardComponent implements OnInit, OnDestroy {
 
   public toggleNftSelection(isChecked: boolean, event?: Event): void {
     if (event) {
-        event.stopPropagation();
+      event.stopPropagation();
     }
     this.nftSelected = isChecked;
 
     const action = isChecked ? 'select' : 'deselect';
     if (action === 'select') {
-        this.nftSelectionService.selectNft(this.nft?.uid || '');
+      this.nftSelectionService.selectNft(this.nft?.uid || '');
     } else {
-        this.nftSelectionService.deselectNft(this.nft?.uid || '');
+      this.nftSelectionService.deselectNft(this.nft?.uid || '');
     }
 
     this.cd.markForCheck();
-}
-
+  }
 
   ngOnDestroy() {
     if (this.nftSelectionSubscription$) {
