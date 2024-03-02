@@ -6,9 +6,9 @@
   <div *ngIf="selectedCount > 0">
     <div class="max-w-screen-xl mx-auto px-4 flex justify-between items-center">
       <span class="text-lg">{{ selectedCount }} item(s) selected</span>
-      <div class="flex space-x-2">
-        <button nz-button nzType="link" class="text-lg" (click)="clearSelection()">Clear</button>
-        <button nz-button nzType="default" (click)="openTransferModal()">Transfer</button>
+      <div class="flex space-x-2 text-foregrounds-primary dark:text-foregrounds-primary-dark">
+        <button nz-button nzType="link" class="text-lg text-foregrounds-primary dark:text-foregrounds-primary-dark" (click)="clearSelection()" style="background-color: silver;border:2px solid black;">Clear</button>
+        <button nz-button nzType="default" (click)="openTransferModal()" style="background-color: silver;border:2px solid black;">Transfer</button>
       </div>
     </div>
   </div>

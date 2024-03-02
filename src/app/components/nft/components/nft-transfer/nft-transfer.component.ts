@@ -123,9 +123,10 @@ export class TransferModalComponent implements OnInit {
               .filter((nft): nft is Nft => nft !== null && nft !== undefined)
               .map((nft) => ({
                 ...nft,
-                transfer: false,
+                transfer: true,
                 withdraw: false,
                 disabled: false,
+                statusMessage: 'Not transferred',
               })),
           ),
         )
@@ -178,7 +179,8 @@ export class TransferModalComponent implements OnInit {
   }
 
   public isTransferEnabled(nft: any): boolean {
-    return !this.selectedNetwork || this.selectedNetwork === nft.mintingData?.network;
+    //return !this.selectedNetwork || this.selectedNetwork === nft.mintingData?.network;
+    return true;
   }
 
   public getSubmitButtonTooltip(): string {
@@ -221,6 +223,7 @@ export class TransferModalComponent implements OnInit {
       this.notification
         .processRequest(this.nftApi.transferNft(sc), $localize`Tranfer initiated.`, finish)
         .subscribe((val: any) => {
+          console.log('build5 response: ', val)
           if (val && typeof val === 'object') {
             Object.entries(val).forEach(([nftId, responseCode]) => {
               const nftIndex = this.selectedNfts.findIndex((nft) => nft.uid === nftId);

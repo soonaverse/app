@@ -2,13 +2,15 @@
   class="w-full bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl wen-card"
   [ngClass]="{
     'h-72 lg:h-99': !fullWidth,
-    'wen-card-selected': nftSelected
+    'wen-card-selected': nftSelected,
+    'cursor-not-allowed opacity-50': nftSelected
   }"
 >
-  <a
-    class="flex flex-col h-full text-current hover:text-current"
-    [routerLink]="['/', this.path, nft?.uid]"
-  >
+<a
+  class="flex flex-col h-full text-current hover:text-current"
+  [routerLink]="nftSelected ? null : ['/', this.path, nft?.uid]"
+  (click)="nftSelected ? $event.preventDefault() : null"
+>
     <div class="relative w-full h-40 overflow-hidden lg:h-60 rounded-2xl">
       <img
         loading="lazy"
