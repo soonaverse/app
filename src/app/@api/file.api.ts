@@ -1,16 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '@env/environment';
-import {
-  FILE_SIZES,
-  BUILD5_PROD_ADDRESS_API,
-  BUILD5_TEST_ADDRESS_API,
-  WEN_FUNC,
-} from '@build-5/interfaces';
+import { FILE_SIZES } from '@build-5/interfaces';
 import { NzUploadXHRArgs } from 'ng-zorro-antd/upload';
 import { Observable, map, of } from 'rxjs';
+import { Build5, https } from '@build-5/sdk';
 
 const EXTENSION_PAT = /\.[^/.]+$/;
+const ORIGIN = environment.production ? Build5.PROD : Build5.TEST;
 
 @Injectable({
   providedIn: 'root',
@@ -42,22 +39,16 @@ export class FileApi {
     return of(url.match('.mp4$') ? 'video' : 'image');
   };
 
-  public upload(memberId: string, item: NzUploadXHRArgs) {
-    const formData = new FormData();
-    formData.append('file', <Blob>item.postFile);
-    formData.append('member', memberId);
-    formData.append('uid', item.file.uid);
-    formData.append('projectApiKey', environment.build5Token);
-    const origin = environment.production ? BUILD5_PROD_ADDRESS_API : BUILD5_TEST_ADDRESS_API;
-    return this.httpClient
-      .post(origin + WEN_FUNC.uploadFile, formData)
+  public upload = (memberId: string, item: NzUploadXHRArgs) =>
+    https(ORIGIN)
+      .project(environment.build5Token)
+      .uploadFile(<Blob>item.postFile, memberId, item.file.uid)
       .pipe(
-        map((b: any) => {
+        map((r) => {
           if (item.onSuccess) {
-            item.onSuccess(b.data.url, item.file, b.data.url);
+            item.onSuccess(r.url, item.file, r.url);
           }
         }),
       )
       .subscribe();
-  }
 }
