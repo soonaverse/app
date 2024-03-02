@@ -179,7 +179,7 @@ export class TransferModalComponent implements OnInit {
   }
 
   public isTransferEnabled(nft: any): boolean {
-    return true; //return !this.selectedNetwork || this.selectedNetwork === nft.mintingData?.network;
+    return true; // return !this.selectedNetwork || this.selectedNetwork === nft.mintingData?.network;
   }
 
   public getSubmitButtonTooltip(): string {
