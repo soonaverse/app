@@ -223,7 +223,7 @@ export class TransferModalComponent implements OnInit {
       this.notification
         .processRequest(this.nftApi.transferNft(sc), $localize`Tranfer initiated.`, finish)
         .subscribe((val: any) => {
-          console.log('build5 response: ', val)
+          console.log('build5 response: ', val);
           if (val && typeof val === 'object') {
             Object.entries(val).forEach(([nftId, responseCode]) => {
               const nftIndex = this.selectedNfts.findIndex((nft) => nft.uid === nftId);
