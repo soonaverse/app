@@ -1,6 +1,6 @@
-import { Component, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Network, Transaction } from '@build-5/interfaces';
-import { Subscription, take, of, Observable, BehaviorSubject } from 'rxjs';
+import { Subscription, take, of, Observable, BehaviorSubject, Subject } from 'rxjs';
 import { CartService, CartItem } from '@components/cart/services/cart.service';
 import { AuthService } from '@components/auth/services/auth.service';
 import { Router } from '@angular/router';
@@ -9,6 +9,7 @@ import { UnitsService } from '@core/services/units/units.service';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { DeviceService } from '@core/services/device';
 import { HelperService } from '@pages/nft/services/helper.service';
+import {  } from '@angular/core';
 
 export enum StepType {
   CONFIRM = 'Confirm',
@@ -23,7 +24,7 @@ export enum StepType {
   styleUrls: ['./cart-modal.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CartModalComponent implements OnDestroy {
+export class CartModalComponent implements OnInit, OnDestroy {
   private subscriptions$ = new Subscription();
   public collectionPath: string = ROUTER_UTILS.config.collection.root;
   public nftPath: string = ROUTER_UTILS.config.nft.root;
@@ -40,11 +41,19 @@ export class CartModalComponent implements OnDestroy {
   public cartModalOpen$ = this.cartService.cartModalOpen$;
   public currentStep$ = this.cartService.currentStep$;
 
+  public selectedNetwork$ = this.cartService.selectedNetwork$;
+
   public memberSpaces$ = this.cartService.memberSpaces$;
   public memberGuardianSpaces$ = this.cartService.memberGuardianSpaces$;
   public memberAwards$ = this.cartService.memberAwards$;
 
   public isLoading$ = this.cartService.isLoading$;
+
+  public currentStep: StepType | null = null;
+  public isTransactionExpired: boolean | null = null;
+  public selectedNetwork: string | null = null;
+  public isLoading: boolean = false;
+  public pendingTransaction: Transaction | undefined = undefined;
 
   constructor(
     public cartService: CartService,
@@ -55,6 +64,52 @@ export class CartModalComponent implements OnDestroy {
     public deviceService: DeviceService,
     public helper: HelperService,
   ) {}
+
+  ngOnInit() {
+    this.subscriptions$.add(
+        this.cartService.currentStep$.subscribe(step => {
+            this.currentStep = step;
+            this.triggerChangeDetection();
+        })
+    );
+
+    this.subscriptions$.add(
+      this.cartService.selectedNetwork$.subscribe(network => {
+          this.selectedNetwork = network;
+          this.triggerChangeDetection();
+      })
+    );
+
+    this.subscriptions$.add(
+      this.cartService.pendingTransaction$.subscribe(transaction => {
+        this.pendingTransaction = transaction;
+        this.triggerChangeDetection();
+      })
+    );
+
+    this.subscriptions$.add(
+        this.cartService.isLoading$.subscribe(loading => {
+            this.isLoading = loading;
+            this.triggerChangeDetection();
+        })
+    );
+
+    this.subscriptions$.add(
+        this.cartService.cartUpdateObservable$.subscribe(() => {
+            this.triggerChangeDetection();
+        })
+    );
+
+    this.subscriptions$.add(
+      this.cartService.triggerChangeDetectionSubject$.subscribe(() => {
+          this.triggerChangeDetection();
+      })
+    );
+  }
+
+  public triggerChangeDetection(): void {
+    this.cd.markForCheck();
+  }
 
   trackByItemId(index: number, item: CartItem): string {
     return item.nft.uid;

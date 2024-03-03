@@ -356,17 +356,17 @@
                     nz-button
                     nzType="default"
                     [disabled]="
-                      (cartService.getCurrentStep() !== stepType.CONFIRM &&
-                        !helper.isExpired(cartService.pendingTransaction$ | async) &&
-                        cartService.getSelectedNetwork() === item.pricing.tokenSymbol) ||
+                      ((cartService.pendingTransaction$ | async) &&
+                      !helper.isExpired(cartService.pendingTransaction$ | async) &&
+                      (cartService.selectedNetwork$ | async) === item.pricing.tokenSymbol) ||
                       (isLoading$ | async)
                     "
                     (click)="removeFromCart(item)"
                     nz-tooltip
                     [nzTooltipTitle]="
-                      cartService.getCurrentStep() !== stepType.CONFIRM &&
+                      (cartService.pendingTransaction$ | async) &&
                       !helper.isExpired(cartService.pendingTransaction$ | async) &&
-                      cartService.getSelectedNetwork() === item.pricing.tokenSymbol
+                      (cartService.selectedNetwork$ | async) === item.pricing.tokenSymbol
                         ? 'Item is part of a pending transaction. Please wait for the transaction to expire or be completed before removing this item from the cart.'
                         : (isLoading$ | async)
                         ? 'Cart items are loading. Please wait.'
@@ -383,6 +383,11 @@
           </ng-template>
         </div>
         <ng-template #emptyCart>Your cart is empty.</ng-template>
+        <div class="tester">
+          Pending Transaction: {{ (cartService.pendingTransaction$ | async) }}
+          <br />
+          Transaction Expired: {{ helper.isExpired(cartService.pendingTransaction$ | async) }}
+        </div>
       </ng-container>
 
       <div class="text-center" *nzModalFooter>
@@ -398,11 +403,11 @@
         </button>
 
         <button
-          *ngIf="cartService.getCurrentStep() === stepType.CONFIRM && cartItems.length"
+          *ngIf="cartItems.length"
           nz-button
           nzType="default"
           (click)="clearCart()"
-          [disabled]="isLoading$ | async"
+          [disabled]="(cartService.pendingTransaction$ | async) && !helper.isExpired(cartService.pendingTransaction$ | async) || (isLoading$ | async)"
           nz-tooltip
           [nzTooltipTitle]="(isLoading$ | async) ? 'Waiting for cart items to finish loading' : ''"
           class="text-red-600 hover:text-red-800"
@@ -420,6 +425,7 @@
           Checkout
         </button>
       </div>
+
     </div>
   </nz-modal>
 </ng-container>

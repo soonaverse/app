@@ -10,6 +10,7 @@ import {
   catchError,
   finalize,
   combineLatest,
+  Subject,
 } from 'rxjs';
 import {
   Nft,
@@ -66,6 +67,9 @@ export enum StepType {
 }
 
 export const CART_STORAGE_KEY = 'App/cartItems';
+export const NETWORK_STORAGE_KEY = 'cartCheckoutSelectedNetwork';
+export const STEP_STORAGE_KEY = 'cartCheckoutCurrentStep';
+export const TRAN_STORAGE_KEY = 'App/checkoutTransaction';
 
 @Injectable({
   providedIn: 'root',
@@ -93,6 +97,10 @@ export class CartService {
   public config?: InstantSearchConfig;
   private selectedNetworkSubject$ = new BehaviorSubject<string | null>(this.getSelectedNetwork());
   public selectedNetwork$ = this.selectedNetworkSubject$.asObservable();
+  private cartUpdateSubject$ = new Subject<void>();
+  public cartUpdateObservable$ = this.cartUpdateSubject$.asObservable();
+  public triggerChangeDetectionSubject$ = new Subject<void>();
+  private transactionCheckInterval: any = null;
 
   constructor(
     private notification: NzNotificationService,
@@ -109,29 +117,170 @@ export class CartService {
   ) {
     this.subscribeToMemberChanges();
     this.listenToStorageChanges();
-    this.listenToNetworkSelectionChanges();
   }
 
   private listenToStorageChanges(): void {
     window.addEventListener('storage', (event) => {
-      if (event.storageArea === localStorage && event.key === CART_STORAGE_KEY) {
-        this.zone.run(() => {
-          const updatedCartItems = JSON.parse(event.newValue || '[]');
-          this.cartItemsSubject$.next(updatedCartItems);
-        });
-      }
+        if (event.storageArea === localStorage) {
+            this.zone.run(() => {
+                switch (event.key) {
+                    case CART_STORAGE_KEY:
+                      const updatedCartItems = JSON.parse(event.newValue || '[]');
+                      this.cartItemsSubject$.next(updatedCartItems);
+                      break;
+                    case NETWORK_STORAGE_KEY:
+                      const updatedNetwork = JSON.parse(event.newValue || 'null');
+                      this.selectedNetworkSubject$.next(updatedNetwork);
+                      break;
+                    case STEP_STORAGE_KEY:
+                      const newStep = JSON.parse(event.newValue || 'null');
+                      this.currentStepSubject$.next(newStep);
+                      break;
+                    case TRAN_STORAGE_KEY:
+                      const newTran = JSON.parse(event.newValue || 'null');
+                      this.pendingTransaction$.next(newTran);
+                      break;
+                }
+                this.cartUpdateSubject$.next();
+            });
+        }
     });
   }
 
-  private listenToNetworkSelectionChanges(): void {
-    window.addEventListener('storage', (event) => {
-      if (event.storageArea === localStorage && event.key === 'cartCheckoutSelectedNetwork') {
-        this.zone.run(() => {
-          const updatedNetwork = localStorage.getItem('cartCheckoutSelectedNetwork');
-          this.selectedNetworkSubject$.next(updatedNetwork);
-        });
+  public startTransactionExpiryCheck(): void {
+    if (this.transactionCheckInterval) {
+        clearInterval(this.transactionCheckInterval);
+    }
+
+    this.transactionCheckInterval = setInterval(() => {
+
+      const transaction = this.pendingTransaction$.getValue();
+      const currentStep = this.getCurrentStep();
+      if (currentStep === StepType.TRANSACTION || currentStep === StepType.WAIT) {
+        if (transaction && transaction.uid) {
+          const expiresOn: dayjs.Dayjs = dayjs(transaction.createdOn!.toDate()).add(
+            TRANSACTION_AUTO_EXPIRY_MS,
+            'ms',
+          );
+          this.triggerChangeDetectionSubject$.next();
+
+          if (
+            expiresOn.isBefore(dayjs()) ||
+            transaction.payload?.void ||
+            transaction.payload?.reconciled
+          ) {
+            removeItem(StorageItem.CheckoutTransaction);
+            this.pendingTransaction$.next(undefined);
+            this.triggerChangeDetectionSubject$.next();
+            clearInterval(this.transactionCheckInterval);
+            this.transactionCheckInterval = null;
+          }
+        } else {
+          removeItem(StorageItem.CheckoutTransaction);
+          this.pendingTransaction$.next(undefined);
+          this.triggerChangeDetectionSubject$.next();
+          clearInterval(this.transactionCheckInterval);
+          this.transactionCheckInterval = null;
+        }
       }
-    });
+    }, 1000);
+  }
+
+  public getSelectedNetwork(): string | null {
+    const selectedNetwork = localStorage.getItem(NETWORK_STORAGE_KEY);
+    return selectedNetwork ? JSON.parse(selectedNetwork) : null;
+  }
+
+  public setNetworkSelection(networkSymbol: string): void {
+    const newNetwork = JSON.stringify(networkSymbol);
+    localStorage.setItem(NETWORK_STORAGE_KEY, newNetwork);
+    this.selectedNetworkSubject$.next(networkSymbol);
+    this.triggerChangeDetectionSubject$.next();
+  }
+
+  public clearNetworkSelection(): void {
+    localStorage.removeItem(NETWORK_STORAGE_KEY);
+    this.selectedNetworkSubject$.next(null);
+  }
+
+  public getDefaultNetworkDecimals(): number {
+    return DEFAULT_NETWORK_DECIMALS;
+  }
+
+  public setCurrentStep(step: StepType): void {
+    const newStep = JSON.stringify(step);
+    localStorage.setItem(STEP_STORAGE_KEY, newStep);
+    this.currentStepSubject$.next(step);
+    this.triggerChangeDetectionSubject$.next();
+  }
+
+  public getCurrentStep(): StepType {
+    const stepValue = localStorage.getItem(STEP_STORAGE_KEY);
+    return stepValue ? JSON.parse(stepValue) : StepType.CONFIRM;
+  }
+
+  public setCurrentTransaction(transactionId: string): void {
+    if (transactionId === null || transactionId === undefined) {
+      return;
+    }
+
+    this.orderApi
+      .listen(transactionId)
+      .pipe(untilDestroyed(this))
+      .subscribe((transaction) => {
+        this.pendingTransaction$.next(transaction);
+        this.startTransactionExpiryCheck();
+        this.triggerChangeDetectionSubject$.next();
+      });
+  }
+
+  public getCurrentTransaction(): Observable<Transaction | undefined> {
+    return this.pendingTransaction$.asObservable();
+  }
+
+  public hasPendingTransaction(): boolean {
+    const checkoutTransaction = getCheckoutTransaction();
+    const transactionId = checkoutTransaction?.transactionId;
+    return !!transactionId;
+  }
+
+  public saveCartItems(): void {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.cartItemsSubject$.getValue()));
+  }
+
+  public loadCartItems(): CartItem[] {
+    const items = getItem(StorageItem.CartItems) as CartItem[];
+    return items || [];
+  }
+
+  public getCartItems(): Observable<CartItem[]> {
+    return this.cartItemsSubject$.asObservable();
+  }
+
+  public clearCart(): void {
+    this.cartItemsSubject$.next([]);
+    this.saveCartItems();
+    this.notification.success($localize`All items have been removed from your cart.`, '');
+  }
+
+  public refreshCartItems(): void {
+    this.cartItemsSubject$.next(this.cartItemsSubject$.value);
+  }
+
+  public removeFromCart(cartItem: CartItem): void {
+    const updatedCartItems = this.cartItemsSubject$.value.filter(
+      (item) => item.nft.uid !== cartItem.nft.uid,
+    );
+    this.cartItemsSubject$.next(updatedCartItems);
+    this.saveCartItems();
+  }
+
+  public removeItemsFromCart(itemIds: string[]): void {
+    const updatedCartItems = this.cartItemsSubject$.value.filter(
+      (item) => !itemIds.includes(item.nft.uid),
+    );
+    this.cartItemsSubject$.next(updatedCartItems);
+    this.saveCartItems();
   }
 
   private subscribeToMemberChanges() {
@@ -252,38 +401,6 @@ export class CartService {
 
   get memberAwards$(): Observable<string[]> {
     return this.memberAwardsSubject$.asObservable();
-  }
-
-  public hasPendingTransaction(): boolean {
-    const checkoutTransaction = getCheckoutTransaction();
-    const transactionId = checkoutTransaction?.transactionId;
-    return !!transactionId;
-  }
-
-  public setCurrentTransaction(transactionId: string): void {
-    if (transactionId === null || transactionId === undefined) {
-      return;
-    }
-
-    this.orderApi
-      .listen(transactionId)
-      .pipe(untilDestroyed(this))
-      .subscribe((transaction) => {
-        this.pendingTransaction$.next(transaction);
-      });
-  }
-
-  public getCurrentTransaction(): Observable<Transaction | undefined> {
-    return this.pendingTransaction$.asObservable();
-  }
-
-  public setCurrentStep(step: StepType): void {
-    this.currentStepSubject$.next(step);
-    localStorage.setItem('cartCheckoutCurrentStep', step);
-  }
-
-  public getCurrentStep(): StepType {
-    return this.currentStepSubject$.getValue();
   }
 
   public showCartModal(): void {
@@ -482,10 +599,6 @@ export class CartService {
     }
   }
 
-  public getCartItems(): Observable<CartItem[]> {
-    return this.cartItemsSubject$.asObservable();
-  }
-
   public cartItemStatus(item: CartItem): Observable<{ status: string; message: string }> {
     return this.isCartItemAvailableForSale(item).pipe(
       map((availabilityResult) => ({
@@ -572,26 +685,6 @@ export class CartService {
     return this.calc(itemPrice, discount);
   }
 
-  public refreshCartItems(): void {
-    this.cartItemsSubject$.next(this.cartItemsSubject$.value);
-  }
-
-  public removeFromCart(cartItem: CartItem): void {
-    const updatedCartItems = this.cartItemsSubject$.value.filter(
-      (item) => item.nft.uid !== cartItem.nft.uid,
-    );
-    this.cartItemsSubject$.next(updatedCartItems);
-    this.saveCartItems();
-  }
-
-  public removeItemsFromCart(itemIds: string[]): void {
-    const updatedCartItems = this.cartItemsSubject$.value.filter(
-      (item) => !itemIds.includes(item.nft.uid),
-    );
-    this.cartItemsSubject$.next(updatedCartItems);
-    this.saveCartItems();
-  }
-
   public removeGroupItemsFromCart(tokenSymbol: string): void {
     const updatedCartItems = this.cartItemsSubject$.value.filter((item) => {
       const itemTokenSymbol =
@@ -617,7 +710,6 @@ export class CartService {
           });
 
           this.cartItemsSubject$.next(updatedCartItems);
-
           this.saveCartItems();
         }),
       )
@@ -795,12 +887,6 @@ export class CartService {
     );
   }
 
-  public clearCart(): void {
-    this.cartItemsSubject$.next([]);
-    this.saveCartItems();
-    this.notification.success($localize`All items have been removed from your cart.`, '');
-  }
-
   public getAvailableNftQuantity(cartItem: CartItem): Observable<number> {
     return this.isCartItemAvailableForSale(cartItem).pipe(
       map((result) => {
@@ -814,39 +900,11 @@ export class CartService {
     );
   }
 
-  public saveCartItems(): void {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.cartItemsSubject$.getValue()));
-  }
-
-  public loadCartItems(): CartItem[] {
-    const items = getItem(StorageItem.CartItems) as CartItem[];
-    return items || [];
-  }
-
   public valueDivideExponent(value: ConvertValue): number {
     if (value.exponents === 0 || value.value === null || value.value === undefined) {
       return value.value!;
     } else {
       return value.value! / Math.pow(10, getDefDecimalIfNotSet(value.exponents));
     }
-  }
-
-  public getDefaultNetworkDecimals(): number {
-    return DEFAULT_NETWORK_DECIMALS;
-  }
-
-  public getSelectedNetwork(): string | null {
-    const selectedNetwork = localStorage.getItem('cartCheckoutSelectedNetwork');
-    return selectedNetwork;
-  }
-
-  public setNetworkSelection(networkSymbol: string): void {
-    localStorage.setItem('cartCheckoutSelectedNetwork', networkSymbol);
-    this.selectedNetworkSubject$.next(networkSymbol);
-  }
-
-  public clearNetworkSelection(): void {
-    localStorage.removeItem('cartCheckoutSelectedNetwork');
-    this.selectedNetworkSubject$.next(null);
   }
 }
