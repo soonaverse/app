@@ -26,8 +26,8 @@
         <div nz-col nzSpan="20">
           <h3 nz-typography nzTitle level="4" class="mb-2">
             Network: <span class="uppercase">{{ group.tokenSymbol }}</span> -
-            <span class="font-bold">{{ group.totalQuantity }}</span> NFTs in network group
-            with total Price of
+            <span class="font-bold">{{ group.totalQuantity }}</span> NFTs in network group with
+            total Price of
             {{ group.totalPrice | formatToken : group.network : true : true | async }} ({{
               unitsService.getUsd(
                 cartService.valueDivideExponent({

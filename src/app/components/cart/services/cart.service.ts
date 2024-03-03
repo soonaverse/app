@@ -121,39 +121,42 @@ export class CartService {
 
   private listenToStorageChanges(): void {
     window.addEventListener('storage', (event) => {
-        if (event.storageArea === localStorage) {
-            this.zone.run(() => {
-                switch (event.key) {
-                    case CART_STORAGE_KEY:
-                      const updatedCartItems = JSON.parse(event.newValue || '[]');
-                      this.cartItemsSubject$.next(updatedCartItems);
-                      break;
-                    case NETWORK_STORAGE_KEY:
-                      const updatedNetwork = JSON.parse(event.newValue || 'null');
-                      this.selectedNetworkSubject$.next(updatedNetwork);
-                      break;
-                    case STEP_STORAGE_KEY:
-                      const newStep = JSON.parse(event.newValue || 'null');
-                      this.currentStepSubject$.next(newStep);
-                      break;
-                    case TRAN_STORAGE_KEY:
-                      const newTran = JSON.parse(event.newValue || 'null');
-                      this.pendingTransaction$.next(newTran);
-                      break;
-                }
-                this.cartUpdateSubject$.next();
-            });
-        }
+      if (event.storageArea === localStorage) {
+        this.zone.run(() => {
+          switch (event.key) {
+            case CART_STORAGE_KEY: {
+              const updatedCartItems = JSON.parse(event.newValue || '[]');
+              this.cartItemsSubject$.next(updatedCartItems);
+              break;
+            }
+            case NETWORK_STORAGE_KEY: {
+              const updatedNetwork = JSON.parse(event.newValue || 'null');
+              this.selectedNetworkSubject$.next(updatedNetwork);
+              break;
+            }
+            case STEP_STORAGE_KEY: {
+              const newStep = JSON.parse(event.newValue || 'null');
+              this.currentStepSubject$.next(newStep);
+              break;
+            }
+            case TRAN_STORAGE_KEY: {
+              const newTran = JSON.parse(event.newValue || 'null');
+              this.pendingTransaction$.next(newTran);
+              break;
+            }
+          }
+          this.cartUpdateSubject$.next();
+        });
+      }
     });
   }
 
   public startTransactionExpiryCheck(): void {
     if (this.transactionCheckInterval) {
-        clearInterval(this.transactionCheckInterval);
+      clearInterval(this.transactionCheckInterval);
     }
 
     this.transactionCheckInterval = setInterval(() => {
-
       const transaction = this.pendingTransaction$.getValue();
       const currentStep = this.getCurrentStep();
       if (currentStep === StepType.TRANSACTION || currentStep === StepType.WAIT) {

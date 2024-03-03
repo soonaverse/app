@@ -1,4 +1,10 @@
-import { Component, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  OnInit,
+} from '@angular/core';
 import { Network, Transaction } from '@build-5/interfaces';
 import { Subscription, take, of, Observable, BehaviorSubject, Subject } from 'rxjs';
 import { CartService, CartItem } from '@components/cart/services/cart.service';
@@ -9,7 +15,7 @@ import { UnitsService } from '@core/services/units/units.service';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { DeviceService } from '@core/services/device';
 import { HelperService } from '@pages/nft/services/helper.service';
-import {  } from '@angular/core';
+import {} from '@angular/core';
 
 export enum StepType {
   CONFIRM = 'Confirm',
@@ -52,7 +58,7 @@ export class CartModalComponent implements OnInit, OnDestroy {
   public currentStep: StepType | null = null;
   public isTransactionExpired: boolean | null = null;
   public selectedNetwork: string | null = null;
-  public isLoading: boolean = false;
+  public isLoading = false;
   public pendingTransaction: Transaction | undefined = undefined;
 
   constructor(
@@ -67,43 +73,43 @@ export class CartModalComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscriptions$.add(
-        this.cartService.currentStep$.subscribe(step => {
-            this.currentStep = step;
-            this.triggerChangeDetection();
-        })
+      this.cartService.currentStep$.subscribe((step) => {
+        this.currentStep = step;
+        this.triggerChangeDetection();
+      }),
     );
 
     this.subscriptions$.add(
-      this.cartService.selectedNetwork$.subscribe(network => {
-          this.selectedNetwork = network;
-          this.triggerChangeDetection();
-      })
+      this.cartService.selectedNetwork$.subscribe((network) => {
+        this.selectedNetwork = network;
+        this.triggerChangeDetection();
+      }),
     );
 
     this.subscriptions$.add(
-      this.cartService.pendingTransaction$.subscribe(transaction => {
+      this.cartService.pendingTransaction$.subscribe((transaction) => {
         this.pendingTransaction = transaction;
         this.triggerChangeDetection();
-      })
+      }),
     );
 
     this.subscriptions$.add(
-        this.cartService.isLoading$.subscribe(loading => {
-            this.isLoading = loading;
-            this.triggerChangeDetection();
-        })
+      this.cartService.isLoading$.subscribe((loading) => {
+        this.isLoading = loading;
+        this.triggerChangeDetection();
+      }),
     );
 
     this.subscriptions$.add(
-        this.cartService.cartUpdateObservable$.subscribe(() => {
-            this.triggerChangeDetection();
-        })
+      this.cartService.cartUpdateObservable$.subscribe(() => {
+        this.triggerChangeDetection();
+      }),
     );
 
     this.subscriptions$.add(
       this.cartService.triggerChangeDetectionSubject$.subscribe(() => {
-          this.triggerChangeDetection();
-      })
+        this.triggerChangeDetection();
+      }),
     );
   }
 

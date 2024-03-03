@@ -357,8 +357,8 @@
                     nzType="default"
                     [disabled]="
                       ((cartService.pendingTransaction$ | async) &&
-                      !helper.isExpired(cartService.pendingTransaction$ | async) &&
-                      (cartService.selectedNetwork$ | async) === item.pricing.tokenSymbol) ||
+                        !helper.isExpired(cartService.pendingTransaction$ | async) &&
+                        (cartService.selectedNetwork$ | async) === item.pricing.tokenSymbol) ||
                       (isLoading$ | async)
                     "
                     (click)="removeFromCart(item)"
@@ -384,7 +384,7 @@
         </div>
         <ng-template #emptyCart>Your cart is empty.</ng-template>
         <div class="tester">
-          Pending Transaction: {{ (cartService.pendingTransaction$ | async) }}
+          Pending Transaction: {{ cartService.pendingTransaction$ | async }}
           <br />
           Transaction Expired: {{ helper.isExpired(cartService.pendingTransaction$ | async) }}
         </div>
@@ -407,7 +407,11 @@
           nz-button
           nzType="default"
           (click)="clearCart()"
-          [disabled]="(cartService.pendingTransaction$ | async) && !helper.isExpired(cartService.pendingTransaction$ | async) || (isLoading$ | async)"
+          [disabled]="
+            ((cartService.pendingTransaction$ | async) &&
+              !helper.isExpired(cartService.pendingTransaction$ | async)) ||
+            (isLoading$ | async)
+          "
           nz-tooltip
           [nzTooltipTitle]="(isLoading$ | async) ? 'Waiting for cart items to finish loading' : ''"
           class="text-red-600 hover:text-red-800"
@@ -425,7 +429,6 @@
           Checkout
         </button>
       </div>
-
     </div>
   </nz-modal>
 </ng-container>
