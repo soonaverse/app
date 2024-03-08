@@ -383,11 +383,6 @@
           </ng-template>
         </div>
         <ng-template #emptyCart>Your cart is empty.</ng-template>
-        <div class="tester">
-          Pending Transaction: {{ cartService.pendingTransaction$ | async }}
-          <br />
-          Transaction Expired: {{ helper.isExpired(cartService.pendingTransaction$ | async) }}
-        </div>
       </ng-container>
 
       <div class="text-center" *nzModalFooter>
