@@ -63,7 +63,13 @@ export class MemberAboutComponent implements OnInit {
     this.drawerVisible$.next(false);
   }
 
+  /*
   public trackByUid(index: number, item: any): number {
     return item.uid;
+  }
+  */
+
+  public trackByUid(index: number, item: any): any {
+    return item ? item.uid : undefined;
   }
 }
