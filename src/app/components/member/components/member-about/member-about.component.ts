@@ -70,6 +70,7 @@ export class MemberAboutComponent implements OnInit {
   */
 
   public trackByUid(index: number, item: any): any {
+    console.log('member-about trackByUid fired, (index, item): ', index, item);
     return item ? item.uid : undefined;
   }
 }
