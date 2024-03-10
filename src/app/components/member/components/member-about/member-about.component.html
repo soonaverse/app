@@ -154,6 +154,14 @@
       >
         <span i18n>No Contribution Yet.</span>
       </article>
+
+      <article class="testArticle">
+        MemberId: {{ (data.member$ | async)?.uid }}<br />
+        Spaces: {{ (data.space$ | async) }}
+        <div *ngFor="let s of data.space$ | async">
+          Space Item: {{ s.uid }}<br />
+        </div>
+      </article>
     </div>
   </div>
 </div>

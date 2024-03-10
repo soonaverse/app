@@ -22,6 +22,7 @@ export class DataService {
   public member$: BehaviorSubject<Member | undefined> = new BehaviorSubject<Member | undefined>(
     undefined,
   );
+
   public awardsCompleted$: BehaviorSubject<Award[] | undefined> = new BehaviorSubject<
     Award[] | undefined
   >(undefined);

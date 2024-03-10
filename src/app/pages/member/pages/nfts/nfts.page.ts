@@ -42,7 +42,8 @@ export class NFTsPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private nftSelectionService: NftSelectionService,
-  ) {}
+  ) {
+  }
 
   public ngOnInit(): void {
     this.route.params.subscribe((params) => {

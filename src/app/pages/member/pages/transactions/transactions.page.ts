@@ -46,7 +46,8 @@ export class TransactionsPage implements OnInit, OnDestroy {
     private memberApi: MemberApi,
     private cd: ChangeDetectorRef,
     private route: ActivatedRoute,
-  ) {}
+  ) {
+  }
 
   public ngOnInit(): void {
     this.route.params.subscribe((params) => {

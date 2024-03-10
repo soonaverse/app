@@ -16,7 +16,7 @@ import { SeoService } from '@core/services/seo';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FILE_SIZES, Member } from '@build-5/interfaces';
-import { BehaviorSubject, Subscription, skip } from 'rxjs';
+import { BehaviorSubject, Subscription, filter, map, skip } from 'rxjs';
 import { MemberApi } from './../../../../@api/member.api';
 import { NavigationService } from './../../../../@core/services/navigation/navigation.service';
 import { DataService } from './../../services/data.service';
@@ -116,17 +116,28 @@ export class MemberPage implements OnInit, OnDestroy {
         .pipe(untilDestroyed(this))
         .subscribe(this.data.awardsPending$),
     );
+
     // TODO Implement search. This is parked since we will be implementing new search here.
+
     this.subscriptions$.push(
-      this.memberApi.topSpaces(memberId).pipe(untilDestroyed(this)).subscribe(this.data.space$),
+      this.memberApi.topSpaces(memberId).pipe(
+        untilDestroyed(this),
+        map(spaces => spaces.filter(space => space && typeof space.uid === 'string' && space.uid.trim() !== ''))
+      ).subscribe((filteredSpaces) => {
+        this.data.space$.next(filteredSpaces);
+      }),
     );
+
     this.subscriptions$.push(
       this.memberApi
         .listen(memberId)
-        .pipe(untilDestroyed(this))
-        .subscribe((v) => {
-          // Only pass next stage.
-          this.data.member$.next(v);
+        .pipe(
+          untilDestroyed(this),
+          filter(v => v && typeof v.uid === 'string' && v.uid.trim() !== '')
+        )
+        .subscribe((validMember) => {
+          // Only pass next stage if valid.
+          this.data.member$.next(validMember);
         }),
     );
 

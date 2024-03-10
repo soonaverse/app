@@ -34,7 +34,8 @@ export class MemberAboutComponent implements OnInit {
     public previewImageService: PreviewImageService,
     public auth: AuthService,
     public cd: ChangeDetectorRef,
-  ) {}
+  ) {
+  }
 
   public ngOnInit(): void {
     this.data.triggerAction$.pipe(skip(1), untilDestroyed(this)).subscribe((s) => {
@@ -63,14 +64,8 @@ export class MemberAboutComponent implements OnInit {
     this.drawerVisible$.next(false);
   }
 
-  /*
-  public trackByUid(index: number, item: any): number {
-    return item.uid;
-  }
-  */
-
   public trackByUid(index: number, item: any): any {
-    console.log('member-about trackByUid fired, (index, item): ', index, item);
-    return item ? item.uid : undefined;
+    return item ? item.uid : index;
   }
+
 }
