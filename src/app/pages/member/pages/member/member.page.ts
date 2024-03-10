@@ -120,12 +120,19 @@ export class MemberPage implements OnInit, OnDestroy {
     // TODO Implement search. This is parked since we will be implementing new search here.
 
     this.subscriptions$.push(
-      this.memberApi.topSpaces(memberId).pipe(
-        untilDestroyed(this),
-        map(spaces => spaces.filter(space => space && typeof space.uid === 'string' && space.uid.trim() !== ''))
-      ).subscribe((filteredSpaces) => {
-        this.data.space$.next(filteredSpaces);
-      }),
+      this.memberApi
+        .topSpaces(memberId)
+        .pipe(
+          untilDestroyed(this),
+          map((spaces) =>
+            spaces.filter(
+              (space) => space && typeof space.uid === 'string' && space.uid.trim() !== '',
+            ),
+          ),
+        )
+        .subscribe((filteredSpaces) => {
+          this.data.space$.next(filteredSpaces);
+        }),
     );
 
     this.subscriptions$.push(
@@ -133,7 +140,7 @@ export class MemberPage implements OnInit, OnDestroy {
         .listen(memberId)
         .pipe(
           untilDestroyed(this),
-          filter(v => v && typeof v.uid === 'string' && v.uid.trim() !== '')
+          filter((v) => v && typeof v.uid === 'string' && v.uid.trim() !== ''),
         )
         .subscribe((validMember) => {
           // Only pass next stage if valid.

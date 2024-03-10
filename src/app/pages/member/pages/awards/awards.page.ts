@@ -53,5 +53,4 @@ export class AwardsPage {
   public trackByUid(index: number, item: any): any {
     return item ? item.uid : index;
   }
-
 }

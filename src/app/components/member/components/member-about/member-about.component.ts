@@ -34,8 +34,7 @@ export class MemberAboutComponent implements OnInit {
     public previewImageService: PreviewImageService,
     public auth: AuthService,
     public cd: ChangeDetectorRef,
-  ) {
-  }
+  ) {}
 
   public ngOnInit(): void {
     this.data.triggerAction$.pipe(skip(1), untilDestroyed(this)).subscribe((s) => {
@@ -67,5 +66,4 @@ export class MemberAboutComponent implements OnInit {
   public trackByUid(index: number, item: any): any {
     return item ? item.uid : index;
   }
-
 }
