@@ -28,6 +28,7 @@ import { NftApi } from '@api/nft.api';
 import { OrderApi } from '@api/order.api';
 import { AuthService } from '@components/auth/services/auth.service';
 import { NotificationService } from '@core/services/notification';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { StorageItem, setItem } from '@core/utils/local-storage.utils';
 import dayjs from 'dayjs';
 import { NzSelectOptionInterface } from 'ng-zorro-antd/select';
@@ -36,12 +37,14 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Build5ErrorLookupService } from '@core/services/build5-error-lookup/build5-error-lookup.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 interface TransNft extends Nft {
   transfer: boolean;
   withdraw: boolean;
   statusMessage?: string;
   disabled: boolean;
+  transferred: TransferStatus;
 }
 
 interface HistoryItem {
@@ -50,6 +53,12 @@ interface HistoryItem {
   label: string;
   transaction: Transaction;
   link?: string;
+}
+
+export enum TransferStatus {
+  PENDING = 'pending',
+  FAILURE = 'failure',
+  SUCCESS = 'success',
 }
 
 @UntilDestroy()
@@ -87,10 +96,12 @@ export class TransferModalComponent implements OnInit {
     public auth: AuthService,
     private orderApi: OrderApi,
     private notification: NotificationService,
+    private nzNotification: NzNotificationService,
     public readonly algoliaService: AlgoliaService,
     private errorLookupService: Build5ErrorLookupService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private modal: NzModalService,
   ) {
     this.form = new FormGroup({
       selectedAccess: this.selectedAccessControl,
@@ -127,6 +138,7 @@ export class TransferModalComponent implements OnInit {
                 withdraw: false,
                 disabled: false,
                 statusMessage: 'Not transferred',
+                transferred: TransferStatus.PENDING,
               })),
           ),
         )
@@ -218,9 +230,11 @@ export class TransferModalComponent implements OnInit {
     };
 
     const params = request;
+    let successCnt = 0;
+    let failCnt = 0;
     await this.auth.sign(params, (sc, finish) => {
       this.notification
-        .processRequest(this.nftApi.transferNft(sc), $localize`Tranfer initiated.`, finish)
+        .processRequest(this.nftApi.transferNft(sc), $localize`Transfer initiated.`, finish)
         .subscribe((val: any) => {
           console.log('build5 response: ', val);
           if (val && typeof val === 'object') {
@@ -232,16 +246,43 @@ export class TransferModalComponent implements OnInit {
                   this.selectedNfts[nftIndex].withdraw = false;
                   this.selectedNfts[nftIndex].disabled = true;
                   this.selectedNfts[nftIndex].statusMessage = 'NFT successfully transferred.';
+                  this.selectedNfts[nftIndex].transferred = TransferStatus.SUCCESS;
+                  successCnt = successCnt + 1;
                 } else {
                   const codeDesc = this.getErrorDesc(responseCode as number);
-                  this.selectedNfts[nftIndex].statusMessage = codeDesc;
+                  this.selectedNfts[nftIndex].statusMessage = 'Error: ' + codeDesc;
+                  this.selectedNfts[nftIndex].transferred = TransferStatus.FAILURE;
+                  failCnt = failCnt + 1;
                 }
               }
             });
           }
+          if (successCnt > 0) {
+            this.nzNotification.success(
+              $localize`Successfully transferred ${successCnt} nfts.`,
+              '',
+            );
+          }
+          if (failCnt > 0) {
+            this.nzNotification.error($localize`Failed to transfer ${failCnt} nfts.`, '');
+          }
+          if (successCnt > 0 || failCnt > 0) {
+            this.showResultModal(successCnt, failCnt);
+          }
           this.cd.markForCheck();
         });
     });
+  }
+
+  private showResultModal(successCnt: number, failCnt: number): void {
+    const modalConfig = {
+      nzTitle: 'NFT Transfer Results',
+      nzContent: `<div class="flex items-center p-2 mt-2 rounded-xl bg-alerts-warning dark:bg-alerts-warning-dark text-foregrounds-primary dark:text-foregrounds-primary text-sm align-middle"><wen-icon-alert-octagon class="mr-1 lg:mr-2"></wen-icon-alert-octagon><div class="font-bold text-sm"><span>NFT Transfer Results:<br />Successful: ${successCnt}<br />Failed: ${failCnt}<br />Please refer to "Results" field in NFT transfer window for detailed results per NFT transferred.</span></div></div>`,
+      nzClosable: true,
+      nzOkText: 'Close',
+    };
+
+    this.modal.create(modalConfig);
   }
 
   public pushToHistory(

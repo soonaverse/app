@@ -133,6 +133,7 @@ export class MemberApi extends BaseApi<Member> {
         }),
       );
 
+  /*
   public topSpaces = (
     memberId: NetworkAddress,
     orderBy = ['createdOn'],
@@ -140,6 +141,20 @@ export class MemberApi extends BaseApi<Member> {
     lastValue?: string,
     limit?: number,
   ) => this.spaceDataset.getTopByMember(memberId, orderBy, orderByDir, lastValue, limit);
+  */
+
+  public topSpaces = (
+    memberId: NetworkAddress,
+    orderBy = ['createdOn'],
+    orderByDir = ['desc'],
+    lastValue?: string,
+    limit?: number,
+  ) => {
+    console.log(
+      `topSpaces API function called with memberId: ${memberId}, orderBy: ${orderBy}, orderByDir: ${orderByDir}, lastValue: ${lastValue}, limit: ${limit}`,
+    );
+    return this.spaceDataset.getTopByMember(memberId, orderBy, orderByDir, lastValue, limit);
+  };
 
   public pendingSpaces = (
     memberId: NetworkAddress,

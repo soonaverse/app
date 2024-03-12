@@ -12,7 +12,11 @@
       <nz-row
         *ngFor="let nft of selectedNfts; let i = index"
         [class.disabled]="nft.disabled"
-        class="nft-row mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-1"
+        [ngClass]="{
+          'nft-row mb-2 bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark lg:grow rounded-xl p-1': true,
+          'transfer-success': nft.transferred === 'success',
+          'transfer-failure': nft.transferred === 'failure'
+        }"
         nzGutter="[16, 16]"
       >
         <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
