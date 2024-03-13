@@ -45,18 +45,27 @@
         nzGutter="[16, 16]"
       >
         <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
-          <!-- <img [src]="nft.media" [alt]="nft.name" class="w-10 h-10 object-cover rounded" /> -->
           <img
+            loading="lazy"
             *ngIf="nft?.mediaType === 'image'"
             i18n-alt
+            (error)="onImgErrorWeShowPlaceHolderVideo($event)"
             alt="NFT image"
-            [src]="previewImageService.getUrl(nft?.media) || '/assets/mocks/no_banner.jpg'"
+            [src]="previewImageService.getNftSize(nft?.media) || '/assets/mocks/no_banner.jpg'"
             class="object-cover w-10 h-10 rounded"
           />
-          <video controls class="object-cover w-10 h-10 rounded" *ngIf="nft?.mediaType === 'video'">
-            <source [src]="previewImageService.getUrl(nft?.media)" type="video/mp4" />
-            Your browser does not support HTML video.
-          </video>
+
+          <img
+            loading="lazy"
+            *ngIf="nft?.mediaType === 'video'"
+            il8n-alt
+            alt="NFT image"
+            [src]="
+              previewImageService.getVideoPreview(nft?.media) ||
+              '/assets/mocks/video_placeholder.jpg'
+            "
+            class="object-cover w-10 h-10 rounded"
+          />
         </nz-col>
         <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
           <span [ngClass]="{ strikethrough: nft.disabled }">{{ nft.name }}</span>

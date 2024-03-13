@@ -185,6 +185,10 @@ export class TransferModalComponent implements OnInit {
     });
   }
 
+  public onImgErrorWeShowPlaceHolderVideo(event: any): any {
+    event.target.src = '/assets/mocks/video_placeholder.jpg';
+  }
+
   private subscribeMemberList(search?: string): void {
     this.memberSubscription$?.unsubscribe();
     this.memberSubscription$ = from(
