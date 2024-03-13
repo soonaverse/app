@@ -53,7 +53,6 @@ export class MemberPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.deviceService.viewWithSearch$.next(false);
     this.route.params.subscribe((params) => {
-      console.log('route.params subscribed: ', params);
       this.cancelSubscriptions();
       if (params?.memberId) {
         this.listenMember(params.memberId);
@@ -105,7 +104,6 @@ export class MemberPage implements OnInit, OnDestroy {
   }
 
   public listenMember(memberId: string): void {
-    console.log('listenMember fired.');
     this.subscriptions$.push(
       this.memberApi
         .topAwardsCompleted(memberId)
@@ -133,7 +131,6 @@ export class MemberPage implements OnInit, OnDestroy {
           ),
         )
         .subscribe((filteredSpaces) => {
-          console.log('member.page listenMember - filteredSpaces: ', filteredSpaces);
           this.data.space$.next(filteredSpaces);
         }),
     );

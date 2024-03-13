@@ -11,6 +11,7 @@ import {
   NftAccess,
   WenError,
   RETRY_UNCOFIRMED_PAYMENT_DELAY,
+  DEFAULT_NETWORK,
 } from '@build-5/interfaces';
 import {
   BehaviorSubject,
@@ -25,6 +26,7 @@ import {
   tap,
 } from 'rxjs';
 import { NftApi } from '@api/nft.api';
+import { FileApi } from '@api/file.api';
 import { OrderApi } from '@api/order.api';
 import { AuthService } from '@components/auth/services/auth.service';
 import { NotificationService } from '@core/services/notification';
@@ -38,6 +40,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Build5ErrorLookupService } from '@core/services/build5-error-lookup/build5-error-lookup.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NzModalService } from 'ng-zorro-antd/modal';
+import { PreviewImageService } from '@core/services/preview-image';
 
 interface TransNft extends Nft {
   transfer: boolean;
@@ -45,6 +48,8 @@ interface TransNft extends Nft {
   statusMessage?: string;
   disabled: boolean;
   transferred: TransferStatus;
+  network?: string;
+  mediaType?: 'video' | 'image';
 }
 
 interface HistoryItem {
@@ -102,6 +107,8 @@ export class TransferModalComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private modal: NzModalService,
+    public previewImageService: PreviewImageService,
+    private fileApi: FileApi,
   ) {
     this.form = new FormGroup({
       selectedAccess: this.selectedAccessControl,
@@ -139,17 +146,42 @@ export class TransferModalComponent implements OnInit {
                 disabled: false,
                 statusMessage: 'Not transferred',
                 transferred: TransferStatus.PENDING,
+                network: nft.mintingData?.network || DEFAULT_NETWORK,
               })),
           ),
         )
         .subscribe((nfts) => {
           this.selectedNfts = this.sortNfts(nfts);
+          this.updateNftMediaTypes();
           this.cd.markForCheck();
         }),
     );
 
     this.targetAccessOption$.pipe(untilDestroyed(this)).subscribe((targetAccessOption) => {
       this.selectedAccessControl.setValue(targetAccessOption);
+    });
+  }
+
+  public updateNftMediaTypes(): void {
+    this.selectedNfts.forEach((nft, index) => {
+      if (nft.media) {
+        this.fileApi
+          .getMetadata(nft.media)
+          .pipe(
+            take(1),
+            catchError((error) => {
+              console.error(`Error fetching metadata for NFT ${nft.name}:`, error);
+              return of(null);
+            }),
+            tap((mediaType) => {
+              if (mediaType) {
+                this.selectedNfts[index].mediaType = mediaType;
+                this.cd.markForCheck();
+              }
+            }),
+          )
+          .subscribe();
+      }
     });
   }
 
@@ -236,7 +268,6 @@ export class TransferModalComponent implements OnInit {
       this.notification
         .processRequest(this.nftApi.transferNft(sc), $localize`Transfer initiated.`, finish)
         .subscribe((val: any) => {
-          console.log('build5 response: ', val);
           if (val && typeof val === 'object') {
             Object.entries(val).forEach(([nftId, responseCode]) => {
               const nftIndex = this.selectedNfts.findIndex((nft) => nft.uid === nftId);
@@ -355,5 +386,16 @@ export class TransferModalComponent implements OnInit {
 
   public getErrorDesc(errorCode: number): string {
     return this.errorLookupService.getErrorMessage(errorCode);
+  }
+
+  public clearSelection() {
+    this.nftSelectionService.clearSelection();
+    this.modalRef.destroy();
+  }
+
+  public getNftMediaType(nft: TransNft): any {
+    if (nft && nft.media) {
+      return this.fileApi.getMetadata(nft.media);
+    }
   }
 }

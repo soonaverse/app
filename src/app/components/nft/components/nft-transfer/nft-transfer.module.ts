@@ -12,6 +12,7 @@ import { ConnectWalletModule } from '@components/connect-wallet/connect-wallet.m
 import { NzNotificationModule } from 'ng-zorro-antd/notification';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { IconModule } from '@components/icon/icon.module';
 
 @NgModule({
   declarations: [TransferModalComponent],
@@ -29,6 +30,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
     NzNotificationModule,
     NzRadioModule,
     NzSelectModule,
+    IconModule,
   ],
   exports: [TransferModalComponent],
 })

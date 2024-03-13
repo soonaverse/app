@@ -5,8 +5,33 @@
         <nz-col nzSpan="5">Image</nz-col>
         <nz-col nzSpan="5">Name</nz-col>
         <nz-col nzSpan="5">Network</nz-col>
-        <nz-col nzSpan="3">Transfer</nz-col>
-        <nz-col nzSpan="3">Withdraw</nz-col>
+        <nz-col nzSpan="3">
+          <div class="title-with-icon flex items-center">
+            Transfer
+            <span
+              nz-tooltip
+              nzTooltipTitle="Checking this box will include this NFT in the NFT transfer when processed below."
+            >
+              <wen-icon-info-circle
+                class="text-icons-primary dark:text-icons-primary-dark"
+              ></wen-icon-info-circle>
+            </span>
+          </div>
+        </nz-col>
+        <nz-col nzSpan="3">
+          <div class="title-with-icon flex items-center">
+            Withdraw
+            <span
+              nz-tooltip
+              nzTooltipTitle="Checking this box will withdraw this NFT to the verified address when the NFT transfer is processed below."
+            >
+              <wen-icon-info-circle
+                class="text-icons-primary dark:text-icons-primary-dark"
+              ></wen-icon-info-circle>
+            </span>
+          </div>
+        </nz-col>
+
         <nz-col nzSpan="3">Results</nz-col>
       </nz-row>
       <nz-row
@@ -20,14 +45,25 @@
         nzGutter="[16, 16]"
       >
         <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
-          <img [src]="nft.media" [alt]="nft.name" class="w-10 h-10 object-cover rounded" />
+          <!-- <img [src]="nft.media" [alt]="nft.name" class="w-10 h-10 object-cover rounded" /> -->
+          <img
+            *ngIf="nft?.mediaType === 'image'"
+            i18n-alt
+            alt="NFT image"
+            [src]="previewImageService.getUrl(nft?.media) || '/assets/mocks/no_banner.jpg'"
+            class="object-cover w-10 h-10 rounded"
+          />
+          <video controls class="object-cover w-10 h-10 rounded" *ngIf="nft?.mediaType === 'video'">
+            <source [src]="previewImageService.getUrl(nft?.media)" type="video/mp4" />
+            Your browser does not support HTML video.
+          </video>
         </nz-col>
         <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
           <span [ngClass]="{ strikethrough: nft.disabled }">{{ nft.name }}</span>
         </nz-col>
         <nz-col nzSpan="5" nzXs="24" nzSm="12" nzMd="5">
           <span [ngClass]="{ strikethrough: nft.disabled }" class="uppercase">{{
-            nft.mintingData?.network
+            nft.network
           }}</span>
         </nz-col>
         <nz-col nzSpan="3" nzXs="12" nzSm="6" nzMd="3">
@@ -130,6 +166,16 @@
             i18n
           >
             Close
+          </button>
+
+          <button
+            nz-button
+            nzType="link"
+            class="text-lg text-foregrounds-primary dark:text-foregrounds-primary-dark"
+            (click)="clearSelection()"
+            style="background-color: silver; border: 2px solid black"
+          >
+            Clear
           </button>
 
           <button
