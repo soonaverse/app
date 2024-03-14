@@ -59,7 +59,8 @@ export class TransactionsPage implements OnInit, OnDestroy {
 
     this.data.member$?.pipe(untilDestroyed(this)).subscribe((member) => {
       if (member) {
-        this.memberApi.getAllTransactions(member.uid)
+        this.memberApi
+          .getAllTransactions(member.uid)
           .pipe(toArray(), first())
           .subscribe({
             next: (pages) => {
@@ -68,7 +69,7 @@ export class TransactionsPage implements OnInit, OnDestroy {
             },
             error: (error) => {
               console.error('Error fetching all transactions', error);
-            }
+            },
           });
       }
     });
@@ -161,21 +162,40 @@ export class TransactionsPage implements OnInit, OnDestroy {
     if (!this.data.member$.value?.uid) return;
     this.exportingTransactions = true;
 
-    this.memberApi.getAllTransactions(this.data.member$.value?.uid)
+    this.memberApi
+      .getAllTransactions(this.data.member$.value?.uid)
       .pipe(toArray(), untilDestroyed(this))
       .subscribe({
         next: (allTransactions: Transaction[][]) => {
           this.exportingTransactions = false;
           const flatTransactions = allTransactions.flat();
           const fields = [
-            'tranUid', 'network', 'type', 'date', 'amount', 'tokenAmount', 'tokenId', 'tokenUid', 'nftUid', 'collectionUid', 'tangle'
+            'tranUid',
+            'network',
+            'type',
+            'date',
+            'amount',
+            'tokenAmount',
+            'tokenId',
+            'tokenUid',
+            'nftUid',
+            'collectionUid',
+            'tangle',
           ];
           const csv = Papa.unparse({
             fields,
-            data: flatTransactions.map(t => [
-              t.uid, t.network, this.transactionService.getTitle(t), t.createdOn?.toDate(), t.payload.amount,
-              t.payload.nativeTokens?.[0]?.amount || '', t.payload.nativeTokens?.[0]?.id || '', t.payload.token,
-              t.payload.nft, t.payload.collection, this.transactionService.getExplorerLink(t)
+            data: flatTransactions.map((t) => [
+              t.uid,
+              t.network,
+              this.transactionService.getTitle(t),
+              t.createdOn?.toDate(),
+              t.payload.amount,
+              t.payload.nativeTokens?.[0]?.amount || '',
+              t.payload.nativeTokens?.[0]?.id || '',
+              t.payload.token,
+              t.payload.nft,
+              t.payload.collection,
+              this.transactionService.getExplorerLink(t),
             ]),
           });
 
@@ -188,8 +208,7 @@ export class TransactionsPage implements OnInit, OnDestroy {
         error: (error) => {
           this.exportingTransactions = false;
           console.error('Error fetching transactions for export', error);
-
-        }
+        },
       });
   }
 

@@ -210,13 +210,17 @@ export class MemberApi extends BaseApi<Member> {
     );
   }
 
-  public getAllTransactions(memberId: string, orderBy: string[] = ['createdOn']): Observable<Transaction[]> {
-    return new Observable(observer => {
+  public getAllTransactions(
+    memberId: string,
+    orderBy: string[] = ['createdOn'],
+  ): Observable<Transaction[]> {
+    return new Observable((observer) => {
       const fetchPage = (lastValue?: string) => {
-        this.transactionDataset.getTopTransactionsLive(orderBy, lastValue, memberId)
+        this.transactionDataset
+          .getTopTransactionsLive(orderBy, lastValue, memberId)
           .pipe(first())
           .subscribe({
-            next: transactions => {
+            next: (transactions) => {
               if (transactions.length > 0) {
                 observer.next(transactions);
                 const lastTransaction = transactions[transactions.length - 1];
@@ -225,7 +229,7 @@ export class MemberApi extends BaseApi<Member> {
                 observer.complete();
               }
             },
-            error: err => observer.error(err)
+            error: (err) => observer.error(err),
           });
       };
 
