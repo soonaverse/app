@@ -18,7 +18,7 @@ import { DataService } from '@pages/member/services/data.service';
 import { HelperService } from '@pages/member/services/helper.service';
 import { Member, Transaction, TransactionType } from '@build-5/interfaces';
 import Papa from 'papaparse';
-import { BehaviorSubject, Observable, Subscription, first, map, of } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, first, map, of, toArray } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -157,47 +157,55 @@ export class TransactionsPage implements OnInit, OnDestroy {
   public exportTransactions(): void {
     if (!this.data.member$.value?.uid) return;
     this.exportingTransactions = true;
-    this.memberApi
-      .topTransactions(this.data.member$.value?.uid, undefined, undefined)
-      .pipe(first(), untilDestroyed(this))
-      .subscribe((transactions: Transaction[]) => {
-        this.exportingTransactions = false;
-        const fields = [
-          '',
-          'tranUid',
-          'network',
-          'type',
-          'date',
-          'amount',
-          'tokenAmount',
-          'tokenId',
-          'tokenUid',
-          'nftUid',
-          'collectionUid',
-          'tangle',
-        ];
-        const csv = Papa.unparse({
-          fields,
-          data: transactions.map((t) => [
-            t.uid,
-            t.network,
-            this.transactionService.getTitle(t),
-            t.createdOn?.toDate(),
-            t.payload.amount,
-            t.payload.nativeTokens?.[0]?.amount || '',
-            t.payload.nativeTokens?.[0]?.id || '',
-            t.payload.token,
-            t.payload.nft,
-            t.payload.collection,
-            this.transactionService.getExplorerLink(t),
-          ]),
-        });
 
-        download(
-          `data:text/csv;charset=utf-8${csv}`,
-          `soonaverse_${this.data.member$.value?.uid}_transactions.csv`,
-        );
-        this.cd.markForCheck();
+    this.memberApi
+      .getAllTransactions(this.data.member$.value?.uid)
+      .pipe(toArray(), untilDestroyed(this))
+      .subscribe({
+        next: (allTransactions: Transaction[][]) => {
+          this.exportingTransactions = false;
+          const flatTransactions = allTransactions.flat();
+          const fields = [
+            'tranUid',
+            'network',
+            'type',
+            'date',
+            'amount',
+            'tokenAmount',
+            'tokenId',
+            'tokenUid',
+            'nftUid',
+            'collectionUid',
+            'tangle',
+          ];
+          const csv = Papa.unparse({
+            fields,
+            data: flatTransactions.map(t => [
+              t.uid,
+              t.network,
+              this.transactionService.getTitle(t),
+              t.createdOn?.toDate(),
+              t.payload.amount,
+              t.payload.nativeTokens?.[0]?.amount || '',
+              t.payload.nativeTokens?.[0]?.id || '',
+              t.payload.token,
+              t.payload.nft,
+              t.payload.collection,
+              this.transactionService.getExplorerLink(t),
+            ]),
+          });
+
+          download(
+            `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`,
+            `soonaverse_${this.data.member$.value?.uid}_transactions.csv`
+          );
+          this.cd.markForCheck();
+        },
+        error: (error) => {
+          this.exportingTransactions = false;
+          console.error('Error fetching transactions for export', error);
+
+        }
       });
   }
 
