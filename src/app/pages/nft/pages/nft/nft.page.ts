@@ -4,6 +4,7 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CollectionApi } from '@api/collection.api';
@@ -22,7 +23,7 @@ import { SeoService } from '@core/services/seo';
 import { ThemeList, ThemeService } from '@core/services/theme';
 import { TransactionService } from '@core/services/transaction';
 import { UnitsService } from '@core/services/units';
-import { StorageItem, getItem } from '@core/utils';
+import { getCheckoutTransaction } from '@core/utils';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { copyToClipboard } from '@core/utils/tools.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -30,6 +31,7 @@ import { HelperService } from '@pages/nft/services/helper.service';
 import {
   Collection,
   CollectionType,
+  CollectionStatus,
   DEFAULT_NETWORK,
   FILE_SIZES,
   IPFS_GATEWAY,
@@ -47,6 +49,8 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { BehaviorSubject, Subscription, combineLatest, interval, map, skip, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { DataService } from '../../services/data.service';
+import { NgModel } from '@angular/forms';
+import { CartService } from '@components/cart/services/cart.service';
 
 export enum ListingType {
   CURRENT_BIDS = 0,
@@ -62,6 +66,7 @@ export enum ListingType {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NFTPage implements OnInit, OnDestroy {
+  @ViewChild('quantityInput', { static: false }) quantityInput!: NgModel;
   public collectionPath: string = ROUTER_UTILS.config.collection.root;
   public isCheckoutOpen = false;
   public isBidOpen = false;
@@ -83,10 +88,14 @@ export class NFTPage implements OnInit, OnDestroy {
     preparing: $localize`Available once minted...`,
     view: $localize`View`,
   };
+  public currentNft: Nft | null | undefined = null;
   private subscriptions$: Subscription[] = [];
   private nftSubscriptions$: Subscription[] = [];
   private collectionSubscriptions$: Subscription[] = [];
   private tranSubscriptions$: Subscription[] = [];
+  public collectionType: CollectionType | null | undefined = null;
+  public collectionMinting: CollectionStatus | null | undefined = null;
+  public nftQtySelected = 1;
 
   constructor(
     public data: DataService,
@@ -109,11 +118,15 @@ export class NFTPage implements OnInit, OnDestroy {
     private themeService: ThemeService,
     private seo: SeoService,
     private notification: NotificationService,
+    public cartService: CartService,
   ) {
     // none
   }
 
   public ngOnInit(): void {
+    this.data.nft$.subscribe((nft) => {
+      this.currentNft = nft;
+    });
     this.deviceService.viewWithSearch$.next(false);
     this.route.params?.pipe(untilDestroyed(this)).subscribe((obj) => {
       const id: string | undefined = obj?.[ROUTER_UTILS.config.nft.nft.replace(':', '')];
@@ -268,6 +281,7 @@ export class NFTPage implements OnInit, OnDestroy {
 
     this.data.collection$.pipe(skip(1), untilDestroyed(this)).subscribe(async (p) => {
       if (p) {
+        this.collectionType = p.type;
         this.collectionSubscriptions$.forEach((s) => {
           s.unsubscribe();
         });
@@ -394,6 +408,20 @@ export class NFTPage implements OnInit, OnDestroy {
     }
   }
 
+  public getCollectionTypeString(type: CollectionType | null | undefined): string {
+    if (type === null || type === undefined) {
+      return 'Unknown';
+    }
+    return CollectionType[type];
+  }
+
+  public getCollectionStatusString(status: CollectionStatus | null | undefined): string {
+    if (status === null || status === undefined) {
+      return 'Unknown';
+    }
+    return CollectionStatus[status];
+  }
+
   private listenToNft(id: string): void {
     this.cancelSubscriptions();
     this.data.nftId = id;
@@ -404,6 +432,65 @@ export class NFTPage implements OnInit, OnDestroy {
 
   public canSetItForSale(nft?: Nft | null): boolean {
     return !!nft?.owner && nft?.owner === this.auth.member$.value?.uid;
+  }
+
+  public getAvailableNftQuantity(col?: Collection | null, nft?: Nft | null): number {
+    return this.helper.getAvailNftQty(nft, col);
+  }
+
+  public updateQuantity(): void {
+    const maxQuantity = this.getAvailableNftQuantity(
+      this.data.collection$.value,
+      this.data.nft$.value,
+    );
+    const startingValue = this.nftQtySelected;
+    const parsedQuantity = Math.round(Number(this.nftQtySelected));
+
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+      this.nftQtySelected = 1;
+    } else if (parsedQuantity > maxQuantity) {
+      this.nftQtySelected = maxQuantity;
+    } else {
+      this.nftQtySelected = parsedQuantity;
+    }
+
+    this.cd.markForCheck();
+
+    if (startingValue === this.nftQtySelected) {
+      return;
+    } else {
+      this.resetInput();
+    }
+  }
+
+  public forceValidRange(event: ClipboardEvent): void {
+    event.preventDefault();
+
+    if (event.clipboardData) {
+      const pastedData = event.clipboardData.getData('text/plain');
+      const parsedQuantity = Math.round(Number(pastedData));
+
+      const maxQuantity = this.getAvailableNftQuantity(
+        this.data.collection$.value,
+        this.data.nft$.value,
+      );
+
+      if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+        this.nftQtySelected = 1;
+      } else if (parsedQuantity > maxQuantity) {
+        this.nftQtySelected = maxQuantity;
+      } else {
+        this.nftQtySelected = parsedQuantity;
+      }
+
+      this.resetInput();
+    }
+  }
+
+  private resetInput() {
+    if (this.quantityInput) {
+      this.quantityInput.reset(this.nftQtySelected);
+    }
   }
 
   public discount(collection?: Collection | null, nft?: Nft | null): number {
@@ -437,7 +524,8 @@ export class NFTPage implements OnInit, OnDestroy {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (getItem(StorageItem.CheckoutTransaction)) {
+    const checkoutTransaction = getCheckoutTransaction();
+    if (checkoutTransaction?.transactionId) {
       this.nzNotification.error('You currently have open order. Pay for it or let it expire.', '');
       return;
     }
@@ -449,7 +537,8 @@ export class NFTPage implements OnInit, OnDestroy {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (getItem(StorageItem.CheckoutTransaction)) {
+    const checkoutTransaction = getCheckoutTransaction();
+    if (checkoutTransaction?.transactionId) {
       this.nzNotification.error('You currently have open order. Pay for it or let it expire.', '');
       return;
     }
@@ -520,6 +609,16 @@ export class NFTPage implements OnInit, OnDestroy {
       }
     } else {
       return nft.name;
+    }
+  }
+
+  public addToCart(nft: Nft): void {
+    if (nft && this.data.collection$) {
+      this.data.collection$.pipe(take(1)).subscribe((collection) => {
+        if (collection) {
+          this.cartService.addToCart(nft, collection, this.nftQtySelected);
+        }
+      });
     }
   }
 

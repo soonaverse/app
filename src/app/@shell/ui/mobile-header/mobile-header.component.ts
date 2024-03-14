@@ -8,6 +8,7 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { Notification } from '@build-5/interfaces';
 import { BehaviorSubject } from 'rxjs';
 import { NotificationContent } from '../header/header.component';
+import { CartService } from '@components/cart/services/cart.service';
 
 @UntilDestroy()
 @Component({
@@ -25,6 +26,7 @@ export class MobileHeaderComponent {
   @Input() enableCreateAwardProposal = true;
   @Input() notifications: Notification[] = [];
   @Input() unreadNotificationCount = 0;
+  @Input() cartItemCount = 0;
   @Input() getNotificationDetails!: (not: Notification) => NotificationContent;
   @Output() wenOnVisibleChange = new EventEmitter<boolean>();
   @Output() wenOnNotificationVisibleChange = new EventEmitter<boolean>();
@@ -36,6 +38,7 @@ export class MobileHeaderComponent {
     public location: Location,
     public routerService: RouterService,
     public unitsService: UnitsService,
+    public cartService: CartService,
   ) {}
 
   public setMobileMenuVisible(isVisible: boolean): void {
@@ -55,5 +58,9 @@ export class MobileHeaderComponent {
 
   public get isLoggedIn$(): BehaviorSubject<boolean> {
     return this.auth.isLoggedIn$;
+  }
+
+  public handleOpenCartModal(): void {
+    this.cartService.showCartModal();
   }
 }

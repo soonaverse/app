@@ -239,6 +239,26 @@
             <wen-icon-wallet class="text-white"></wen-icon-wallet>
           </button>
         </span>
+        <ng-container *ngIf="nft && collection">
+          <ng-container
+            *ngIf="
+              cartService.isNftAvailableForSale(nft, collection, true)
+                | async as nftAvailabilityStatus
+            "
+          >
+            <span class="ml-2" nz-tooltip [nzTooltipTitle]="nftAvailabilityStatus.message">
+              <button
+                nz-button
+                nzType="default"
+                class="flex items-center justify-center p-2 rounded-full"
+                (click)="addToCart($event, nft, collection)"
+                [disabled]="!nftAvailabilityStatus.isAvailable"
+              >
+                <wen-icon-cart class="text-white"></wen-icon-cart>
+              </button>
+            </span>
+          </ng-container>
+        </ng-container>
       </div>
     </div>
   </a>

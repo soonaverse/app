@@ -130,6 +130,7 @@
                   sortBy: filterStorageService.marketCollectionsFilters$.value.sortBy,
                   range: filterStorageService.marketCollectionsFilters$.value.range,
                   refinementList: {
+                    status: filterStorageService.marketCollectionsFilters$.value.refinementList?.status,
                     category: filterStorageService.marketCollectionsFilters$.value.refinementList?.category,
                     space: filterStorageService.marketCollectionsFilters$.value.refinementList?.space,
                     access: $event
@@ -163,6 +164,7 @@
                   range: filterStorageService.marketCollectionsFilters$.value.range,
                   refinementList: {
                     access: filterStorageService.marketCollectionsFilters$.value.refinementList?.access,
+                    status: filterStorageService.marketCollectionsFilters$.value.refinementList?.status,
                     category: filterStorageService.marketCollectionsFilters$.value.refinementList?.category,
                     space: $event
                   }
@@ -193,7 +195,38 @@
                   refinementList: {
                     access: filterStorageService.marketCollectionsFilters$.value.refinementList?.access,
                     space: filterStorageService.marketCollectionsFilters$.value.refinementList?.space,
+                    status: filterStorageService.marketCollectionsFilters$.value.refinementList?.status,
                     category: $event
+                  }
+                }
+              )"
+          >
+          </wen-algolia-checkbox>
+        </wen-collapse>
+        <wen-collapse
+          class="mb-2 transition-all"
+          i18n-title
+          title="Status"
+          [isCollapsed]="true"
+          [type]="collapseTypes.UNDERLINE"
+          (wenOnCollapse)="statusFilterOpen = !$event"
+          [ngClass]="{ 'mb-10': statusFilterOpen }"
+        >
+          <wen-algolia-checkbox
+            attribute="status"
+            [transformItems]="algoliaService.convertCollectionStatus"
+            [filterType]="algoliaCheckboxFilterTypes.DEFAULT"
+            [reset$]="reset$"
+            [value]="(filterStorageService.marketCollectionsFilters$ | async)?.refinementList?.status"
+            (wenChange)="filterStorageService.marketCollectionsFilters$.next(
+                {
+                  sortBy: filterStorageService.marketCollectionsFilters$.value.sortBy,
+                  range: filterStorageService.marketCollectionsFilters$.value.range,
+                  refinementList: {
+                    category: filterStorageService.marketCollectionsFilters$.value.refinementList?.category,
+                    access: filterStorageService.marketCollectionsFilters$.value.refinementList?.access,
+                    space: filterStorageService.marketCollectionsFilters$.value.refinementList?.space,
+                    status: $event
                   }
                 }
               )"
