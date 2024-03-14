@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { FileApi } from '@api/file.api';
 import { MemberApi } from '@api/member.api';
@@ -10,6 +17,7 @@ import { UnitsService } from '@core/services/units';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/nft/services/helper.service';
+import { CartService } from '@components/cart/services/cart.service';
 import {
   Access,
   Collection,
@@ -30,19 +38,20 @@ import { BehaviorSubject, Subscription, take } from 'rxjs';
   styleUrls: ['./nft-card.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NftCardComponent {
+export class NftCardComponent implements OnInit, OnDestroy {
+  private cartSubscription$!: Subscription;
   @Input() fullWidth?: boolean;
   @Input() enableWithdraw?: boolean;
 
   @Input()
   set nft(value: Nft | null | undefined) {
-    if (this.memberApiSubscription) {
-      this.memberApiSubscription.unsubscribe();
+    if (this.memberApiSubscription$) {
+      this.memberApiSubscription$.unsubscribe();
     }
     this._nft = value;
     const owner = this.nft?.owner || this.nft?.createdBy;
     if (owner) {
-      this.memberApiSubscription = this.memberApi
+      this.memberApiSubscription$ = this.memberApi
         .listen(owner)
         .pipe(untilDestroyed(this))
         .subscribe(this.owner$);
@@ -75,7 +84,7 @@ export class NftCardComponent {
   public owner$: BehaviorSubject<Member | undefined> = new BehaviorSubject<Member | undefined>(
     undefined,
   );
-  private memberApiSubscription?: Subscription;
+  private memberApiSubscription$?: Subscription;
   private _nft?: Nft | null;
 
   constructor(
@@ -89,7 +98,14 @@ export class NftCardComponent {
     private memberApi: MemberApi,
     private fileApi: FileApi,
     private cache: CacheService,
+    public cartService: CartService,
   ) {}
+
+  ngOnInit(): void {
+    this.cartSubscription$ = this.cartService.getCartItems().subscribe(() => {
+      this.cd.markForCheck();
+    });
+  }
 
   public onBuy(event: MouseEvent): void {
     event.stopPropagation();
@@ -181,5 +197,24 @@ export class NftCardComponent {
 
   public get collectionStatuses(): typeof CollectionStatus {
     return CollectionStatus;
+  }
+
+  public addToCart(
+    event: MouseEvent,
+    nft: Nft | null | undefined,
+    collection: Collection | null | undefined,
+  ): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (nft && collection) {
+      this.cartService.addToCart(nft, collection);
+    } else {
+      console.error('Attempted to add a null or undefined NFT or Collection to the cart');
+    }
+  }
+
+  ngOnDestroy() {
+    this.cartSubscription$.unsubscribe();
   }
 }

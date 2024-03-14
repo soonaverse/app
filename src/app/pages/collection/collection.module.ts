@@ -47,6 +47,7 @@ import { CollectionPage } from './pages/collection/collection.page';
 import { CollectionNFTsPage } from './pages/collection/nfts/nfts.page';
 import { UpsertPage } from './pages/upsert/upsert.page';
 import { DataService } from './services/data.service';
+import { NzSliderModule } from 'ng-zorro-antd/slider';
 
 @NgModule({
   declarations: [CollectionPage, UpsertPage, CollectionAboutComponent, CollectionNFTsPage],
@@ -97,6 +98,7 @@ import { DataService } from './services/data.service';
     IpfsBadgeModule,
     IotaInputModule,
     CollectionMintNetworkModule,
+    NzSliderModule,
   ],
   providers: [DataService, FilterService],
 })

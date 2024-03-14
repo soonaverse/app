@@ -75,8 +75,8 @@ export class NFTsPage implements OnInit {
     return this.auth.member$;
   }
 
-  public trackByUid(_index: number, item: any): number {
-    return item.uid;
+  public trackByUid(index: number, item: any): any {
+    return item ? item.uid : index;
   }
 
   public convertAllToSoonaverseModel(algoliaItems: any[]) {

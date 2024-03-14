@@ -23,6 +23,7 @@ import { MobileHeaderModule } from '../mobile-header/mobile-header.module';
 import { MobileMenuModule } from '../mobile-menu/mobile-menu.module';
 import { TruncateModule } from './../../../@core/pipes/truncate/truncate.module';
 import { HeaderComponent } from './header.component';
+import { CartModule } from '@components/cart/cart.module';
 
 @NgModule({
   declarations: [HeaderComponent],
@@ -50,6 +51,7 @@ import { HeaderComponent } from './header.component';
     NftCheckoutModule,
     MobileMenuModule,
     MobileHeaderModule,
+    CartModule,
   ],
   exports: [HeaderComponent],
 })

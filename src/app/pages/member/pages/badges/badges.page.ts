@@ -124,7 +124,7 @@ export class BadgesPage implements OnInit {
     return this.auth.isLoggedIn$;
   }
 
-  public trackByUid(index: number, item: Transaction) {
-    return item.uid;
+  public trackByUid(index: number, item: any): any {
+    return item ? item.uid : index;
   }
 }

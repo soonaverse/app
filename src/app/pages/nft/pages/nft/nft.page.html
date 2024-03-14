@@ -4,8 +4,15 @@
       <nz-tag
         class="wen-status-tag bg-tags-commencing dark:bg-tags-commencing-dark border-tags-commencing dark:border-tags-commencing-dark"
         i18n
-        >NFT</nz-tag
       >
+        NFT
+      </nz-tag>
+      <nz-tag
+        class="wen-status-tag bg-tags-regular dark:bg-tags-regular-dark border-tags-regular dark:border-tags-regular-dark"
+        i18n
+      >
+        {{ getCollectionTypeString(collectionType) }}
+      </nz-tag>
       <wen-collection-status
         [collection]="data.collection$ | async"
         *ngIf="!(data.nft$ | async )?.owner"
@@ -70,24 +77,35 @@
           <div class="text-xs font-medium text-foregrounds-secondary" i18n>Current price</div>
           <div class="flex items-center mt-2">
             <ng-container
-              *ngIf="((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price); else noPrice"
+              *ngIf="(data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price; else noPrice"
             >
               <div
                 class="mr-2 text-xs font-medium line-through truncate text-foregrounds-secondary"
                 *ngIf="discount(data.collection$ | async, data.nft$ | async) < 1"
               >
-                {{(((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price) |
+                {{ (((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price) |
                 formatToken: ((data.nft$ | async)?.placeholderNft ? (data.collection$ |
-                async)?.mintingData?.network : (data.nft$ | async)?.mintingData?.network): true |
-                async)}}
+                async)?.mintingData?.network : (data.nft$ | async)?.mintingData?.network):true) |
+                async }} ({{ unitsService.getUsd(cartService.valueDivideExponent({ value:
+                ((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price) || 0, exponents:
+                cartService.getDefaultNetworkDecimals() }), ((data.nft$ | async)?.placeholderNft ?
+                (data.collection$ | async)?.mintingData?.network : (data.nft$ |
+                async)?.mintingData?.network)) | async | currency: 'USD':'symbol':'1.0-2' }} USD)
               </div>
               <div class="text-lg font-bold truncate">
-                {{(calc(((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price),
+                {{ (calc(((data.nft$ | async)?.availablePrice || (data.nft$ | async)?.price),
                 discount(data.collection$ | async, data.nft$ | async)) | formatToken: ((data.nft$ |
                 async)?.placeholderNft ? (data.collection$ | async)?.mintingData?.network :
-                (data.nft$ | async)?.mintingData?.network): true | async)}}
+                (data.nft$ | async)?.mintingData?.network):true) | async }} ({{
+                unitsService.getUsd(cartService.valueDivideExponent({ value: calc(((data.nft$ |
+                async)?.availablePrice || (data.nft$ | async)?.price), discount(data.collection$ |
+                async, data.nft$ | async)) || 0, exponents: cartService.getDefaultNetworkDecimals()
+                }), ((data.nft$ | async)?.placeholderNft ? (data.collection$ |
+                async)?.mintingData?.network : (data.nft$ | async)?.mintingData?.network)) | async |
+                currency: 'USD':'symbol':'1.0-2' }} USD)
               </div>
             </ng-container>
+
             <ng-template #noPrice>
               <div class="text-lg font-bold truncate">-</div>
             </ng-template>
@@ -248,28 +266,96 @@
         ></wen-connect-wallet>
       </div>
 
-      <div
-        *ngIf="!helper.isLocked(data.nft$ | async, data.collection$ | async, true) && helper.isAvailableForSale(data.nft$ | async, data.collection$ | async) && (!(data.nft$ | async)?.owner || (data.nft$ | async)?.owner !== (auth.member$ | async)?.uid)"
-        class="mt-10"
-      >
-        <button
-          nz-button
-          nzType="primary"
-          (click)="buy($event)"
-          *ngIf="auth.isLoggedIn$ | async"
-          nzBlock
-          nzSize="large"
-          i18n
-        >
-          Buy now
-        </button>
+      <ng-container *ngIf="(data.collection$ | async) as collection">
+        <ng-container *ngIf="(data.nft$ | async) as nft">
+          <div
+            *ngIf="!helper.isLocked(nft, collection, true) && helper.isAvailableForSale(nft, collection) && (!nft.owner || nft.owner !== (auth.member$ | async)?.uid)"
+            class="mt-10"
+          >
+            <!-- If Multiple Available Set Quantity -->
+            <div *ngIf="getAvailableNftQuantity(collection, nft) > 1">
+              <nz-form-item>
+                <nz-form-control
+                  i18n-nzErrorTip
+                  nzErrorTip="Minimum 1 and maximum {{ getAvailableNftQuantity(collection, nft) }}."
+                >
+                  <nz-input-group nzAddOnBefore="Set NFT Purchase Quantity:">
+                    <input
+                      nz-input
+                      type="number"
+                      [(ngModel)]="nftQtySelected"
+                      (ngModelChange)="updateQuantity()"
+                      #quantityInput="ngModel"
+                      (paste)="forceValidRange($event)"
+                      min="1"
+                      max="{{ getAvailableNftQuantity(collection, nft) }}"
+                    />
+                  </nz-input-group>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
 
-        <wen-connect-wallet
-          class="w-full"
-          wrapperClass="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
-          *ngIf="(auth.isLoggedIn$ | async) === false"
-        ></wen-connect-wallet>
-      </div>
+            <!-- Buy Now Button -->
+            <button
+              nz-button
+              nzType="primary"
+              (click)="buy($event)"
+              *ngIf="auth.isLoggedIn$ | async"
+              nzBlock
+              nzSize="large"
+              i18n
+            >
+              Buy now
+            </button>
+
+            <!-- Add to Cart Button -->
+            <ng-container *ngIf="nft && collection">
+              <ng-container
+                *ngIf="(cartService.isNftAvailableForSale(nft, collection, true) | async) as availability"
+              >
+                <ng-container *ngIf="availability.isAvailable; else unavailableNFT">
+                  <button
+                    nz-button
+                    nzType="primary"
+                    (click)="addToCart(nft)"
+                    nzBlock
+                    nzSize="large"
+                    i18n
+                    style="margin-top: 5px; margin-bottom: 5px"
+                  >
+                    Add to Cart
+                  </button>
+                </ng-container>
+              </ng-container>
+              <ng-template #unavailableNFT>
+                <span
+                  nz-tooltip
+                  [nzTooltipTitle]="(cartService.isNftAvailableForSale(nft, collection, true) | async)?.message"
+                >
+                  <button
+                    nz-button
+                    nzType="primary"
+                    nzBlock
+                    nzSize="large"
+                    disabled
+                    i18n
+                    style="margin-top: 5px; margin-bottom: 5px"
+                  >
+                    Add to Cart
+                  </button>
+                </span>
+              </ng-template>
+            </ng-container>
+
+            <!-- Connect Wallet Component -->
+            <wen-connect-wallet
+              class="w-full"
+              wrapperClass="bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark text-foregrounds-primary dark:text-foregrounds-primary-dark"
+              *ngIf="(auth.isLoggedIn$ | async) !== true"
+            ></wen-connect-wallet>
+          </div>
+        </ng-container>
+      </ng-container>
 
       <div class="mt-12 font-medium" [innerHtml]="(data.nft$ | async)?.description| markdown"></div>
 
@@ -775,6 +861,7 @@
   [isOpen]="isCheckoutOpen"
   [nft]="data.nft$ | async"
   [collection]="data.collection$ | async"
+  [nftQuantity]="nftQtySelected"
   (wenOnClose)="isCheckoutOpen = false"
 ></wen-nft-checkout>
 <wen-nft-sale
