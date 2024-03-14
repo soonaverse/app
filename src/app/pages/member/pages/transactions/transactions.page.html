@@ -17,7 +17,7 @@
 
 <nz-card *ngIf="deviceService.isDesktop$ | async" nzTitle="Transactions" i18n-nzTitle>
   <div class="overflow-x-auto">
-    <nz-table class="block" #table [nzData]="(transactions$ | async) || []" [nzPageSize]="50">
+    <nz-table class="block" #table [nzData]="(allTransactions) || []" [nzPageSize]="50">
       <thead>
         <tr>
           <th i18n>Date</th>

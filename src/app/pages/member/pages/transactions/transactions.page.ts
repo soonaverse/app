@@ -35,6 +35,7 @@ export class TransactionsPage implements OnInit, OnDestroy {
   public openLockedTokenClaim?: Transaction | null;
   private dataStore: Transaction[][] = [];
   private subscriptions$: Subscription[] = [];
+  public allTransactions: Transaction[] = [];
 
   constructor(
     public deviceService: DeviceService,
@@ -54,13 +55,30 @@ export class TransactionsPage implements OnInit, OnDestroy {
         this.exportTransactions();
         this.cd.markForCheck();
       }
-
-      this.data.member$?.pipe(untilDestroyed(this)).subscribe((obj) => {
-        if (obj) {
-          this.listen();
-        }
-      });
     });
+
+    this.data.member$?.pipe(untilDestroyed(this)).subscribe((member) => {
+      if (member) {
+        this.memberApi.getAllTransactions(member.uid)
+          .pipe(toArray(), first())
+          .subscribe({
+            next: (pages) => {
+              this.allTransactions = pages.flat();
+              this.updateDisplayedTransactions();
+            },
+            error: (error) => {
+              console.error('Error fetching all transactions', error);
+            }
+          });
+      }
+    });
+  }
+
+  private updateDisplayedTransactions(lastIndex?: number): void {
+    const nextIndex = lastIndex ?? DEFAULT_LIST_SIZE;
+    const newTransactions = this.allTransactions.slice(0, nextIndex);
+    this.transactions$.next(newTransactions);
+    this.cd.markForCheck();
   }
 
   public getDebugInfo(tran: Transaction | undefined | null): string {
@@ -108,24 +126,10 @@ export class TransactionsPage implements OnInit, OnDestroy {
   }
 
   public onScroll(): void {
-    // In this case there is no value, no need to infinite scroll.
-    if (!this.transactions$.value) {
-      return;
+    if (this.transactions$.value && this.allTransactions.length > this.transactions$.value.length) {
+      const nextIndex = this.transactions$.value.length + DEFAULT_LIST_SIZE;
+      this.updateDisplayedTransactions(nextIndex);
     }
-
-    // We reached maximum.
-    if (
-      !this.dataStore[this.dataStore.length - 1] ||
-      this.dataStore[this.dataStore.length - 1]?.length < DEFAULT_LIST_SIZE
-    ) {
-      return;
-    }
-
-    // Def order field.
-    const lastValue = this.transactions$.value[this.transactions$.value.length - 1]._doc;
-    this.subscriptions$.push(
-      this.getHandler(lastValue).subscribe(this.store.bind(this, this.dataStore.length)),
-    );
   }
 
   protected store(page: number, a: any): void {
@@ -135,7 +139,6 @@ export class TransactionsPage implements OnInit, OnDestroy {
       this.dataStore.push(a);
     }
 
-    // Merge arrays.
     this.transactions$.next(Array.prototype.concat.apply([], this.dataStore));
   }
 
@@ -158,47 +161,28 @@ export class TransactionsPage implements OnInit, OnDestroy {
     if (!this.data.member$.value?.uid) return;
     this.exportingTransactions = true;
 
-    this.memberApi
-      .getAllTransactions(this.data.member$.value?.uid)
+    this.memberApi.getAllTransactions(this.data.member$.value?.uid)
       .pipe(toArray(), untilDestroyed(this))
       .subscribe({
         next: (allTransactions: Transaction[][]) => {
           this.exportingTransactions = false;
           const flatTransactions = allTransactions.flat();
           const fields = [
-            'tranUid',
-            'network',
-            'type',
-            'date',
-            'amount',
-            'tokenAmount',
-            'tokenId',
-            'tokenUid',
-            'nftUid',
-            'collectionUid',
-            'tangle',
+            'tranUid', 'network', 'type', 'date', 'amount', 'tokenAmount', 'tokenId', 'tokenUid', 'nftUid', 'collectionUid', 'tangle'
           ];
           const csv = Papa.unparse({
             fields,
             data: flatTransactions.map(t => [
-              t.uid,
-              t.network,
-              this.transactionService.getTitle(t),
-              t.createdOn?.toDate(),
-              t.payload.amount,
-              t.payload.nativeTokens?.[0]?.amount || '',
-              t.payload.nativeTokens?.[0]?.id || '',
-              t.payload.token,
-              t.payload.nft,
-              t.payload.collection,
-              this.transactionService.getExplorerLink(t),
+              t.uid, t.network, this.transactionService.getTitle(t), t.createdOn?.toDate(), t.payload.amount,
+              t.payload.nativeTokens?.[0]?.amount || '', t.payload.nativeTokens?.[0]?.id || '', t.payload.token,
+              t.payload.nft, t.payload.collection, this.transactionService.getExplorerLink(t)
             ]),
           });
 
-          download(
-            `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`,
-            `soonaverse_${this.data.member$.value?.uid}_transactions.csv`
-          );
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          const downloadUrl = URL.createObjectURL(blob);
+          download(downloadUrl, `soonaverse_${this.data.member$.value?.uid}_transactions.csv`);
+          URL.revokeObjectURL(downloadUrl);
           this.cd.markForCheck();
         },
         error: (error) => {
@@ -209,8 +193,8 @@ export class TransactionsPage implements OnInit, OnDestroy {
       });
   }
 
-  public trackByUid(index: number, item: any): number {
-    return item.uid;
+  public trackByUid(index: number, item: any): any {
+    return item ? item.uid : index;
   }
 
   private cancelSubscriptions(): void {
