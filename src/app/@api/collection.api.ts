@@ -34,6 +34,10 @@ export class CollectionApi extends BaseApi<Collection> {
     super(Dataset.COLLECTION, httpClient);
   }
 
+  public getCollectionById(collectionId: string): Observable<Collection | undefined> {
+    return this.listen(collectionId);
+  }
+
   public mintCollection = (
     req: Build5Request<CollectionMintRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.mintCollection, req);

@@ -106,9 +106,9 @@
           class="text-sm font-medium truncate text-foregrounds-primary dark:text-foregrounds-primary-dark"
         >
           {{
-            collection?.floorPrice
-              ? (collection?.floorPrice
-                | formatToken : collection?.mintingData?.network : false : true : 2
+            collection.floorPrice
+              ? (collection.floorPrice
+                | formatToken : collection.mintingData?.network : false : true : 2
                 | async)
               : '-'
           }}

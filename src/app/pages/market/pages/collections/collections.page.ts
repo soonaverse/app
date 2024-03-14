@@ -34,6 +34,7 @@ export class CollectionsPage implements OnInit {
   spaceFilterOpen = true;
   categoryFilterOpen = false;
   priceFilterOpen = false;
+  statusFilterOpen = false;
 
   constructor(
     public filter: FilterService,

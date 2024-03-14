@@ -4,7 +4,7 @@ import {
   DescriptionItem,
   DescriptionItemType,
 } from '@components/description/description.component';
-import { getItem, StorageItem } from '@core/utils';
+import { getCheckoutTransaction } from '@core/utils';
 import {
   Collection,
   CollectionStatus,
@@ -111,6 +111,10 @@ export class HelperService {
   }
 
   public isDateInFuture(date?: Timestamp | null): boolean {
+    if (!date) {
+      return false;
+    }
+
     if (!this.getDate(date)) {
       return false;
     }
@@ -124,16 +128,36 @@ export class HelperService {
   }
 
   public getDate(date: any): any {
-    if (typeof date === 'object' && date?.toDate) {
-      const d = date.toDate();
-      if (!(d instanceof Date) || isNaN(d.valueOf())) {
-        return undefined;
+    if (!date) {
+      return undefined;
+    }
+
+    if (typeof date === 'number') {
+      return new Date(date);
+    } else if (typeof date === 'object') {
+      if (date.toDate && typeof date.toDate === 'function') {
+        try {
+          return date.toDate();
+        } catch {
+          return undefined;
+        }
       }
 
-      return d;
-    } else {
-      return date || undefined;
+      if ('seconds' in date && !isNaN(Number(date.seconds))) {
+        const seconds = Number(date.seconds);
+        return new Date(seconds * 1000);
+      }
+
+      if (date.toMillis && typeof date.toMillis === 'function') {
+        try {
+          return new Date(date.toMillis());
+        } catch {
+          return undefined;
+        }
+      }
     }
+
+    return undefined;
   }
 
   public getCountdownTitle(nft?: Nft | null): string {
@@ -158,12 +182,14 @@ export class HelperService {
       return false;
     }
 
+    const checkoutTransaction = getCheckoutTransaction();
+
     return (
       col.approved === true &&
       ((nft?.locked === true && !exceptMember) ||
         (exceptMember &&
           nft?.locked === true &&
-          nft?.lockedBy !== getItem(StorageItem.CheckoutTransaction)))
+          (!checkoutTransaction || nft?.lockedBy !== checkoutTransaction.transactionId)))
     );
   }
 
@@ -172,11 +198,23 @@ export class HelperService {
       return false;
     }
 
-    return (
+    const isAvail =
       col.approved === true &&
       !!this.getDate(nft.availableFrom) &&
-      dayjs(this.getDate(nft.availableFrom)).isSameOrBefore(dayjs(), 's')
-    );
+      dayjs(this.getDate(nft.availableFrom)).isSameOrBefore(dayjs(), 's');
+    return isAvail;
+  }
+
+  public getAvailNftQty(nft?: Nft | null, col?: Collection | null): number {
+    const isAvailableForSale = this.isAvailableForSale(nft, col);
+
+    if (nft?.placeholderNft && isAvailableForSale) {
+      return col?.availableNfts || 0;
+    } else if (isAvailableForSale) {
+      return 1;
+    }
+
+    return 0;
   }
 
   public canBeSetForSale(nft?: Nft | null): boolean {
