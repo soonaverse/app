@@ -71,10 +71,6 @@ export class NftApi extends BaseApi<Nft> {
     req: Build5Request<NftTransferRequest>,
   ): Observable<{ [key: string]: number } | undefined> => this.request(WEN_FUNC.nftTransfer, req);
 
-  public getNftById(nftId: string): Observable<Nft | undefined> {
-    return this.listen(nftId);
-  }
-
   public successfullOrders(
     nftId: string,
     network?: Network,

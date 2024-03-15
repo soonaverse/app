@@ -244,6 +244,10 @@ export class NftCardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.nftSelectionSubscription$) {
+      this.nftSelectionSubscription$.unsubscribe();
+    }
+
     this.cartSubscription$.unsubscribe();
   }
 
@@ -261,11 +265,5 @@ export class NftCardComponent implements OnInit, OnDestroy {
     }
 
     this.cd.markForCheck();
-  }
-
-  ngOnDestroy() {
-    if (this.nftSelectionSubscription$) {
-      this.nftSelectionSubscription$.unsubscribe();
-    }
   }
 }
