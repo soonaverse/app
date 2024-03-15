@@ -51,6 +51,7 @@ export interface MarketCollectionsFilters {
     access?: string[];
     space?: string[];
     category?: string[];
+    status?: string[];
   };
   range?: {
     price: string;
@@ -195,7 +196,9 @@ export class FilterStorageService {
   public marketNftsResetVisible$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   public marketNftsFilters$: BehaviorSubject<MarketNftsFilters> =
     new BehaviorSubject<MarketNftsFilters>({
-      sortBy: this.marketNftsFiltersOptions.sortItems[0].value,
+      sortBy:
+        this.marketNftsFiltersOptions.sortItems.find((item) => item.value === 'nft_price_asc')
+          ?.value || 'nft_availableFrom_asc',
     });
 
   public marketCollectionsFiltersOptions = {

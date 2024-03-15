@@ -8,8 +8,8 @@
 </wen-modal-drawer>
 
 <ng-template #content>
-  <div class="flex flex-col mt-12 lg:flex-row lg:mt-6">
-    <div class="relative w-full lg:w-72 lg:w-overflow-hidden">
+  <div class="flex flex-col lg:flex-row">
+    <div class="relative w-full lg:w-1/2">
       <img
         *ngIf="mediaType === 'image'"
         i18n-alt
@@ -23,7 +23,8 @@
         Your browser does not support HTML video.
       </video>
     </div>
-    <div class="mt-8 lg:ml-8 lg:mt-0">
+    <!-- <div class="mt-8 lg:ml-8 lg:mt-0"> -->
+    <div class="mt-4 lg:ml-8 lg:mt-0 lg:w-1/2">
       <div class="relative flex flex-col w-full h-full">
         <h3 class="mb-1 text-2xl font-bold truncate">{{ getTitle() }}</h3>
         <div class="text-xl font-medium">{{ collection?.name }}</div>
@@ -65,41 +66,405 @@
         </a>
 
         <div
-          class="px-5 py-3 mt-8 lg:mt-auto bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl w-max"
+          class="px-2 py-1 mt-2 lg:mt-auto bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl w-max"
         >
-          <div
-            class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
-            i18n
-          >
-            Total price
-          </div>
-          <div
-            class="flex items-center mt-2 text-lg"
-            *ngIf="discount() < 1 && currentStep === stepType.CONFIRM"
-          >
-            <div class="mr-2 font-bold line-through text-foregrounds-tertiary">
-              {{ targetPrice | formatToken : collection?.mintingData?.network : true | async }}
+          <ng-container *ngIf="!nftQuantity || nftQuantity <= 1">
+            <div
+              class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+              i18n
+            >
+              Total price
             </div>
-            <div class="mr-2 font-bold truncate">
-              {{
-                calc(targetPrice, discount())
-                  | formatToken : collection?.mintingData?.network : true
-                  | async
-              }}
+
+            <div
+              class="flex items-center mt-2 text-lg"
+              *ngIf="discount() < 1 && currentStep === stepType.CONFIRM"
+            >
+              <div class="mr-2 font-bold line-through text-foregrounds-tertiary">
+                {{ targetPrice | formatToken : collection?.mintingData?.network : true | async }}
+                <br />
+                <span class="text-sm">
+                  ({{
+                    unitsService.getUsd(
+                      cartService.valueDivideExponent({
+                        value: targetPrice || 0,
+                        exponents: cartService.getDefaultNetworkDecimals()
+                      }),
+                      collection?.mintingData?.network
+                    )
+                      | async
+                      | currency : 'USD'
+                      | UsdBelowTwoDecimals
+                  }})
+                </span>
+              </div>
+              <div class="mr-2 font-bold truncate">
+                {{
+                  calc(targetPrice, discount())
+                    | formatToken : collection?.mintingData?.network : true
+                    | async
+                }}
+                <br />
+                <span class="text-sm">
+                  ({{
+                    unitsService.getUsd(
+                      cartService.valueDivideExponent({
+                        value: calc(targetPrice, discount()) || 0,
+                        exponents: cartService.getDefaultNetworkDecimals()
+                      }),
+                      collection?.mintingData?.network
+                    )
+                      | async
+                      | currency : 'USD'
+                      | UsdBelowTwoDecimals
+                  }})
+                </span>
+              </div>
             </div>
-          </div>
-          <div
-            class="flex items-center mt-2 text-lg"
-            *ngIf="discount() === 1 || currentStep !== stepType.CONFIRM"
+
+            <div
+              class="flex items-center mt-2 text-lg"
+              *ngIf="discount() === 1 || currentStep !== stepType.CONFIRM"
+            >
+              <div class="mr-2 font-bold truncate">
+                {{
+                  (currentStep !== stepType.CONFIRM ? targetAmount : targetPrice)
+                    | formatToken : collection?.mintingData?.network : true
+                    | async
+                }}
+                <br />
+                <span class="text-sm">
+                  ({{
+                    unitsService.getUsd(
+                      cartService.valueDivideExponent({
+                        value: currentStep !== stepType.CONFIRM ? targetAmount : targetPrice || 0,
+                        exponents: cartService.getDefaultNetworkDecimals()
+                      }),
+                      collection?.mintingData?.network
+                    )
+                      | async
+                      | currency : 'USD'
+                      | UsdBelowTwoDecimals
+                  }})
+                </span>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Display when nftQuantity is over 1 (Bulk Order) -->
+          <ng-container
+            *ngIf="
+              nftQuantity > 1 &&
+                ((currentStep === stepType.CONFIRM && targetPrice !== null) ||
+                  (currentStep !== stepType.CONFIRM && targetAmount !== null));
+              else elseBlock
+            "
           >
-            <div class="mr-2 font-bold truncate">
-              {{
-                currentStep !== stepType.CONFIRM
-                  ? (targetAmount | formatToken : collection?.mintingData?.network : true | async)
-                  : (targetPrice | formatToken : collection?.mintingData?.network : true | async)
-              }}
+            <div class="flex flex-row justify-between items-center mt-2">
+              <div
+                class="flex items-center p-2 mt-2 rounded-xl bg-alerts-warning dark:bg-alerts-warning-dark text-foregrounds-primary dark:text-foregrounds-primary text-sm w-72"
+                *ngIf="nftQuantity > 1"
+              >
+                <wen-icon-alert-octagon class="mr-1 lg:mr-2"></wen-icon-alert-octagon>
+                <div class="font-bold text-sm">
+                  <span>
+                    You have selected to perform a bulk order of this NFT. Please review quantity
+                    selected before finalizing and purchase.
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
+            <div class="flex flex-row justify-between items-center mt-2">
+              <!-- Price Each -->
+              <div class="flex flex-col items-center mr-4">
+                <div
+                  class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark underline"
+                  i18n
+                >
+                  Price
+                </div>
+                <div
+                  class="flex items-center mt-2 text-sm"
+                  *ngIf="discount() < 1 && currentStep === stepType.CONFIRM"
+                >
+                  <div
+                    class="mr-2 font-bold line-through text-foregrounds-tertiary alignCenter text-xs"
+                  >
+                    {{
+                      targetPrice | formatToken : collection?.mintingData?.network : true | async
+                    }}
+                    <br />
+                    <span>
+                      ({{
+                        unitsService.getUsd(
+                          cartService.valueDivideExponent({
+                            value: targetPrice || 0,
+                            exponents: cartService.getDefaultNetworkDecimals()
+                          }),
+                          collection?.mintingData?.network
+                        )
+                          | async
+                          | currency : 'USD'
+                          | UsdBelowTwoDecimals
+                      }})
+                    </span>
+                  </div>
+                  <div class="mr-2 font-bold truncate alignCenter text-xs">
+                    {{
+                      calc(targetPrice, discount())
+                        | formatToken : collection?.mintingData?.network : true
+                        | async
+                    }}
+                    <br />
+                    <span>
+                      ({{
+                        unitsService.getUsd(
+                          cartService.valueDivideExponent({
+                            value: calc(targetPrice, discount()) || 0,
+                            exponents: cartService.getDefaultNetworkDecimals()
+                          }),
+                          collection?.mintingData?.network
+                        )
+                          | async
+                          | currency : 'USD'
+                          | UsdBelowTwoDecimals
+                      }})
+                    </span>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center mt-2 text-sm"
+                  *ngIf="discount() === 1 || currentStep !== stepType.CONFIRM"
+                >
+                  <div class="mr-2 font-bold truncate alignCenter text-xs">
+                    {{
+                      (currentStep !== stepType.CONFIRM ? pricePerItem : targetPrice)
+                        | formatToken : collection?.mintingData?.network : true
+                        | async
+                    }}
+                    <br />
+                    <span>
+                      ({{
+                        unitsService.getUsd(
+                          cartService.valueDivideExponent({
+                            value:
+                              currentStep !== stepType.CONFIRM ? pricePerItem : targetPrice || 0,
+                            exponents: cartService.getDefaultNetworkDecimals()
+                          }),
+                          collection?.mintingData?.network
+                        )
+                          | async
+                          | currency : 'USD'
+                          | UsdBelowTwoDecimals
+                      }})
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Order Qty -->
+              <div class="flex flex-col items-center mr-4">
+                <div
+                  class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark underline"
+                  i18n
+                >
+                  Quantity
+                </div>
+                <div class="flex items-center mt-2 text-sm">
+                  <div class="mr-2 font-bold truncate alignCenter">
+                    {{ nftQuantity }} <br />
+                    &nbsp;
+                  </div>
+                </div>
+              </div>
+
+              <!-- Total Price -->
+              <div class="flex flex-col items-center">
+                <div
+                  class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark underline"
+                  i18n
+                >
+                  Total
+                </div>
+                <div
+                  class="flex items-center mt-2 text-sm"
+                  *ngIf="discount() < 1 && currentStep === stepType.CONFIRM && targetPrice !== null"
+                >
+                  <div
+                    class="mr-2 font-bold line-through text-foregrounds-tertiary alignCenter text-xs"
+                  >
+                    {{
+                      targetPrice * nftQuantity
+                        | formatToken : collection?.mintingData?.network : true
+                        | async
+                    }}
+                    <br />
+                    <span>
+                      ({{
+                        unitsService.getUsd(
+                          cartService.valueDivideExponent({
+                            value: targetPrice * nftQuantity || 0,
+                            exponents: cartService.getDefaultNetworkDecimals()
+                          }),
+                          collection?.mintingData?.network
+                        )
+                          | async
+                          | currency : 'USD'
+                          | UsdBelowTwoDecimals
+                      }})
+                    </span>
+                  </div>
+                  <div class="mr-2 font-bold truncate alignCenter text-xs">
+                    {{
+                      calc(targetPrice, discount()) * nftQuantity
+                        | formatToken : collection?.mintingData?.network : true
+                        | async
+                    }}
+                    <br />
+                    <span>
+                      ({{
+                        unitsService.getUsd(
+                          cartService.valueDivideExponent({
+                            value: calc(targetPrice, discount()) * nftQuantity || 0,
+                            exponents: cartService.getDefaultNetworkDecimals()
+                          }),
+                          collection?.mintingData?.network
+                        )
+                          | async
+                          | currency : 'USD'
+                          | UsdBelowTwoDecimals
+                      }})
+                    </span>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center mt-2 text-sm"
+                  *ngIf="
+                    (currentStep === stepType.CONFIRM && targetPrice !== null) ||
+                    (currentStep !== stepType.CONFIRM && targetAmount !== null)
+                  "
+                >
+                  <div class="mr-2 font-bold truncate alignCenter text-xs">
+                    {{
+                      (currentStep !== stepType.CONFIRM && targetAmount !== null
+                        ? targetAmount
+                        : targetPrice * nftQuantity
+                      )
+                        | formatToken : collection?.mintingData?.network : true
+                        | async
+                    }}
+                    <br />
+                    <span>
+                      ({{
+                        unitsService.getUsd(
+                          cartService.valueDivideExponent({
+                            value:
+                              currentStep !== stepType.CONFIRM && targetAmount !== null
+                                ? targetAmount
+                                : targetPrice * nftQuantity || 0,
+                            exponents: cartService.getDefaultNetworkDecimals()
+                          }),
+                          collection?.mintingData?.network
+                        )
+                          | async
+                          | currency : 'USD'
+                          | UsdBelowTwoDecimals
+                      }})
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Warning/Error Message Block -->
+          <ng-template #elseBlock>
+            <div
+              class="px-2 py-1 mt-2 lg:mt-auto bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark rounded-2xl w-max"
+              *ngIf="nftQuantity !== 1"
+            >
+              <div
+                class="flex items-center p-2 mt-2 rounded-xl bg-alerts-warning dark:bg-alerts-warning-dark text-foregrounds-primary dark:text-foregrounds-primary"
+              >
+                <wen-icon-alert-octagon class="mr-2.5 lg:mr-3.5"></wen-icon-alert-octagon>
+                <div class="text-base font-bold">
+                  <span>Warning: Missing or Invalid Data</span>
+                </div>
+              </div>
+
+              <div class="flex flex-row justify-between items-center mt-2">
+                <div class="flex flex-col items-center mr-4">
+                  <div class="flex flex-col items-center mr-4">
+                    <div
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      i18n
+                    >
+                      Target Price
+                    </div>
+                    <div class="text-lg font-bold truncate">
+                      {{ targetPrice }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-center mr-4">
+                  <div class="flex flex-col items-center mr-4">
+                    <div
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      i18n
+                    >
+                      Target Amount
+                    </div>
+                    <div class="text-lg font-bold truncate">
+                      {{ targetAmount }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-center mr-4">
+                  <div class="flex flex-col items-center mr-4">
+                    <div
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      i18n
+                    >
+                      Quantity Selected
+                    </div>
+                    <div class="text-lg font-bold truncate">
+                      {{ nftQuantity }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-center mr-4">
+                  <div class="flex flex-col items-center mr-4">
+                    <div
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      i18n
+                    >
+                      Discount
+                    </div>
+                    <div class="text-lg font-bold truncate">
+                      {{ discount() }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-center mr-4">
+                  <div class="flex flex-col items-center mr-4">
+                    <div
+                      class="text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark"
+                      i18n
+                    >
+                      Purchase Workflow Step
+                    </div>
+                    <div class="text-lg font-bold truncate">
+                      {{ currentStep }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-template>
         </div>
       </div>
     </div>
@@ -287,6 +652,7 @@
         (click)="goToNft()"
         nzSize="large"
         class="w-full mb-6 lg:mb-0 lg:mt-1"
+        *ngIf="!nftQuantity || nftQuantity <= 1"
         i18n
       >
         Show my NFT

@@ -12,6 +12,7 @@ import { AssemblyIconComponent } from './assembly/assembly.component';
 import { AwardIconComponent } from './award/award.component';
 import { BellIconComponent } from './bell/bell.component';
 import { CalendarIconComponent } from './calendar/calendar.component';
+import { CartIconComponent } from './cart/cart.component';
 import { CheckCircleIconComponent } from './check-circle/check-circle.component';
 import { CheckIconComponent } from './check/check.component';
 import { CloseIconComponent } from './close/close.component';
@@ -187,6 +188,7 @@ import { WalletIconComponent } from './wallet/wallet.component';
     SpecificMembersOnlyIconComponent,
     SadCryIconComponent,
     LinkBrokenIconComponent,
+    CartIconComponent,
   ],
   exports: [
     GlobeIconComponent,
@@ -279,6 +281,7 @@ import { WalletIconComponent } from './wallet/wallet.component';
     SpecificMembersOnlyIconComponent,
     SadCryIconComponent,
     LinkBrokenIconComponent,
+    CartIconComponent,
   ],
   imports: [CommonModule],
 })

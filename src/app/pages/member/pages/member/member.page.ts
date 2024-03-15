@@ -104,6 +104,16 @@ export class MemberPage implements OnInit, OnDestroy {
   }
 
   public listenMember(memberId: string): void {
+    const isValidMemberId = typeof memberId === 'string' && /[a-zA-Z0-9]/.test(memberId);
+
+    if (!isValidMemberId) {
+      this.data.awardsCompleted$.next([]);
+      this.data.awardsPending$.next([]);
+      this.data.space$.next([]);
+      this.data.member$.next(undefined);
+      return;
+    }
+
     this.subscriptions$.push(
       this.memberApi
         .topAwardsCompleted(memberId)
@@ -148,7 +158,7 @@ export class MemberPage implements OnInit, OnDestroy {
         }),
     );
 
-    // Badges.
+    // Continue with other actions if memberId is valid.
     this.data.refreshBadges();
   }
 
