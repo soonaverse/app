@@ -50,7 +50,7 @@ export class AwardsPage {
     return this.auth.isLoggedIn$;
   }
 
-  public trackByUid(index: number, item: any): number {
-    return item.uid;
+  public trackByUid(index: number, item: any): any {
+    return item ? item.uid : index;
   }
 }

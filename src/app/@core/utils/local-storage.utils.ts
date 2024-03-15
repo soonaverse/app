@@ -25,6 +25,12 @@ export enum StorageItem {
   SelectedTradePriceOption = 'App/selectedTradePriceOption',
   DepositNftTransaction = 'App/depositNftTransaction-',
   StakeNftTransaction = 'App/stakeNftTransaction-',
+  CartItems = 'App/cartItems',
+}
+
+interface CheckoutTransactionData {
+  transactionId: string | null;
+  source: 'nftCheckout' | 'cartCheckout' | 'bulkNftCheckout' | null;
 }
 
 export const getBitItemItem = (nftId: string): unknown | null => {
@@ -133,4 +139,17 @@ export const setItem = (itemName: StorageItem, value: unknown): void => {
 
 export const removeItem = (itemName: StorageItem): void => {
   localStorage.removeItem(itemName);
+};
+
+export const getCheckoutTransaction = (): CheckoutTransactionData | null => {
+  const item = localStorage.getItem(StorageItem.CheckoutTransaction);
+  return item ? JSON.parse(item) : { transactionId: null, source: null };
+};
+
+export const setCheckoutTransaction = (value: CheckoutTransactionData): void => {
+  if (value.transactionId === null && value.source === null) {
+    localStorage.removeItem(StorageItem.CheckoutTransaction);
+  } else {
+    localStorage.setItem(StorageItem.CheckoutTransaction, JSON.stringify(value));
+  }
 };

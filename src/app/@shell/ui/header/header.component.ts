@@ -19,15 +19,16 @@ import { DeviceService } from '@core/services/device';
 import { RouterService } from '@core/services/router';
 import {
   StorageItem,
-  getItem,
   getNotificationItem,
   removeItem,
   setNotificationItem,
+  getCheckoutTransaction,
 } from '@core/utils';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   Collection,
+  CollectionType,
   FILE_SIZES,
   Member,
   Nft,
@@ -47,7 +48,8 @@ import {
   interval,
   skip,
 } from 'rxjs';
-import { MemberApi } from './../../../@api/member.api';
+import { MemberApi } from '@api/member.api';
+import { CartService } from '@components/cart/services/cart.service';
 
 const IS_SCROLLED_HEIGHT = 20;
 
@@ -76,8 +78,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public isMobileMenuVisible = false;
   public isScrolled = false;
   public isCheckoutOpen = false;
+  public isCartCheckoutOpen = false;
+  public isCheckoutOverlayOpen = false;
   public currentCheckoutNft?: Nft;
   public currentCheckoutCollection?: Collection;
+  public nftQty?: number;
   public notifications$: BehaviorSubject<Notification[]> = new BehaviorSubject<Notification[]>([]);
   private notificationRef?: NzNotificationRef;
   public expiryTicker$: BehaviorSubject<dayjs.Dayjs | null> =
@@ -87,6 +92,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   >(undefined);
   private subscriptionTransaction$?: Subscription;
   private subscriptionNotification$?: Subscription;
+  public cartItemCount = 0;
+  private cartItemsSubscription$!: Subscription;
+  public isTransactionPending = false;
+  public isCartCheckoutOverlayVisible = false;
 
   constructor(
     public auth: AuthService,
@@ -102,6 +111,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private cd: ChangeDetectorRef,
     private nzNotification: NzNotificationService,
     private checkoutService: CheckoutService,
+    public cartService: CartService,
   ) {}
 
   public ngOnInit(): void {
@@ -120,6 +130,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.enableCreateAwardProposal = false;
         this.cd.markForCheck();
       }
+    });
+
+    this.cartItemsSubscription$ = this.cartService.getCartItems().subscribe((items) => {
+      let count = 0;
+      items.forEach((nft) => {
+        count += nft.quantity;
+      });
+      this.cartItemCount = count;
     });
 
     const memberRoute = `/${ROUTER_UTILS.config.member.root}/`;
@@ -162,6 +180,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
 
       if (expired === false && o?.payload.void === false && o.payload.reconciled === false) {
+        this.isTransactionPending = true;
         if (!this.notificationRef) {
           this.notificationRef = this.nzNotification.template(this.notCompletedNotification, {
             nzDuration: 0,
@@ -169,6 +188,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
           });
         }
       } else {
+        this.isTransactionPending = false;
         this.removeCheckoutNotification();
       }
     });
@@ -177,17 +197,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
     interval(500)
       .pipe(untilDestroyed(this))
       .subscribe(() => {
-        if (this.checkoutService.modalOpen$.value) {
+        if (
+          this.checkoutService.modalOpen$.value ||
+          this.cartService.checkoutOverlayOpenSubject$.value
+        ) {
           this.removeCheckoutNotification(false);
         } else {
+          const checkoutTransaction = getCheckoutTransaction();
           if (
-            getItem(StorageItem.CheckoutTransaction) &&
+            checkoutTransaction &&
+            checkoutTransaction.transactionId &&
             (!this.subscriptionTransaction$ || this.subscriptionTransaction$.closed)
           ) {
             this.subscriptionTransaction$ = this.orderApi
-              .listen(<any>getItem(StorageItem.CheckoutTransaction))
+              .listen(checkoutTransaction.transactionId)
               .pipe(untilDestroyed(this))
-              .subscribe(<any>this.transaction$);
+              .subscribe((transaction) => {
+                this.transaction$.next(transaction);
+              });
           }
         }
       });
@@ -218,31 +245,78 @@ export class HeaderComponent implements OnInit, OnDestroy {
         lastMember = undefined;
       }
     });
+
+    this.cartItemsSubscription$ = this.cartService.getCartItems().subscribe((items) => {
+      let count = 0;
+      items.forEach((nft) => {
+        count += nft.quantity;
+      });
+      this.cartItemCount = count;
+    });
+
+    this.cartService.checkoutOverlayOpen$.pipe(untilDestroyed(this)).subscribe((isOpen) => {
+      this.isCheckoutOverlayOpen = isOpen;
+    });
+
+    this.cartService.cartModalOpen$.pipe(untilDestroyed(this)).subscribe((isOpen) => {
+      this.isCartCheckoutOpen = isOpen;
+    });
   }
 
   public async onOpenCheckout(): Promise<void> {
-    const t = this.transaction$.getValue();
-    if (!t?.payload.nft || !t.payload.collection) {
-      return;
-    }
-    const collection: Collection | undefined = await firstValueFrom(
-      this.collectionApi.listen(t?.payload.collection),
-    );
-    let nft: Nft | undefined = undefined;
-    try {
-      nft = await firstValueFrom(this.nftApi.listen(t?.payload?.nft));
-    } catch (_e) {
-      // If it's not classic or re-sale we're using placeholder NFT
-      if (collection?.placeholderNft) {
-        nft = await firstValueFrom(this.nftApi.listen(collection?.placeholderNft));
+    const checkoutTransaction = getCheckoutTransaction();
+    if (checkoutTransaction) {
+      switch (checkoutTransaction.source) {
+        case 'cartCheckout': {
+          if (!this.cartService.isCheckoutOverlayOpen()) {
+            this.cartService.openCheckoutOverlay();
+            this.cd.markForCheck();
+          }
+          break;
+        }
+        case 'nftCheckout': {
+          const t = this.transaction$.getValue();
+
+          if (!t?.payload.nft || !t.payload.collection) {
+            return;
+          }
+
+          const collection: Collection | undefined = await firstValueFrom(
+            this.collectionApi.listen(t?.payload.collection),
+          );
+
+          let nft: Nft | undefined = undefined;
+          try {
+            nft = await firstValueFrom(this.nftApi.listen(t?.payload?.nft));
+          } catch (_e) {
+            if (collection?.placeholderNft) {
+              nft = await firstValueFrom(this.nftApi.listen(collection?.placeholderNft));
+            }
+          }
+
+          if (nft && collection) {
+            this.currentCheckoutCollection = collection;
+            this.currentCheckoutNft = nft;
+            this.isCheckoutOpen = true;
+            this.cd.markForCheck();
+          }
+          break;
+        }
+        default: {
+          console.error('Unknown checkout transaction source:', checkoutTransaction.source);
+        }
       }
+    } else {
+      this.removeCheckoutNotification();
     }
-    if (nft && collection) {
-      this.currentCheckoutCollection = collection;
-      this.currentCheckoutNft = nft;
-      this.isCheckoutOpen = true;
-      this.cd.markForCheck();
-    }
+  }
+
+  public handleOpenCartModal(): void {
+    this.cartService.showCartModal();
+  }
+
+  public handleOpenCartCheckoutModal(): void {
+    this.cartService.openCheckoutOverlay();
   }
 
   public get filesizes(): typeof FILE_SIZES {
@@ -259,11 +333,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   public get urlToDiscover(): string {
     return '/' + ROUTER_UTILS.config.market.root;
-  }
-
-  public closeCheckout(): void {
-    this.checkoutService.modalOpen$.next(false);
-    this.isCheckoutOpen = false;
   }
 
   public goToMyProfile(): void {
@@ -283,6 +352,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   public trackByUid(index: number, item: Notification) {
     return item.uid;
+  }
+
+  public closeCheckout(): void {
+    this.checkoutService.modalOpen$.next(false);
+    this.isCheckoutOpen = false;
   }
 
   private removeCheckoutNotification(removeFromStorage = true): void {
@@ -313,6 +387,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
       this.cd.markForCheck();
     }, 2500);
+  }
+
+  public getCartItemCount(): number {
+    return this.cartItemCount;
   }
 
   public unreadNotificationCount(): number {
@@ -378,5 +456,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.subscriptionTransaction$?.unsubscribe();
     this.currentCheckoutNft = undefined;
     this.currentCheckoutCollection = undefined;
+    if (this.cartItemsSubscription$) {
+      this.cartItemsSubscription$.unsubscribe();
+    }
   }
 }
