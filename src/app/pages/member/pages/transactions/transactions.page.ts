@@ -6,7 +6,6 @@ import {
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { DEFAULT_LIST_SIZE } from '@api/base.api';
 import { MemberApi } from '@api/member.api';
 import { AuthService } from '@components/auth/services/auth.service';
 import { DeviceService } from '@core/services/device';
@@ -18,7 +17,7 @@ import { DataService } from '@pages/member/services/data.service';
 import { HelperService } from '@pages/member/services/helper.service';
 import { Member, Transaction, TransactionType } from '@build-5/interfaces';
 import Papa from 'papaparse';
-import { BehaviorSubject, Observable, Subscription, first, map, of } from 'rxjs';
+import { BehaviorSubject, Observable, filter, finalize, first } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -33,8 +32,12 @@ export class TransactionsPage implements OnInit, OnDestroy {
   >(undefined);
   public exportingTransactions = false;
   public openLockedTokenClaim?: Transaction | null;
-  private dataStore: Transaction[][] = [];
-  private subscriptions$: Subscription[] = [];
+  public allTransactions: Transaction[] = [];
+  public isLoadingTransactions$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
+  public selectedTransactionCount = '100';
+  public transactionOptions = ['100', '200', '500', 'ALL'];
+  public lastTransactionId: string | null = null;
+  public likelyAllFetched$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   constructor(
     public deviceService: DeviceService,
@@ -52,15 +55,62 @@ export class TransactionsPage implements OnInit, OnDestroy {
     this.route.params.subscribe((params) => {
       if (params?.export === 'true' || params?.export === true) {
         this.exportTransactions();
-        this.cd.markForCheck();
+      }
+    });
+
+    this.isLoadingTransactions$.next(true);
+    this.data.member$
+      .pipe(
+        filter((member) => !!member),
+        first(),
+        untilDestroyed(this),
+      )
+      .subscribe((member) => {
+        this.isLoadingTransactions$.next(false);
+        this.fetchTransactionsForDisplay();
+      });
+  }
+
+  public fetchTransactionsForDisplay(): void {
+    this.isLoadingTransactions$.next(true);
+    const memberUid = this.data.member$.value?.uid;
+
+    if (memberUid) {
+      if (this.selectedTransactionCount === 'ALL') {
+        this.allTransactions = [];
       }
 
-      this.data.member$?.pipe(untilDestroyed(this)).subscribe((obj) => {
-        if (obj) {
-          this.listen();
-        }
-      });
-    });
+      let transactionsObservable: Observable<Transaction[]>;
+      if (this.selectedTransactionCount === 'ALL') {
+        transactionsObservable = this.memberApi.getAllTransactions(memberUid, ['createdOn']);
+        this.likelyAllFetched$.next(true);
+      } else {
+        const limit = parseInt(this.selectedTransactionCount);
+        transactionsObservable = this.memberApi.getTransactionsWithLimit(memberUid, limit, [
+          'createdOn',
+        ]);
+      }
+
+      transactionsObservable
+        .pipe(
+          finalize(() => {
+            this.isLoadingTransactions$.next(false);
+            this.cd.markForCheck();
+          }),
+          untilDestroyed(this),
+        )
+        .subscribe((transactions) => {
+          this.transactions$.next(transactions);
+          if (this.selectedTransactionCount === 'ALL') {
+            this.allTransactions = transactions;
+          } else {
+            this.likelyAllFetched$.next(
+              transactions.length < parseInt(this.selectedTransactionCount) ||
+                transactions.length === this.allTransactions.length,
+            );
+          }
+        });
+    }
   }
 
   public getDebugInfo(tran: Transaction | undefined | null): string {
@@ -70,16 +120,6 @@ export class TransactionsPage implements OnInit, OnDestroy {
     }
 
     return msg;
-  }
-
-  private listen(): void {
-    this.cancelSubscriptions();
-    this.transactions$.next(undefined);
-    this.subscriptions$.push(this.getHandler(undefined).subscribe(this.store.bind(this, 0)));
-  }
-
-  public isLoading(arr: any): boolean {
-    return arr === undefined;
   }
 
   public get loggedInMember$(): BehaviorSubject<Member | undefined> {
@@ -99,71 +139,44 @@ export class TransactionsPage implements OnInit, OnDestroy {
     this.cd.markForCheck();
   }
 
-  public getHandler(last?: any): Observable<Transaction[]> {
-    if (this.data.member$.value) {
-      return this.memberApi.topTransactions(this.data.member$.value.uid, undefined, last);
-    } else {
-      return of([]);
-    }
-  }
-
   public onScroll(): void {
-    // In this case there is no value, no need to infinite scroll.
-    if (!this.transactions$.value) {
-      return;
-    }
-
-    // We reached maximum.
     if (
-      !this.dataStore[this.dataStore.length - 1] ||
-      this.dataStore[this.dataStore.length - 1]?.length < DEFAULT_LIST_SIZE
+      this.deviceService.isMobile$ &&
+      this.transactions$.value &&
+      this.transactions$.value.length > 0
     ) {
-      return;
-    }
+      this.isLoadingTransactions$.pipe(first()).subscribe((isLoading) => {
+        if (!isLoading) {
+          this.isLoadingTransactions$.next(true);
+          const memberUid = this.data.member$.value?.uid;
 
-    // Def order field.
-    const lastValue = this.transactions$.value[this.transactions$.value.length - 1]._doc;
-    this.subscriptions$.push(
-      this.getHandler(lastValue).subscribe(this.store.bind(this, this.dataStore.length)),
-    );
-  }
-
-  protected store(page: number, a: any): void {
-    if (this.dataStore[page]) {
-      this.dataStore[page] = a;
-    } else {
-      this.dataStore.push(a);
-    }
-
-    // Merge arrays.
-    this.transactions$.next(Array.prototype.concat.apply([], this.dataStore));
-  }
-
-  public get maxRecords$(): BehaviorSubject<boolean> {
-    return <BehaviorSubject<boolean>>this.transactions$.pipe(
-      map(() => {
-        if (!this.dataStore[this.dataStore.length - 1]) {
-          return true;
+          if (memberUid && this.lastTransactionId) {
+            this.memberApi
+              .topTransactions(memberUid, ['createdOn'], this.lastTransactionId)
+              .pipe(
+                first(),
+                finalize(() => this.isLoadingTransactions$.next(false)),
+              )
+              .subscribe((transactions) => {
+                if (transactions && transactions.length > 0) {
+                  this.transactions$.next([...(this.transactions$.value || []), ...transactions]);
+                  this.lastTransactionId = transactions[transactions.length - 1].uid;
+                }
+                this.cd.markForCheck();
+              });
+          }
         }
-
-        return (
-          !this.dataStore[this.dataStore.length - 1] ||
-          this.dataStore[this.dataStore.length - 1]?.length < DEFAULT_LIST_SIZE
-        );
-      }),
-    );
+      });
+    }
   }
 
   public exportTransactions(): void {
     if (!this.data.member$.value?.uid) return;
     this.exportingTransactions = true;
-    this.memberApi
-      .topTransactions(this.data.member$.value?.uid, undefined, undefined)
-      .pipe(first(), untilDestroyed(this))
-      .subscribe((transactions: Transaction[]) => {
-        this.exportingTransactions = false;
+
+    this.transactions$.pipe(first()).subscribe((transactions) => {
+      if (transactions && transactions.length > 0) {
         const fields = [
-          '',
           'tranUid',
           'network',
           'type',
@@ -193,12 +206,16 @@ export class TransactionsPage implements OnInit, OnDestroy {
           ]),
         });
 
-        download(
-          `data:text/csv;charset=utf-8${csv}`,
-          `soonaverse_${this.data.member$.value?.uid}_transactions.csv`,
-        );
-        this.cd.markForCheck();
-      });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const downloadUrl = URL.createObjectURL(blob);
+        download(downloadUrl, `soonaverse_${this.data.member$.value?.uid}_transactions.csv`);
+        URL.revokeObjectURL(downloadUrl);
+      } else {
+        console.error('No transactions to export');
+      }
+      this.exportingTransactions = false;
+      this.cd.markForCheck();
+    });
   }
 
   public trackByUid(index: number, item: any): any {
@@ -206,11 +223,9 @@ export class TransactionsPage implements OnInit, OnDestroy {
   }
 
   private cancelSubscriptions(): void {
-    this.subscriptions$.forEach((s) => {
-      s.unsubscribe();
-    });
-
-    this.dataStore = [];
+    this.transactions$.unsubscribe();
+    this.likelyAllFetched$.unsubscribe();
+    this.isLoadingTransactions$.unsubscribe();
   }
 
   public ngOnDestroy(): void {
