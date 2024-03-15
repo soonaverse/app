@@ -9,21 +9,15 @@
       <div class="flex space-x-2 text-foregrounds-primary dark:text-foregrounds-primary-dark">
         <button
           nz-button
-          nzType="link"
-          class="text-lg text-foregrounds-primary dark:text-foregrounds-primary-dark"
+          nzType="default"
+          class="wen-btn-link mr-2"
           (click)="clearSelection()"
-          style="background-color: silver; border: 2px solid black"
+          i18n
         >
           Clear
         </button>
-        <button
-          nz-button
-          nzType="default"
-          (click)="openTransferModal()"
-          style="background-color: silver; border: 2px solid black"
-        >
-          Transfer
-        </button>
+
+        <button nz-button nzType="primary" (click)="openTransferModal()" i18n>Transfer</button>
       </div>
     </div>
   </div>

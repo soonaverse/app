@@ -126,7 +126,7 @@ export class NftCardComponent implements OnInit, OnDestroy {
       )
       .subscribe((isOwner) => {
         this.nftSelectable = isOwner && this.nft?.locked === false;
-        this.cd.markForCheck(); // Trigger change detection
+        this.cd.markForCheck();
       });
 
     this.nftSelectionSubscription$.add(nftSelectableSub);
@@ -243,18 +243,20 @@ export class NftCardComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    if (this.nftSelectionSubscription$) {
-      this.nftSelectionSubscription$.unsubscribe();
-    }
-
-    this.cartSubscription$.unsubscribe();
-  }
-
-  public toggleNftSelection(isChecked: boolean, event?: Event): void {
-    if (event) {
+  preventDefaultOnClick(event: MouseEvent): void {
+    if (this.nftSelected) {
+      event.preventDefault();
       event.stopPropagation();
     }
+  }
+
+  onCardClick(event: MouseEvent, nft: any): void {
+    if (!this.nftSelected) {
+      this.router.navigate(['/', this.path, nft?.uid]);
+    }
+  }
+
+  public toggleNftSelection(isChecked: boolean): void {
     this.nftSelected = isChecked;
 
     const action = isChecked ? 'select' : 'deselect';
@@ -265,5 +267,13 @@ export class NftCardComponent implements OnInit, OnDestroy {
     }
 
     this.cd.markForCheck();
+  }
+
+  ngOnDestroy() {
+    if (this.nftSelectionSubscription$) {
+      this.nftSelectionSubscription$.unsubscribe();
+    }
+
+    this.cartSubscription$.unsubscribe();
   }
 }

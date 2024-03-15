@@ -6,11 +6,14 @@
     'cursor-not-allowed opacity-50': nftSelected
   }"
 >
+  <!--
   <a
     class="flex flex-col h-full text-current hover:text-current"
     [routerLink]="nftSelected ? null : ['/', this.path, nft?.uid]"
     (click)="nftSelected ? $event.preventDefault() : null"
   >
+  -->
+  <a class="flex flex-col h-full ..." (click)="onCardClick($event, nft)">
     <div class="relative w-full h-40 overflow-hidden lg:h-60 rounded-2xl">
       <img
         loading="lazy"
@@ -58,6 +61,7 @@
       <div class="absolute top-4 right-4 z-10 flex items-center space-x-2">
         <div *ngIf="nftSelectable" class="flex items-center">
           <label
+            (click)="$event.stopPropagation()"
             nz-checkbox
             [nzChecked]="nftSelected"
             (nzCheckedChange)="toggleNftSelection($event)"

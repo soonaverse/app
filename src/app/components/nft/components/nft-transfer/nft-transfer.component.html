@@ -168,9 +168,8 @@
         <nz-col nzSpan="24">
           <button
             nz-button
-            type="button"
             nzType="default"
-            class="wen-btn-link m-2"
+            class="wen-btn-link mr-2"
             (click)="handleCancel()"
             i18n
           >
@@ -179,22 +178,21 @@
 
           <button
             nz-button
-            nzType="link"
-            class="text-lg text-foregrounds-primary dark:text-foregrounds-primary-dark"
+            nzType="default"
+            class="text-red-600 hover:text-red-800 mr-2"
             (click)="clearSelection()"
-            style="background-color: silver; border: 2px solid black"
           >
-            Clear
+            Clear NFTs
           </button>
 
           <button
             *ngIf="auth.isLoggedIn$ | async"
             nz-button
             nzType="primary"
-            class="m-2"
             [disabled]="!canSubmit()"
             nz-tooltip
             [nzTooltipTitle]="getSubmitButtonTooltip()"
+            i18n
           >
             Transfer NFTs
           </button>
