@@ -215,6 +215,8 @@ export class MemberApi extends BaseApi<Member> {
     orderBy: string[] = ['createdOn'],
   ): Observable<Transaction[]> {
     return new Observable((observer) => {
+      let accumulatedTransactions: Transaction[] = [];
+
       const fetchPage = (lastValue?: string) => {
         this.transactionDataset
           .getTopTransactionsLive(orderBy, lastValue, memberId)
@@ -222,15 +224,48 @@ export class MemberApi extends BaseApi<Member> {
           .subscribe({
             next: (transactions) => {
               if (transactions.length > 0) {
-                observer.next(transactions);
+                accumulatedTransactions = [...accumulatedTransactions, ...transactions];
                 const lastTransaction = transactions[transactions.length - 1];
                 fetchPage(lastTransaction.uid);
               } else {
+                observer.next(accumulatedTransactions);
                 observer.complete();
               }
             },
             error: (err) => observer.error(err),
           });
+      };
+
+      fetchPage();
+    });
+  }
+
+  public getTransactionsWithLimit(
+    memberId: string,
+    totalRequired: number,
+    orderBy: string[] = ['createdOn'],
+  ): Observable<Transaction[]> {
+    return new Observable((observer) => {
+      let accumulatedTransactions: Transaction[] = [];
+
+      const fetchPage = (lastValue?: string) => {
+        this.transactionDataset
+          .getTopTransactionsLive(orderBy, lastValue, memberId)
+          .pipe(first())
+          .subscribe(
+            (transactions) => {
+              accumulatedTransactions = [...accumulatedTransactions, ...transactions];
+              observer.next(accumulatedTransactions.slice(0, totalRequired));
+
+              if (transactions.length > 0 && accumulatedTransactions.length < totalRequired) {
+                const newLastValue = transactions[transactions.length - 1].uid;
+                fetchPage(newLastValue);
+              } else {
+                observer.complete();
+              }
+            },
+            (error) => observer.error(error),
+          );
       };
 
       fetchPage();

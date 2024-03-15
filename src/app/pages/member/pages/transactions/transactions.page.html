@@ -3,6 +3,52 @@
     <span i18n></span>
   </label>
 
+  <div
+    *ngIf="deviceService.isDesktop$ | async"
+    class="transaction-selector"
+    style="text-align: center"
+  >
+    <div class="selector-label mb-2">
+      <span i18n>Select number of transactions to view/export:</span>
+    </div>
+    <nz-radio-group
+      [(ngModel)]="selectedTransactionCount"
+      (ngModelChange)="fetchTransactionsForDisplay()"
+      class="radio-group"
+    >
+      <label
+        [class]="selectedTransactionCount === '100' ? 'radio-button active text-foregrounds-primary dark:text-foregrounds-primary-dark' : 'radio-button text-foregrounds-primary dark:text-foregrounds-primary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark'"
+        nz-radio-button
+        nzValue="100"
+        >100</label
+      >
+      <label
+        [class]="selectedTransactionCount === '200' ? 'radio-button active text-foregrounds-primary dark:text-foregrounds-primary-dark' : 'radio-button text-foregrounds-primary dark:text-foregrounds-primary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark'"
+        nz-radio-button
+        nzValue="200"
+        >200</label
+      >
+      <label
+        [class]="selectedTransactionCount === '500' ? 'radio-button active text-foregrounds-primary dark:text-foregrounds-primary-dark' : 'radio-button text-foregrounds-primary dark:text-foregrounds-primary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark'"
+        nz-radio-button
+        nzValue="500"
+        >500</label
+      >
+      <label
+        [class]="selectedTransactionCount === '1000' ? 'radio-button active text-foregrounds-primary dark:text-foregrounds-primary-dark' : 'radio-button text-foregrounds-primary dark:text-foregrounds-primary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark'"
+        nz-radio-button
+        nzValue="1000"
+        >1000</label
+      >
+      <label
+        [class]="selectedTransactionCount === 'ALL' ? 'radio-button active text-foregrounds-primary dark:text-foregrounds-primary-dark' : 'radio-button text-foregrounds-primary dark:text-foregrounds-primary-dark bg-backgrounds-secondary dark:bg-backgrounds-secondary-dark'"
+        nz-radio-button
+        nzValue="ALL"
+        >ALL</label
+      >
+    </nz-radio-group>
+  </div>
+
   <button nz-button nzType="default" nzSize="default" (click)="exportTransactions()">
     <ng-container *ngIf="!exportingTransactions">
       <wen-icon-file-export></wen-icon-file-export>
@@ -17,7 +63,14 @@
 
 <nz-card *ngIf="deviceService.isDesktop$ | async" nzTitle="Transactions" i18n-nzTitle>
   <div class="overflow-x-auto">
-    <nz-table class="block" #table [nzData]="(allTransactions) || []" [nzPageSize]="50">
+    <div *ngIf="(isLoadingTransactions$ | async)" class="loading-overlay p-4">
+      <nz-spin nzSimple [nzSize]="'large'"></nz-spin>
+    </div>
+    <p nz-typography nzType="secondary" class="mb-2" *ngIf="(isLoadingTransactions$ | async) === false">
+      {{ ((transactions$ | async)?.length || 0) + ((likelyAllFetched$ | async) === false ? '+' : '')
+      }} Transactions
+    </p>
+    <nz-table class="block" #table [nzData]="(transactions$ | async) || []" [nzPageSize]="50">
       <thead>
         <tr>
           <th i18n>Date</th>
@@ -95,8 +148,12 @@
 </nz-card>
 
 <div class="mt-3" *ngIf="deviceService.isMobile$ | async">
-  <p nz-typography nzType="secondary" class="mb-6" *ngIf="!isLoading(transactions$ | async)">
-    {{ ((transactions$ | async)?.length || 0) + ((maxRecords$ | async) === false ? '+' : '') }} NFTs
+  <div *ngIf="(isLoadingTransactions$ | async)" class="loading-overlay">
+    <nz-spin nzSimple [nzSize]="'large'"></nz-spin>
+  </div>
+  <p nz-typography nzType="secondary" class="mb-2" *ngIf="(isLoadingTransactions$ | async) === false">
+    {{ ((transactions$ | async)?.length || 0) + ((likelyAllFetched$ | async) === false ? '+' : '')
+    }} Transactions
   </p>
   <div
     class="mb-10"
@@ -106,7 +163,7 @@
     (scrolled)="onScroll()"
   >
     <nz-skeleton
-      *ngIf="isLoading(transactions$ | async)"
+      *ngIf="(isLoadingTransactions$ | async)"
       class="p-4 bg-backgrounds-tertiary dark:bg-backgrounds-tertiary-dark rounded-2xl w-76 lg:w-full h-76 lg:h-16"
       [nzActive]="true"
       [nzAvatar]="{ size: 'default' }"
