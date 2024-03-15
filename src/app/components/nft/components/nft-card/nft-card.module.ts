@@ -12,6 +12,9 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzNotificationModule } from 'ng-zorro-antd/notification';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NftCardComponent } from './nft-card.component';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [NftCardComponent],
@@ -28,6 +31,9 @@ import { NftCardComponent } from './nft-card.component';
     NzToolTipModule,
     ResizeAvatarModule,
     AccessBadgeModule,
+    NzCheckboxModule,
+    NzFormModule,
+    FormsModule,
   ],
   exports: [NftCardComponent],
 })

@@ -1,0 +1,32 @@
+.nft-row {
+  padding-bottom: 2px;
+}
+
+.ant-modal-header {
+  background-color: var(--bg-backgrounds-primary-dark) !important;
+  color: var(--text-foregrounds-primary-dark) !important;
+  font-size: '100px';
+}
+
+.target-access-option {
+  @apply text-xs font-medium text-foregrounds-secondary dark:text-foregrounds-secondary-dark cursor-pointer;
+  &__selected {
+    @apply text-accent-primary dark:text-accent-primary-dark;
+  }
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.strikethrough {
+  text-decoration: line-through;
+}
+
+.transfer-success {
+  background-color: rgba(0, 128, 0, 0.15);
+}
+
+.transfer-failure {
+  background-color: rgba(255, 0, 0, 0.15);
+}
