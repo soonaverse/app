@@ -66,7 +66,12 @@
     <div *ngIf="(isLoadingTransactions$ | async)" class="loading-overlay p-4">
       <nz-spin nzSimple [nzSize]="'large'"></nz-spin>
     </div>
-    <p nz-typography nzType="secondary" class="mb-2" *ngIf="(isLoadingTransactions$ | async) === false">
+    <p
+      nz-typography
+      nzType="secondary"
+      class="mb-2"
+      *ngIf="(isLoadingTransactions$ | async) === false"
+    >
       {{ ((transactions$ | async)?.length || 0) + ((likelyAllFetched$ | async) === false ? '+' : '')
       }} Transactions
     </p>
@@ -151,7 +156,12 @@
   <div *ngIf="(isLoadingTransactions$ | async)" class="loading-overlay">
     <nz-spin nzSimple [nzSize]="'large'"></nz-spin>
   </div>
-  <p nz-typography nzType="secondary" class="mb-2" *ngIf="(isLoadingTransactions$ | async) === false">
+  <p
+    nz-typography
+    nzType="secondary"
+    class="mb-2"
+    *ngIf="(isLoadingTransactions$ | async) === false"
+  >
     {{ ((transactions$ | async)?.length || 0) + ((likelyAllFetched$ | async) === false ? '+' : '')
     }} Transactions
   </p>
