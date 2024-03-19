@@ -182,8 +182,7 @@ export class CartService {
               this.triggerChangeDetectionSubject$.next();
               clearInterval(this.transactionCheckInterval);
               this.transactionCheckInterval = null;
-            }
-            else if (transaction.payload?.void && !transaction.payload?.reconciled) {
+            } else if (transaction.payload?.void && !transaction.payload?.reconciled) {
               this.notification.error($localize`NFT purchase transaction expired.`, '');
               this.setCurrentStep(StepType.CONFIRM);
               removeItem(StorageItem.CheckoutTransaction);
@@ -191,8 +190,7 @@ export class CartService {
               this.triggerChangeDetectionSubject$.next();
               clearInterval(this.transactionCheckInterval);
               this.transactionCheckInterval = null;
-            }
-            else {
+            } else {
               removeItem(StorageItem.CheckoutTransaction);
               this.pendingTransaction$.next(undefined);
               this.triggerChangeDetectionSubject$.next();
@@ -725,7 +723,6 @@ export class CartService {
 
   private performCartUpdate(tokenSymbol: string): void {
     const updatedCartItems = this.cartItemsSubject$.value.filter((item) => {
-
       const itemTokenSymbol =
         (item.nft?.placeholderNft
           ? item.collection?.mintingData?.network

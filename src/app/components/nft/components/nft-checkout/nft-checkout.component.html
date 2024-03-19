@@ -556,9 +556,7 @@
     >
     </wen-send-funds>
 
-    <div>
-      network print: {{ collection?.mintingData?.network }}
-    </div>
+    <div>network print: {{ collection?.mintingData?.network }}</div>
     <wen-wallet-deeplink
       *ngIf="!helper.isExpired(transaction$ | async)"
       class="mt-6"
