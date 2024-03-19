@@ -185,6 +185,7 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
           (<any>val).payload?.chainReference,
         );
 
+        this.removePurchasedGroupItems();
         this.currentStep = StepType.COMPLETE;
         this.updateStep(this.currentStep);
         this.cd.markForCheck();
@@ -493,7 +494,8 @@ export class CheckoutOverlayComponent implements OnInit, OnDestroy {
   private removePurchasedGroupItems(): void {
     if (this.selectedNetwork) {
       this.cartService.removeGroupItemsFromCart(this.selectedNetwork);
-      this.cartService.clearNetworkSelection();
+    } else {
+      this.cartService.removeGroupItemsFromCart();
     }
   }
 

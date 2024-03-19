@@ -16,6 +16,7 @@ import {
   Nft,
   Collection,
   Transaction,
+  TransactionType,
   MIN_AMOUNT_TO_TRANSFER,
   TRANSACTION_AUTO_EXPIRY_MS,
   DEFAULT_NETWORK,
@@ -172,13 +173,33 @@ export class CartService {
             transaction.payload?.void ||
             transaction.payload?.reconciled
           ) {
-            removeItem(StorageItem.CheckoutTransaction);
-            this.pendingTransaction$.next(undefined);
-            this.triggerChangeDetectionSubject$.next();
-            clearInterval(this.transactionCheckInterval);
-            this.transactionCheckInterval = null;
+            if (transaction.payload?.reconciled) {
+              this.removeGroupItemsFromCart();
+              this.notification.success($localize`NFT(s) successfully purchased.`, '');
+              this.setCurrentStep(StepType.CONFIRM);
+              removeItem(StorageItem.CheckoutTransaction);
+              this.pendingTransaction$.next(undefined);
+              this.triggerChangeDetectionSubject$.next();
+              clearInterval(this.transactionCheckInterval);
+              this.transactionCheckInterval = null;
+            }
+            else if (transaction.payload?.void && !transaction.payload?.reconciled) {
+              this.notification.error($localize`NFT purchase transaction expired.`, '');
+              this.setCurrentStep(StepType.CONFIRM);
+              removeItem(StorageItem.CheckoutTransaction);
+              this.pendingTransaction$.next(undefined);
+              this.triggerChangeDetectionSubject$.next();
+              clearInterval(this.transactionCheckInterval);
+              this.transactionCheckInterval = null;
+            }
+            else {
+              removeItem(StorageItem.CheckoutTransaction);
+              this.pendingTransaction$.next(undefined);
+              this.triggerChangeDetectionSubject$.next();
+            }
           }
         } else {
+          this.setCurrentStep(StepType.CONFIRM);
           removeItem(StorageItem.CheckoutTransaction);
           this.pendingTransaction$.next(undefined);
           this.triggerChangeDetectionSubject$.next();
@@ -688,8 +709,23 @@ export class CartService {
     return this.calc(itemPrice, discount);
   }
 
-  public removeGroupItemsFromCart(tokenSymbol: string): void {
+  public removeGroupItemsFromCart(tokenSymbol?: string): void {
+    if (!tokenSymbol) {
+      this.selectedNetwork$.pipe(take(1)).subscribe((defaultTokenSymbol) => {
+        if (defaultTokenSymbol == null) {
+          console.warn('No default token symbol found, no updates performed.');
+        } else {
+          this.performCartUpdate(defaultTokenSymbol);
+        }
+      });
+    } else {
+      this.performCartUpdate(tokenSymbol);
+    }
+  }
+
+  private performCartUpdate(tokenSymbol: string): void {
     const updatedCartItems = this.cartItemsSubject$.value.filter((item) => {
+
       const itemTokenSymbol =
         (item.nft?.placeholderNft
           ? item.collection?.mintingData?.network
