@@ -35,7 +35,7 @@
 
 # Overview
 
-Soonaverse delivers DAO Management Tools, NFT Marketplace, Token Management, On-Chain voting and much more. Open source application for everyone to utilize and benefit from. Using [BUILD-5](https://build5.com) platform and IOTA it can deliver feeless on chain functionality. Soonaverse operates on both IOTA and Shimmer network.
+Soonaverse delivers DAO Management Tools, NFT Marketplace, Token Management, On-Chain voting and much more. Open source application for everyone to utilize and benefit from. Using [Buildcore](https://buildcore.io) platform and IOTA it can deliver feeless on chain functionality. Soonaverse operates on both IOTA and Shimmer network.
 
 We would love your contributions. Please make sure you read contribution guide to join the effort. Key areas we need help:
 - UI Improvements
