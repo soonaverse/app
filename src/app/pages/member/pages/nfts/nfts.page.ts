@@ -9,7 +9,7 @@ import { DeviceService } from '@core/services/device';
 import { FilterStorageService } from '@core/services/filter-storage';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService } from '@pages/member/services/data.service';
-import { COL, Member, Timestamp } from '@build-5/interfaces';
+import { COL, Member, Timestamp } from '@buildcore/interfaces';
 import { InstantSearchConfig } from 'angular-instantsearch/instantsearch/instantsearch';
 import { BehaviorSubject } from 'rxjs';
 

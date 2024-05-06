@@ -10,7 +10,7 @@ import { TOKEN_METRICS_INITIAL_COLORS, getRandomColor } from '@core/utils/colors
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService } from '@pages/token/services/data.service';
 import { HelperService } from '@pages/token/services/helper.service';
-import { Token, TokenAllocation, getDefDecimalIfNotSet } from '@build-5/interfaces';
+import { Token, TokenAllocation, getDefDecimalIfNotSet } from '@buildcore/interfaces';
 import { ChartConfiguration, ChartType } from 'chart.js';
 
 @UntilDestroy()

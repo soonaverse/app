@@ -5,10 +5,10 @@ import {
   Token,
   Transaction,
   WEN_FUNC,
-  Build5Request,
+  BuildcoreRequest,
   TokenMintRequest,
   ImportMintedTokenRequest,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { Observable } from 'rxjs';
 import { BaseApi } from './base.api';
 
@@ -20,10 +20,10 @@ export class TokenMintApi extends BaseApi<Token> {
     super(Dataset.TOKEN, httpClient);
   }
 
-  public mintToken = (req: Build5Request<TokenMintRequest>): Observable<Transaction | undefined> =>
+  public mintToken = (req: BuildcoreRequest<TokenMintRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.mintTokenOrder, req);
 
   public importToken = (
-    req: Build5Request<ImportMintedTokenRequest>,
+    req: BuildcoreRequest<ImportMintedTokenRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.importMintedToken, req);
 }

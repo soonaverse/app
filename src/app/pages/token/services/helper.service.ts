@@ -10,7 +10,7 @@ import {
   TokenTradeOrderStatus,
   Transaction,
   TransactionType,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 

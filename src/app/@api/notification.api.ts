@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Notification, Dataset } from '@build-5/interfaces';
+import { Notification, Dataset } from '@buildcore/interfaces';
 import { BaseApi } from './base.api';
 
 @Injectable({

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Award, Collection, CollectionStats, Member, Nft, Space } from '@build-5/interfaces';
+import { Award, Collection, CollectionStats, Member, Nft, Space } from '@buildcore/interfaces';
 import { BehaviorSubject } from 'rxjs';
 import {
   AuditOneQueryService,

@@ -36,7 +36,7 @@ import {
   NotificationType,
   TRANSACTION_AUTO_EXPIRY_MS,
   Transaction,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationRef, NzNotificationService } from 'ng-zorro-antd/notification';
 import {

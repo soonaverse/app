@@ -22,7 +22,7 @@ import {
   FILENAME_REGEXP,
   MAX_IOTA_AMOUNT,
   MIN_IOTA_AMOUNT,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { NzSelectOptionInterface } from 'ng-zorro-antd/select';

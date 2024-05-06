@@ -10,7 +10,7 @@ import {
 import { TokenPurchaseApi } from '@api/token_purchase.api';
 import { ThemeList, ThemeService } from '@core/services/theme';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { TokenPurchase, TokenStatus } from '@build-5/interfaces';
+import { TokenPurchase, TokenStatus } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import {
   CandlestickData,

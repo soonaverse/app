@@ -32,7 +32,7 @@ import {
   Transaction,
   TransactionType,
   getDefDecimalIfNotSet,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, Subscription, interval } from 'rxjs';
 

@@ -37,7 +37,7 @@ import {
   Token,
   URL_REGEXP,
   getDefDecimalIfNotSet,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { DisabledTimeConfig } from 'ng-zorro-antd/date-picker';
 import { NzNotificationService } from 'ng-zorro-antd/notification';

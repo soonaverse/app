@@ -8,7 +8,7 @@ import { SeoService } from '@core/services/seo';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/award/services/helper.service';
-import { Award, FILE_SIZES, GLOBAL_DEBOUNCE_TIME, Network } from '@build-5/interfaces';
+import { Award, FILE_SIZES, GLOBAL_DEBOUNCE_TIME, Network } from '@buildcore/interfaces';
 import { BehaviorSubject, debounceTime, first, skip, Subscription } from 'rxjs';
 import { AwardApi } from './../../../../@api/award.api';
 import { SpaceApi } from './../../../../@api/space.api';

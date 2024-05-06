@@ -14,7 +14,7 @@ import {
   TWITTER_REGEXP,
   Token,
   getDefDecimalIfNotSet,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { NzUploadChangeParam, NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
 import { Observable, Subscription, first, map, of } from 'rxjs';

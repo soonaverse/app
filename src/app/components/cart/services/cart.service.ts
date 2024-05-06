@@ -25,7 +25,7 @@ import {
   Network,
   COL,
   Timestamp,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { getItem, removeItem, StorageItem, getCheckoutTransaction } from '@core/utils';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { HelperService } from '@pages/nft/services/helper.service';

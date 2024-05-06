@@ -9,13 +9,13 @@ import {
   TransactionPayloadType,
   TransactionType,
   WEN_FUNC,
-  Build5Request,
+  BuildcoreRequest,
   NftCreateRequest,
   NftSetForSaleRequest,
   NftWithdrawRequest,
   NftDepositRequest,
   NftStakeRequest,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { Observable, switchMap } from 'rxjs';
 import { BaseApi } from './base.api';
 
@@ -42,24 +42,24 @@ export class NftApi extends BaseApi<Nft> {
     super(Dataset.NFT, httpClient);
   }
 
-  public create = (req: Build5Request<NftCreateRequest>): Observable<Nft | undefined> =>
+  public create = (req: BuildcoreRequest<NftCreateRequest>): Observable<Nft | undefined> =>
     this.request(WEN_FUNC.createNft, req);
 
-  public batchCreate = (req: Build5Request<NftCreateRequest[]>): Observable<string[] | undefined> =>
+  public batchCreate = (req: BuildcoreRequest<NftCreateRequest[]>): Observable<string[] | undefined> =>
     this.request(WEN_FUNC.createBatchNft, req);
 
-  public setForSaleNft = (req: Build5Request<NftSetForSaleRequest>): Observable<Nft | undefined> =>
+  public setForSaleNft = (req: BuildcoreRequest<NftSetForSaleRequest>): Observable<Nft | undefined> =>
     this.request(WEN_FUNC.setForSaleNft, req);
 
   public withdrawNft = (
-    req: Build5Request<NftWithdrawRequest>,
+    req: BuildcoreRequest<NftWithdrawRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.withdrawNft, req);
 
   public depositNft = (
-    req: Build5Request<NftDepositRequest>,
+    req: BuildcoreRequest<NftDepositRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.depositNft, req);
 
-  public stakeNft = (req: Build5Request<NftStakeRequest>): Observable<Transaction | undefined> =>
+  public stakeNft = (req: BuildcoreRequest<NftStakeRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.stakeNft, req);
 
   public getNftById(nftId: string): Observable<Nft | undefined> {

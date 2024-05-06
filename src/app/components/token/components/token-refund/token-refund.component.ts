@@ -12,7 +12,7 @@ import { AuthService } from '@components/auth/services/auth.service';
 import { DeviceService } from '@core/services/device';
 import { NotificationService } from '@core/services/notification';
 import { PreviewImageService } from '@core/services/preview-image';
-import { Token, TokenDistribution, getDefDecimalIfNotSet } from '@build-5/interfaces';
+import { Token, TokenDistribution, getDefDecimalIfNotSet } from '@buildcore/interfaces';
 
 @Component({
   selector: 'wen-token-refund',

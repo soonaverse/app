@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { HelperService } from '@pages/award/services/helper.service';
-import { Award } from '@build-5/interfaces';
+import { Award } from '@buildcore/interfaces';
 
 @Component({
   selector: 'wen-award-status',

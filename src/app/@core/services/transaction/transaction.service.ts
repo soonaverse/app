@@ -5,7 +5,7 @@ import {
   Transaction,
   TransactionPayloadType,
   TransactionType,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 
 @Injectable({
   providedIn: 'root',

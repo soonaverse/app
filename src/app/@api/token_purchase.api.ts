@@ -7,7 +7,7 @@ import {
   TokenPurchaseAge,
   TokenTradeOrder,
   TokenTradeOrderType,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { map } from 'rxjs';
 import { BaseApi } from './base.api';
 

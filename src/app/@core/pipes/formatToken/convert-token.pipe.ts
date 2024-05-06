@@ -5,7 +5,7 @@ import {
   NETWORK_DETAIL,
   Network,
   getDefDecimalIfNotSet,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { firstValueFrom, skipWhile } from 'rxjs';
 
 export interface ConvertValue {

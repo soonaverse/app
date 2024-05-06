@@ -20,7 +20,7 @@ import {
   Nft,
   NftAccess,
   TRANSACTION_DEFAULT_AUCTION,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { SaleType, UpdateEvent } from '../nft-sale.component';

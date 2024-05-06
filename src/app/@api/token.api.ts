@@ -7,7 +7,7 @@ import {
   TokenDistribution,
   Transaction,
   WEN_FUNC,
-  Build5Request,
+  BuildcoreRequest,
   TokenCreateRequest,
   TokenUpdateRequest,
   VoteRequest,
@@ -22,7 +22,7 @@ import {
   ProposalVoteRequest,
   EnableTokenTradingRequest,
   Subset,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { Observable, of } from 'rxjs';
 import { BaseApi } from './base.api';
 
@@ -36,56 +36,56 @@ export class TokenApi extends BaseApi<Token> {
     super(Dataset.TOKEN, httpClient);
   }
 
-  public create = (req: Build5Request<TokenCreateRequest>): Observable<Token | undefined> =>
+  public create = (req: BuildcoreRequest<TokenCreateRequest>): Observable<Token | undefined> =>
     this.request(WEN_FUNC.createToken, req);
 
-  public update = (req: Build5Request<TokenUpdateRequest>): Observable<Token | undefined> =>
+  public update = (req: BuildcoreRequest<TokenUpdateRequest>): Observable<Token | undefined> =>
     this.request(WEN_FUNC.updateToken, req);
 
   public setTokenAvailableForSale = (
-    req: Build5Request<SetTokenForSaleRequest>,
+    req: BuildcoreRequest<SetTokenForSaleRequest>,
   ): Observable<Token | undefined> => this.request(WEN_FUNC.setTokenAvailableForSale, req);
 
-  public vote = (req: Build5Request<VoteRequest>): Observable<Transaction | undefined> =>
+  public vote = (req: BuildcoreRequest<VoteRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.voteController, req);
 
-  public rank = (req: Build5Request<RankRequest>): Observable<Transaction | undefined> =>
+  public rank = (req: BuildcoreRequest<RankRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.rankController, req);
 
   public cancelPublicSale = (
-    req: Build5Request<CanelPublicSaleRequest>,
+    req: BuildcoreRequest<CanelPublicSaleRequest>,
   ): Observable<Token | undefined> => this.request(WEN_FUNC.cancelPublicSale, req);
 
   public airdropToken = (
-    req: Build5Request<CreateAirdropsRequest>,
+    req: BuildcoreRequest<CreateAirdropsRequest>,
   ): Observable<TokenDistribution[] | undefined> => this.request(WEN_FUNC.airdropToken, req);
 
   public airdropMintedToken = (
-    req: Build5Request<CreateAirdropsRequest>,
+    req: BuildcoreRequest<CreateAirdropsRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.airdropMintedToken, req);
 
   public creditToken = (
-    req: Build5Request<CreditTokenRequest>,
+    req: BuildcoreRequest<CreditTokenRequest>,
   ): Observable<Transaction[] | undefined> => this.request(WEN_FUNC.creditToken, req);
 
   public claimAirdroppedToken = (
-    req: Build5Request<ClaimAirdroppedTokensRequest>,
+    req: BuildcoreRequest<ClaimAirdroppedTokensRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.claimAirdroppedToken, req);
 
   public claimMintedToken = (
-    req: Build5Request<ClaimPreMintedAirdroppedTokensRequest>,
+    req: BuildcoreRequest<ClaimPreMintedAirdroppedTokensRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.claimMintedTokenOrder, req);
 
   public depositStake = (
-    req: Build5Request<TokenStakeRequest>,
+    req: BuildcoreRequest<TokenStakeRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.depositStake, req);
 
   public voteOnProposal = (
-    req: Build5Request<ProposalVoteRequest>,
+    req: BuildcoreRequest<ProposalVoteRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.voteOnProposal, req);
 
   public enableTrading = (
-    req: Build5Request<EnableTokenTradingRequest>,
+    req: BuildcoreRequest<EnableTokenTradingRequest>,
   ): Observable<Token | undefined> => this.request(WEN_FUNC.enableTokenTrading, req);
 
   public getMembersDistribution(tokenId: string, memberId: string) {

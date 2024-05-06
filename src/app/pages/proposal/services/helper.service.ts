@@ -5,7 +5,7 @@ import {
   ProposalQuestion,
   ProposalType,
   PROPOSAL_COMMENCING_IN_DAYS,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 
 @Injectable({

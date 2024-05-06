@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { AuthService } from '@components/auth/services/auth.service';
-import { Award } from '@build-5/interfaces';
+import { Award } from '@buildcore/interfaces';
 import { PreviewImageService } from '@core/services/preview-image';
 import { BehaviorSubject } from 'rxjs';
 import { DataService } from './../../services/data.service';

@@ -7,13 +7,13 @@ import {
   Timestamp,
   Transaction,
   WEN_FUNC,
-  Build5Request,
+  BuildcoreRequest,
   Subset,
   ProposalCreateRequest,
   ApproveProposalRequest,
   RejectProposalRequest,
   ProposalVoteRequest,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { Observable, map, of, switchMap } from 'rxjs';
 import { BaseApi } from './base.api';
 
@@ -139,15 +139,15 @@ export class ProposalApi extends BaseApi<Proposal> {
         }),
       );
 
-  public create = (req: Build5Request<ProposalCreateRequest>): Observable<Proposal | undefined> =>
+  public create = (req: BuildcoreRequest<ProposalCreateRequest>): Observable<Proposal | undefined> =>
     this.request(WEN_FUNC.createProposal, req);
 
-  public approve = (req: Build5Request<ApproveProposalRequest>): Observable<Proposal | undefined> =>
+  public approve = (req: BuildcoreRequest<ApproveProposalRequest>): Observable<Proposal | undefined> =>
     this.request(WEN_FUNC.approveProposal, req);
 
-  public reject = (req: Build5Request<RejectProposalRequest>): Observable<Proposal | undefined> =>
+  public reject = (req: BuildcoreRequest<RejectProposalRequest>): Observable<Proposal | undefined> =>
     this.request(WEN_FUNC.rejectProposal, req);
 
-  public vote = (req: Build5Request<ProposalVoteRequest>): Observable<Proposal | undefined> =>
+  public vote = (req: BuildcoreRequest<ProposalVoteRequest>): Observable<Proposal | undefined> =>
     this.request(WEN_FUNC.voteOnProposal, req);
 }

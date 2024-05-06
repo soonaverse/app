@@ -13,7 +13,7 @@ import { SeoService } from '@core/services/seo';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService } from '@pages/space/services/data.service';
-import { Collection } from '@build-5/interfaces';
+import { Collection } from '@buildcore/interfaces';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @UntilDestroy()

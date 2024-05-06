@@ -9,7 +9,7 @@ import {
   PROD_NETWORKS,
   Space,
   TEST_NETWORKS,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 
 @Component({
   selector: 'wen-manage-addresses',

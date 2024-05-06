@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SelectCollectionOption } from '@components/collection/components/select-collection/select-collection.component';
 import { SelectSpaceOption } from '@components/space/components/select-space/select-space.component';
-import { Collection, Space, Token, TokenDrop, TokenStatus } from '@build-5/interfaces';
+import { Collection, Space, Token, TokenDrop, TokenStatus } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 
 @Injectable({

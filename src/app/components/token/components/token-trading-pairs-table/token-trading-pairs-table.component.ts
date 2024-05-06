@@ -4,7 +4,7 @@ import { DeviceService } from '@core/services/device';
 import { FilterStorageService } from '@core/services/filter-storage';
 import { StorageItem, getItem, setItem } from '@core/utils';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { COL, Timestamp } from '@build-5/interfaces';
+import { COL, Timestamp } from '@buildcore/interfaces';
 import { InstantSearchConfig } from 'angular-instantsearch/instantsearch/instantsearch';
 
 @UntilDestroy()

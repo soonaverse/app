@@ -20,7 +20,7 @@ import { FilterStorageService } from '@core/services/filter-storage';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { marketSections } from '@pages/market/pages/market/market.page';
 import { FilterService } from '@pages/market/services/filter.service';
-import { COL, Timestamp, Collection } from '@build-5/interfaces';
+import { COL, Timestamp, Collection } from '@buildcore/interfaces';
 import { InstantSearchConfig } from 'angular-instantsearch/instantsearch/instantsearch';
 import { Subject, take, filter, takeUntil } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';

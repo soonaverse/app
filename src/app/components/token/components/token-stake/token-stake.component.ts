@@ -44,7 +44,7 @@ import {
   TransactionType,
   calcStakedMultiplier,
   getDefDecimalIfNotSet,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, Subscription, interval, merge } from 'rxjs';
 

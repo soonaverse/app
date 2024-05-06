@@ -15,13 +15,13 @@ import {
   TokenDropStatus,
   Transaction,
   WEN_FUNC,
-  Build5Request,
-  BUILD5_PROD_ADDRESS_API,
-  BUILD5_TEST_ADDRESS_API,
+  BuildcoreRequest,
+  BUILDCORE_PROD_ADDRESS_API,
+  BUILDCORE_TEST_ADDRESS_API,
   Subset,
   MemberUpdateRequest,
   CustomTokenRequest,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { Observable, combineLatest, map, of, switchMap } from 'rxjs';
 import { BaseApi } from './base.api';
@@ -226,19 +226,19 @@ export class MemberApi extends BaseApi<Member> {
   public createIfNotExists = (address: string): Observable<Member | undefined> =>
     this.request(WEN_FUNC.createMember, {
       address: address,
-      projectApiKey: environment.build5Token,
+      projectApiKey: environment.buildcoreToken,
       body: {
         address,
       },
     });
 
-  public updateMember = (req: Build5Request<MemberUpdateRequest>): Observable<Member | undefined> =>
+  public updateMember = (req: BuildcoreRequest<MemberUpdateRequest>): Observable<Member | undefined> =>
     this.request(WEN_FUNC.updateMember, req);
 
   public generateAuthToken = (
-    req: Build5Request<CustomTokenRequest>,
+    req: BuildcoreRequest<CustomTokenRequest>,
   ): Observable<string | undefined> => {
-    const origin = environment.production ? BUILD5_PROD_ADDRESS_API : BUILD5_TEST_ADDRESS_API;
+    const origin = environment.production ? BUILDCORE_PROD_ADDRESS_API : BUILDCORE_TEST_ADDRESS_API;
     return <any>this.httpClient.post(origin + WEN_FUNC.generateCustomToken, req, {
       responseType: 'text',
     });

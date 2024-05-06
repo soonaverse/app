@@ -10,7 +10,7 @@ import { SeoService } from '@core/services/seo';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewService } from '@pages/token/services/new.service';
-import { Access, TokenAllocation, getDefDecimalIfNotSet } from '@build-5/interfaces';
+import { Access, TokenAllocation, getDefDecimalIfNotSet } from '@buildcore/interfaces';
 
 export enum StepType {
   INTRODUCTION = 'Introduction',

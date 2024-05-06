@@ -12,7 +12,7 @@ import { AuthService } from '@components/auth/services/auth.service';
 import { DescriptionItemType } from '@components/description/description.component';
 import { NotificationService } from '@core/services/notification';
 import { UnitsService } from '@core/services/units';
-import { Token, TokenAllocation } from '@build-5/interfaces';
+import { Token, TokenAllocation } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 
 @Component({

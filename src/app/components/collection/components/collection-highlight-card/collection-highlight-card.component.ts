@@ -5,7 +5,7 @@ import { DeviceService } from '@core/services/device';
 import { PreviewImageService } from '@core/services/preview-image';
 import { UnitsService } from '@core/services/units';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Collection, Space, Timestamp } from '@build-5/interfaces';
+import { Collection, Space, Timestamp } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, Subscription } from 'rxjs';
 

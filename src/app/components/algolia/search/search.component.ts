@@ -14,7 +14,7 @@ import { TabSection } from '@components/tabs/tabs.component';
 import { DeviceService } from '@core/services/device';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FilterService } from '@pages/market/services/filter.service';
-import { GLOBAL_DEBOUNCE_TIME } from '@build-5/interfaces';
+import { GLOBAL_DEBOUNCE_TIME } from '@buildcore/interfaces';
 import { NgAisIndex, NgAisInstantSearch, TypedBaseWidget } from 'angular-instantsearch';
 import connectSearchBox, {
   SearchBoxConnectorParams,

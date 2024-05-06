@@ -6,7 +6,7 @@ import {
   PROD_NETWORKS,
   TEST_AVAILABLE_MINTABLE_NETWORKS,
   TEST_NETWORKS,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 
 @Component({
   selector: 'wen-select-network',

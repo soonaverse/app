@@ -17,8 +17,8 @@ import {
   Network,
   StakeType,
   TOKEN_EXPIRY_HOURS,
-  Build5Request,
-} from '@build-5/interfaces';
+  BuildcoreRequest,
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { BehaviorSubject, firstValueFrom, skip, Subscription } from 'rxjs';
@@ -29,7 +29,7 @@ const tanglePay = (window as any).iota;
 
 export interface MetamaskSignature {
   address: string;
-  req: Build5Request<any>;
+  req: BuildcoreRequest<any>;
 }
 
 export interface SignCallback {
@@ -202,7 +202,7 @@ export class AuthService {
     return customToken && customToken.expiresOn && dayjs(customToken.expiresOn).isAfter(dayjs());
   }
 
-  public async sign(params: any = {}, cb: SignCallback): Promise<Build5Request<any> | undefined> {
+  public async sign(params: any = {}, cb: SignCallback): Promise<BuildcoreRequest<any> | undefined> {
     this.showWalletPopup$.next(WalletStatus.ACTIVE);
     // We support either resign with metamask or reuse token.
     let sc: any | undefined | false = undefined;
@@ -213,7 +213,7 @@ export class AuthService {
       sc = {
         address: customToken.address,
         customToken: customToken.value,
-        projectApiKey: environment.build5Token,
+        projectApiKey: environment.buildcoreToken,
         body: params,
       };
     } else if (customToken) {
@@ -319,7 +319,7 @@ export class AuthService {
         return {
           address: provider.selectedAddress,
           signature: signature,
-          projectApiKey: environment.build5Token,
+          projectApiKey: environment.buildcoreToken,
           body: params,
         };
       } catch (e) {
@@ -334,7 +334,7 @@ export class AuthService {
 
   private async signWithTanglePay(
     params: any = {},
-  ): Promise<Build5Request<any> | undefined | false> {
+  ): Promise<BuildcoreRequest<any> | undefined | false> {
     let currentAddress: string | undefined = undefined;
     if (tanglePay.isTanglePay) {
       try {
@@ -395,7 +395,7 @@ export class AuthService {
         const returnObj: any = {
           address: currentAddress,
           signature: signature,
-          projectApiKey: environment.build5Token,
+          projectApiKey: environment.buildcoreToken,
           body: params,
         };
 
@@ -440,7 +440,7 @@ export class AuthService {
 
   public async signIn(wallet: Wallets = Wallets.Metamask): Promise<boolean> {
     this.showWalletPopup$.next(WalletStatus.ACTIVE);
-    let sc: Build5Request<any> | undefined | false;
+    let sc: BuildcoreRequest<any> | undefined | false;
     if (wallet === Wallets.Metamask) {
       sc = await this.signWithMetamask({});
     } else if (wallet === Wallets.TanglePay) {

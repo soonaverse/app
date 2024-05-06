@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { Nft } from '@build-5/interfaces';
+import { Nft } from '@buildcore/interfaces';
 import { SaleType, UpdateEvent } from '../nft-sale.component';
 
 @Component({

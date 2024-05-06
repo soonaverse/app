@@ -11,7 +11,7 @@ import { SeoService } from '@core/services/seo';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { environment } from '@env/environment';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Award, ProposalStartDateMin, ProposalType, Space, Token } from '@build-5/interfaces';
+import { Award, ProposalStartDateMin, ProposalType, Space, Token } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { NzDatePickerComponent } from 'ng-zorro-antd/date-picker';
 import { NzNotificationService } from 'ng-zorro-antd/notification';

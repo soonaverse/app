@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Timestamp } from '@build-5/interfaces';
+import { Timestamp } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 @Component({
   selector: 'wen-date-tag',

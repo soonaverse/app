@@ -16,7 +16,7 @@ import { UnitsService } from '@core/services/units';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService } from '@pages/nft/services/data.service';
 import { HelperService } from '@pages/nft/services/helper.service';
-import { FILE_SIZES, Nft, Space } from '@build-5/interfaces';
+import { FILE_SIZES, Nft, Space } from '@buildcore/interfaces';
 import { switchMap, take } from 'rxjs';
 
 @UntilDestroy()

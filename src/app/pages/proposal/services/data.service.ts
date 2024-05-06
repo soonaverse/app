@@ -9,7 +9,7 @@ import {
   Token,
   TokenDistribution,
   Transaction,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { BehaviorSubject } from 'rxjs';
 import { TransactionWithFullMember } from './../../../@api/proposal.api';
 

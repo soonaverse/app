@@ -14,7 +14,7 @@ import {
   MAX_IOTA_AMOUNT,
   MIN_IOTA_AMOUNT,
   NETWORK_DETAIL,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 
 export enum IotaInputSize {
   LARGE = 'large',

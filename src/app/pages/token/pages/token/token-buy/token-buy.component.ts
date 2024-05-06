@@ -13,7 +13,7 @@ import { NotificationService } from '@core/services/notification';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService, TokenAction } from '@pages/token/services/data.service';
 import { HelperService } from '@pages/token/services/helper.service';
-import { Network } from '@build-5/interfaces';
+import { Network } from '@buildcore/interfaces';
 import { combineLatest, of, skip, switchMap } from 'rxjs';
 
 @UntilDestroy()

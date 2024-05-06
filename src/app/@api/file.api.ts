@@ -1,13 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '@env/environment';
-import { FILE_SIZES } from '@build-5/interfaces';
+import { FILE_SIZES } from '@buildcore/interfaces';
 import { NzUploadXHRArgs } from 'ng-zorro-antd/upload';
 import { Observable, map, of } from 'rxjs';
-import { Build5, https } from '@build-5/sdk';
+import { Buildcore, https } from '@buildcore/sdk';
 
 const EXTENSION_PAT = /\.[^/.]+$/;
-const ORIGIN = environment.production ? Build5.PROD : Build5.TEST;
+const ORIGIN = environment.production ? Buildcore.PROD : Buildcore.TEST;
 
 @Injectable({
   providedIn: 'root',
@@ -41,7 +41,7 @@ export class FileApi {
 
   public upload = (memberId: string, item: NzUploadXHRArgs) =>
     https(ORIGIN)
-      .project(environment.build5Token)
+      .project(environment.buildcoreToken)
       .uploadFile(<Blob>item.postFile, memberId, item.file.uid)
       .pipe(
         map((r) => {

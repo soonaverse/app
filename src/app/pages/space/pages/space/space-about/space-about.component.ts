@@ -27,7 +27,7 @@ import {
   SpaceMember,
   StakeType,
   getDefDecimalIfNotSet,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import Papa from 'papaparse';
 import { Observable, Subscription, combineLatest, first, map, skip } from 'rxjs';
 import { SpaceApi } from './../../../../../@api/space.api';

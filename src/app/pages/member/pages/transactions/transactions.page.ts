@@ -16,7 +16,7 @@ import { download } from '@core/utils/tools.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService } from '@pages/member/services/data.service';
 import { HelperService } from '@pages/member/services/helper.service';
-import { Member, Transaction, TransactionType } from '@build-5/interfaces';
+import { Member, Transaction, TransactionType } from '@buildcore/interfaces';
 import Papa from 'papaparse';
 import { BehaviorSubject, Observable, Subscription, first, map, of } from 'rxjs';
 

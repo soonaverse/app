@@ -5,7 +5,7 @@ import { DeviceService } from '@core/services/device';
 import { SeoService } from '@core/services/seo';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/proposal/services/helper.service';
-import { Proposal, StakeType, Timestamp } from '@build-5/interfaces';
+import { Proposal, StakeType, Timestamp } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { BehaviorSubject, Observable, Subscription, interval, map } from 'rxjs';

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { switchMap, map, take } from 'rxjs/operators';
-import { Nft, Collection } from '@build-5/interfaces';
+import { Nft, Collection } from '@buildcore/interfaces';
 import { CartService } from '@components/cart/services/cart.service';
 
 @Injectable({

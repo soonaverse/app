@@ -1,4 +1,4 @@
-import { Network } from '@build-5/interfaces';
+import { Network } from '@buildcore/interfaces';
 
 export enum StorageItem {
   CustomToken = 'App/customToken',

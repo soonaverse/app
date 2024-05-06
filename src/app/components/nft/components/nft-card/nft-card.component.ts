@@ -28,7 +28,7 @@ import {
   MIN_AMOUNT_TO_TRANSFER,
   Nft,
   NftAccess,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { BehaviorSubject, Subscription, take } from 'rxjs';
 
 @UntilDestroy()

@@ -21,7 +21,7 @@ import {
   StakeType,
   Token,
   Transaction,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import dayjs from 'dayjs';
 import { BehaviorSubject, map, Observable } from 'rxjs';

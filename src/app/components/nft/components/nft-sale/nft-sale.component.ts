@@ -15,7 +15,7 @@ import { PreviewImageService } from '@core/services/preview-image';
 import { UnitsService } from '@core/services/units';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/nft/services/helper.service';
-import { Collection, Nft, NftAccess, PRICE_UNITS, Timestamp, Units } from '@build-5/interfaces';
+import { Collection, Nft, NftAccess, PRICE_UNITS, Timestamp, Units } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { take } from 'rxjs';
 

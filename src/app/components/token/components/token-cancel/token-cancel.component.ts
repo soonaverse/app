@@ -11,7 +11,7 @@ import {
   Token,
   TokenTradeOrder,
   TokenTradeOrderType,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import bigDecimal from 'js-big-decimal';
 
 @Component({

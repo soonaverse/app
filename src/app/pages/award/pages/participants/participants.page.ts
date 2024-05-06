@@ -14,7 +14,7 @@ import { SeoService } from '@core/services/seo';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/award/services/helper.service';
-import { COL, GLOBAL_DEBOUNCE_TIME, Member } from '@build-5/interfaces';
+import { COL, GLOBAL_DEBOUNCE_TIME, Member } from '@buildcore/interfaces';
 import { BehaviorSubject, debounceTime, first, from, skip, Subscription } from 'rxjs';
 import { DataService } from '../../services/data.service';
 import { AwardApi, AwardParticipantWithMember } from './../../../../@api/award.api';

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { DataService } from '@pages/award/services/data.service';
-import { FILE_SIZES } from '@build-5/interfaces';
+import { FILE_SIZES } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import * as relativeTime from 'dayjs/plugin/relativeTime';

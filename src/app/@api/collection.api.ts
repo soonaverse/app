@@ -5,7 +5,7 @@ import {
   Dataset,
   Transaction,
   WEN_FUNC,
-  Build5Request,
+  BuildcoreRequest,
   CollectionMintRequest,
   VoteRequest,
   RankRequest,
@@ -13,7 +13,7 @@ import {
   UpdateCollectionRequest,
   RejectCollectionRequest,
   Subset,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { Observable, of } from 'rxjs';
 import { BaseApi } from './base.api';
 
@@ -39,13 +39,13 @@ export class CollectionApi extends BaseApi<Collection> {
   }
 
   public mintCollection = (
-    req: Build5Request<CollectionMintRequest>,
+    req: BuildcoreRequest<CollectionMintRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.mintCollection, req);
 
-  public vote = (req: Build5Request<VoteRequest>): Observable<Transaction | undefined> =>
+  public vote = (req: BuildcoreRequest<VoteRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.voteController, req);
 
-  public rank = (req: Build5Request<RankRequest>): Observable<Transaction | undefined> =>
+  public rank = (req: BuildcoreRequest<RankRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.rankController, req);
 
   public stats = (collectionId: string) =>
@@ -67,14 +67,14 @@ export class CollectionApi extends BaseApi<Collection> {
     this.collectionDataset.getAllRejectedLive(space, lastValue);
 
   public create = (
-    req: Build5Request<CreateCollectionRequest>,
+    req: BuildcoreRequest<CreateCollectionRequest>,
   ): Observable<Collection | undefined> => this.request(WEN_FUNC.createCollection, req);
 
   public update = (
-    req: Build5Request<UpdateCollectionRequest>,
+    req: BuildcoreRequest<UpdateCollectionRequest>,
   ): Observable<Collection | undefined> => this.request(WEN_FUNC.updateCollection, req);
 
   public reject = (
-    req: Build5Request<RejectCollectionRequest>,
+    req: BuildcoreRequest<RejectCollectionRequest>,
   ): Observable<Collection | undefined> => this.request(WEN_FUNC.rejectCollection, req);
 }

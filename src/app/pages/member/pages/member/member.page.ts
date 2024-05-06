@@ -15,7 +15,7 @@ import { DeviceService } from '@core/services/device';
 import { SeoService } from '@core/services/seo';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { FILE_SIZES, Member } from '@build-5/interfaces';
+import { FILE_SIZES, Member } from '@buildcore/interfaces';
 import { BehaviorSubject, Subscription, filter, map, skip } from 'rxjs';
 import { MemberApi } from './../../../../@api/member.api';
 import { NavigationService } from './../../../../@core/services/navigation/navigation.service';

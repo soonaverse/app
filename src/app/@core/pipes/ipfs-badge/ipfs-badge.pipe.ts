@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { FileMetedata, FILE_SIZES, IPFS_GATEWAY_AVATAR } from '@build-5/interfaces';
+import { FileMetedata, FILE_SIZES, IPFS_GATEWAY_AVATAR } from '@buildcore/interfaces';
 
 @Pipe({
   name: 'ipfsBadge',

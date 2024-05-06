@@ -42,7 +42,7 @@ import {
   Space,
   Timestamp,
   Transaction,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import dayjs from 'dayjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';

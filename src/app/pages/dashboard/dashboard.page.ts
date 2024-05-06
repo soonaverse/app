@@ -4,7 +4,7 @@ import { DeviceService } from '@core/services/device';
 import { ThemeList, ThemeService } from '@core/services/theme';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Award, Proposal, Space } from '@build-5/interfaces';
+import { Award, Proposal, Space } from '@buildcore/interfaces';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { MemberApi } from './../../@api/member.api';
 

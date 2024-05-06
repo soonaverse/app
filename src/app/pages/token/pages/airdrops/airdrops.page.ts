@@ -6,7 +6,7 @@ import { NotificationService } from '@core/services/notification';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { download } from '@core/utils/tools.utils';
 import { DataService } from '@pages/token/services/data.service';
-import { MAX_TOTAL_TOKEN_SUPPLY, StakeType, getDefDecimalIfNotSet } from '@build-5/interfaces';
+import { MAX_TOTAL_TOKEN_SUPPLY, StakeType, getDefDecimalIfNotSet } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { NzUploadFile } from 'ng-zorro-antd/upload';
 import Papa from 'papaparse';

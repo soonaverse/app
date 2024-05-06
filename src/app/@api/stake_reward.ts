@@ -8,10 +8,10 @@ import {
   StakeType,
   TokenStats,
   WEN_FUNC,
-  Build5Request,
+  BuildcoreRequest,
   TokenStakeRewardRequest,
   TokenStakeRewardsRemoveRequest,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { Observable } from 'rxjs';
 import { BaseApi } from './base.api';
@@ -65,10 +65,10 @@ export class StakeRewardApi extends BaseApi<StakeReward> {
     this.stakeRewardDataset.getByTokenLive(token, lastValue);
 
   public submit = (
-    req: Build5Request<TokenStakeRewardRequest>,
+    req: BuildcoreRequest<TokenStakeRewardRequest>,
   ): Observable<StakeReward[] | undefined> => this.request(WEN_FUNC.stakeReward, req);
 
   public remove = (
-    req: Build5Request<TokenStakeRewardsRemoveRequest>,
+    req: BuildcoreRequest<TokenStakeRewardsRemoveRequest>,
   ): Observable<StakeReward[] | undefined> => this.request(WEN_FUNC.removeStakeReward, req);
 }

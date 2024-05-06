@@ -7,7 +7,7 @@ import { download } from '@core/utils/tools.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService } from '@pages/token/services/data.service';
 import { HelperService } from '@pages/token/services/helper.service';
-import { QUERY_MAX_LENGTH, Token, TokenDistribution } from '@build-5/interfaces';
+import { QUERY_MAX_LENGTH, Token, TokenDistribution } from '@buildcore/interfaces';
 import Papa from 'papaparse';
 import { debounceTime } from 'rxjs';
 

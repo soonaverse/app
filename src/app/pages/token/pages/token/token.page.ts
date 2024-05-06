@@ -19,7 +19,7 @@ import { environment } from '@env/environment';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService, TokenAction } from '@pages/token/services/data.service';
 import { HelperService } from '@pages/token/services/helper.service';
-import { COL, Member, RANKING, RANKING_TEST, Token, TokenStatus } from '@build-5/interfaces';
+import { COL, Member, RANKING, RANKING_TEST, Token, TokenStatus } from '@buildcore/interfaces';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { BehaviorSubject, debounceTime, first, interval, skip, Subscription, take } from 'rxjs';
 

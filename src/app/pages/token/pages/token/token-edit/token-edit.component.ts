@@ -18,7 +18,7 @@ import {
   NETWORK_DETAIL,
   Token,
   TokenStatus,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 
 @Component({
   selector: 'wen-token-edit',

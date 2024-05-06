@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AwardParticipantWithMember } from '@api/award.api';
-import { Award, Member, Space, Token } from '@build-5/interfaces';
+import { Award, Member, Space, Token } from '@buildcore/interfaces';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({

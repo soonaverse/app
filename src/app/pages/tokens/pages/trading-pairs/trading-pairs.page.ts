@@ -5,7 +5,7 @@ import { FilterStorageService } from '@core/services/filter-storage';
 import { SeoService } from '@core/services/seo';
 import { StorageItem, getItem, setItem } from '@core/utils';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { COL, Timestamp, Token } from '@build-5/interfaces';
+import { COL, Timestamp, Token } from '@buildcore/interfaces';
 import { InstantSearchConfig } from 'angular-instantsearch/instantsearch/instantsearch';
 import { tokensSections } from '../tokens/tokens.page';
 

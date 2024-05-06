@@ -11,7 +11,7 @@ import {
   Token,
   TokenDistribution,
   TokenStats,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {

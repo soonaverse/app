@@ -5,13 +5,13 @@ import {
   Dataset,
   Transaction,
   WEN_FUNC,
-  Build5Request,
+  BuildcoreRequest,
   NftPurchaseRequest,
   NftPurchaseBulkRequest,
   OrderTokenRequest,
   AddressValidationRequest,
   NftBidRequest,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { Observable, of } from 'rxjs';
 import { BaseApi } from './base.api';
 
@@ -25,22 +25,22 @@ export class OrderApi extends BaseApi<Transaction> {
     super(Dataset.TRANSACTION, httpClient);
   }
 
-  public orderNft = (req: Build5Request<NftPurchaseRequest>): Observable<Transaction | undefined> =>
+  public orderNft = (req: BuildcoreRequest<NftPurchaseRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.orderNft, req);
 
   public orderNfts = (
-    req: Build5Request<NftPurchaseBulkRequest>,
+    req: BuildcoreRequest<NftPurchaseBulkRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.orderNftBulk, req);
 
   public orderToken = (
-    req: Build5Request<OrderTokenRequest>,
+    req: BuildcoreRequest<OrderTokenRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.orderToken, req);
 
   public validateAddress = (
-    req: Build5Request<AddressValidationRequest>,
+    req: BuildcoreRequest<AddressValidationRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.validateAddress, req);
 
-  public openBid = (req: Build5Request<NftBidRequest>): Observable<Transaction | undefined> =>
+  public openBid = (req: BuildcoreRequest<NftBidRequest>): Observable<Transaction | undefined> =>
     this.request(WEN_FUNC.openBid, req);
 
   public listenMultiple = (ids: NetworkAddress[]) =>

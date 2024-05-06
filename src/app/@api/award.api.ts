@@ -7,13 +7,13 @@ import {
   AwardFundRequest,
   AwardParticpateRequest,
   AwardRejectRequest,
-  Build5Request,
+  BuildcoreRequest,
   Dataset,
   Member,
   Subset,
   Timestamp,
   WEN_FUNC,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { map, Observable, of } from 'rxjs';
 import { AwardFilter, BaseApi } from './base.api';
 
@@ -83,23 +83,23 @@ export class AwardApi extends BaseApi<Award> {
       .pipe(map((awardMember) => !!awardMember));
   }
 
-  public create = (req: Build5Request<AwardCreateRequest>): Observable<Award | undefined> =>
+  public create = (req: BuildcoreRequest<AwardCreateRequest>): Observable<Award | undefined> =>
     this.request(WEN_FUNC.createAward, req);
 
   public participate = (
-    req: Build5Request<AwardParticpateRequest>,
+    req: BuildcoreRequest<AwardParticpateRequest>,
   ): Observable<Award | undefined> => this.request(WEN_FUNC.participateAward, req);
 
   public approveParticipant = (
-    req: Build5Request<AwardApproveParticipantRequest>,
+    req: BuildcoreRequest<AwardApproveParticipantRequest>,
   ): Observable<Award | undefined> => this.request(WEN_FUNC.approveParticipantAward, req);
 
-  public approve = (req: Build5Request<AwardFundRequest>): Observable<Award | undefined> =>
+  public approve = (req: BuildcoreRequest<AwardFundRequest>): Observable<Award | undefined> =>
     this.request(WEN_FUNC.fundAward, req);
 
-  public reject = (req: Build5Request<AwardRejectRequest>): Observable<Award | undefined> =>
+  public reject = (req: BuildcoreRequest<AwardRejectRequest>): Observable<Award | undefined> =>
     this.request(WEN_FUNC.rejectAward, req);
 
-  public fundAndMint = (req: Build5Request<AwardFundRequest>): Observable<Award | undefined> =>
+  public fundAndMint = (req: BuildcoreRequest<AwardFundRequest>): Observable<Award | undefined> =>
     this.request(WEN_FUNC.fundAward, req);
 }

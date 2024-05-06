@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  Build5Request,
+  BuildcoreRequest,
   Dataset,
   QUERY_MAX_LENGTH,
   Space,
@@ -14,7 +14,7 @@ import {
   SpaceUpdateRequest,
   Subset,
   WEN_FUNC,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { Observable, map, of, switchMap } from 'rxjs';
 import { BaseApi } from './base.api';
 import { chunkArray } from '@core/utils/common.utils';
@@ -121,45 +121,45 @@ export class SpaceApi extends BaseApi<Space> {
     return (await Promise.all(promises)).flat();
   };
 
-  public create = (req: Build5Request<SpaceCreateRequest>): Observable<Space | undefined> =>
+  public create = (req: BuildcoreRequest<SpaceCreateRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.createSpace, req);
 
-  public save = (req: Build5Request<SpaceUpdateRequest>): Observable<Space | undefined> =>
+  public save = (req: BuildcoreRequest<SpaceUpdateRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.updateSpace, req);
 
-  public join = (req: Build5Request<SpaceJoinRequest>): Observable<Space | undefined> =>
+  public join = (req: BuildcoreRequest<SpaceJoinRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.joinSpace, req);
 
-  public leave = (req: Build5Request<SpaceLeaveRequest>): Observable<Space | undefined> =>
+  public leave = (req: BuildcoreRequest<SpaceLeaveRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.leaveSpace, req);
 
   public setGuardian = (
-    req: Build5Request<SpaceMemberUpsertRequest>,
+    req: BuildcoreRequest<SpaceMemberUpsertRequest>,
   ): Observable<Space | undefined> => this.request(WEN_FUNC.addGuardianSpace, req);
 
-  public claimSpace = (req: Build5Request<SpaceClaimRequest>): Observable<Space | undefined> =>
+  public claimSpace = (req: BuildcoreRequest<SpaceClaimRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.claimSpace, req);
 
   public removeGuardian = (
-    req: Build5Request<SpaceMemberUpsertRequest>,
+    req: BuildcoreRequest<SpaceMemberUpsertRequest>,
   ): Observable<Space | undefined> => this.request(WEN_FUNC.removeGuardianSpace, req);
 
   public blockMember = (
-    req: Build5Request<SpaceMemberUpsertRequest>,
+    req: BuildcoreRequest<SpaceMemberUpsertRequest>,
   ): Observable<Space | undefined> => this.request(WEN_FUNC.blockMemberSpace, req);
 
   public unblockMember = (
-    req: Build5Request<SpaceMemberUpsertRequest>,
+    req: BuildcoreRequest<SpaceMemberUpsertRequest>,
   ): Observable<Space | undefined> => this.request(WEN_FUNC.unblockMemberSpace, req);
 
   public acceptMember = (
-    req: Build5Request<SpaceMemberUpsertRequest>,
+    req: BuildcoreRequest<SpaceMemberUpsertRequest>,
   ): Observable<Space | undefined> => this.request(WEN_FUNC.acceptMemberSpace, req);
 
   public rejectMember = (
-    req: Build5Request<SpaceMemberUpsertRequest>,
+    req: BuildcoreRequest<SpaceMemberUpsertRequest>,
   ): Observable<Space | undefined> => this.request(WEN_FUNC.declineMemberSpace, req);
 
-  public update = (req: Build5Request<SpaceUpdateRequest>): Observable<Space | undefined> =>
+  public update = (req: BuildcoreRequest<SpaceUpdateRequest>): Observable<Space | undefined> =>
     this.request(WEN_FUNC.updateSpace, req);
 }

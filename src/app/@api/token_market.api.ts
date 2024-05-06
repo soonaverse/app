@@ -6,10 +6,10 @@ import {
   TokenTradeOrderStatus,
   TokenTradeOrderType,
   WEN_FUNC,
-  Build5Request,
+  BuildcoreRequest,
   TradeTokenRequest,
   CancelTokenTradeOrderRequest,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { Observable, map } from 'rxjs';
 import { BaseApi } from './base.api';
 
@@ -49,10 +49,10 @@ export class TokenMarketApi extends BaseApi<TokenTradeOrder> {
     this.tokenMarketDataset.getTokenPriceLive(tokenId).pipe(map((result) => result.price));
 
   public tradeToken = (
-    req: Build5Request<TradeTokenRequest>,
+    req: BuildcoreRequest<TradeTokenRequest>,
   ): Observable<TokenTradeOrder | undefined> => this.request(WEN_FUNC.tradeToken, req);
 
   public cancel = (
-    req: Build5Request<CancelTokenTradeOrderRequest>,
+    req: BuildcoreRequest<CancelTokenTradeOrderRequest>,
   ): Observable<TokenTradeOrder | undefined> => this.request(WEN_FUNC.cancelTradeOrder, req);
 }

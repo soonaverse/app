@@ -4,9 +4,9 @@ import {
   Dataset,
   Transaction,
   WEN_FUNC,
-  Build5Request,
+  BuildcoreRequest,
   CreditUnrefundableRequest,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { Observable } from 'rxjs';
 import { BaseApi } from './base.api';
 
@@ -19,6 +19,6 @@ export class TransactionApi extends BaseApi<Transaction> {
   }
 
   public creditUnrefundable = (
-    req: Build5Request<CreditUnrefundableRequest>,
+    req: BuildcoreRequest<CreditUnrefundableRequest>,
   ): Observable<Transaction | undefined> => this.request(WEN_FUNC.creditUnrefundable, req);
 }

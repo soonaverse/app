@@ -20,7 +20,7 @@ import {
   NftPurchaseRequest,
   Network,
   DEFAULT_NETWORK,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { AuthService } from '@components/auth/services/auth.service';
 import { NotificationService } from '@core/services/notification';
 import { OrderApi } from '@api/order.api';

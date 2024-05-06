@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MemberApi } from '@api/member.api';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Award, Member, Space, Transaction } from '@build-5/interfaces';
+import { Award, Member, Space, Transaction } from '@buildcore/interfaces';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import {
   AuditOneQueryService,

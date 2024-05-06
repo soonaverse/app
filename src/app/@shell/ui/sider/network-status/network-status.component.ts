@@ -8,7 +8,7 @@ import {
 import { DeviceService } from '@core/services/device';
 import { environment } from '@env/environment';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { Milestone, Network, PROD_NETWORKS, TEST_NETWORKS } from '@build-5/interfaces';
+import { Milestone, Network, PROD_NETWORKS, TEST_NETWORKS } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject } from 'rxjs';
 import { MilestoneApi } from '@api/milestone.api';

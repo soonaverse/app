@@ -30,7 +30,7 @@ import {
   Transaction,
   TransactionType,
   UnsoldMintingOptions,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, Subscription, interval } from 'rxjs';
 

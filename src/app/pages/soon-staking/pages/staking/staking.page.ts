@@ -30,7 +30,7 @@ import {
   TokenStats,
   calcStakedMultiplier,
   getDefDecimalIfNotSet,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { BehaviorSubject, Observable, Subscription, map, merge, of } from 'rxjs';
 
 interface Rewards {

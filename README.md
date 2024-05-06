@@ -70,7 +70,7 @@ Soonaverse uses key libraries:
 - [Angular](https://angular.io/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Ng Zorro](https://ng.ant.design)
-- [Build-5/interfaces](https://www.npmjs.com/package/@build-5/interfaces) and [Build-5/lib](https://www.npmjs.com/package/@build-5/lib)
+- [Build-5/interfaces](https://www.npmjs.com/package/@buildcore/interfaces) and [Build-5/lib](https://www.npmjs.com/package/@buildcore/lib)
 - [Algolia](https://www.algolia.com/) (for searches)
 
 ## Setting Up a Project

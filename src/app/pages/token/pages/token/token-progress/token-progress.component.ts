@@ -3,7 +3,7 @@ import { DescriptionItemType } from '@components/description/description.compone
 import { UnitsService } from '@core/services/units';
 import { DataService } from '@pages/token/services/data.service';
 import { HelperService } from '@pages/token/services/helper.service';
-import { Token, TokenDistribution, TokenStatus } from '@build-5/interfaces';
+import { Token, TokenDistribution, TokenStatus } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 
 @Component({

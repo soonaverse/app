@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { DeviceService } from '@core/services/device';
 import { PreviewImageService } from '@core/services/preview-image';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
-import { Member, Space } from '@build-5/interfaces';
+import { Member, Space } from '@buildcore/interfaces';
 
 @Component({
   selector: 'wen-member-space-row',

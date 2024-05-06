@@ -19,7 +19,7 @@ import {
   TokenStatus,
   getDefDecimalIfNotSet,
   Network,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { BehaviorSubject, of, Subscription, switchMap } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { AwardApi } from './../../../../@api/award.api';

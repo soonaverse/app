@@ -10,7 +10,7 @@ import {
   Network,
   Transaction,
   TransactionType,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 
 export enum TimelineItemType {
   BADGE = 'Badge',

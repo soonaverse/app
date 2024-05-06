@@ -10,7 +10,7 @@ import { DeviceService } from '@core/services/device';
 import { PreviewImageService } from '@core/services/preview-image';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataService, MemberAction } from '@pages/member/services/data.service';
-import { FILE_SIZES, Member } from '@build-5/interfaces';
+import { FILE_SIZES, Member } from '@buildcore/interfaces';
 import { BehaviorSubject, skip } from 'rxjs';
 import { EntityType } from './../../../wallet-address/wallet-address.component';
 

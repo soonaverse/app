@@ -14,7 +14,7 @@ import { SeoService } from '@core/services/seo';
 import { ThemeList, ThemeService } from '@core/services/theme';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { COL, GLOBAL_DEBOUNCE_TIME, Member } from '@build-5/interfaces';
+import { COL, GLOBAL_DEBOUNCE_TIME, Member } from '@buildcore/interfaces';
 import { BehaviorSubject, debounceTime, first, from, skip, Subscription } from 'rxjs';
 import { SpaceApi } from './../../../../@api/space.api';
 import { CacheService } from './../../../../@core/services/cache/cache.service';

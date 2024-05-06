@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { FILE_SIZES } from '@build-5/interfaces';
+import { FILE_SIZES } from '@buildcore/interfaces';
 
 @Component({
   selector: 'wen-badge-tile',

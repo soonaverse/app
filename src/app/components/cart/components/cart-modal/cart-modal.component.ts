@@ -5,7 +5,7 @@ import {
   ChangeDetectionStrategy,
   OnInit,
 } from '@angular/core';
-import { Network, Transaction } from '@build-5/interfaces';
+import { Network, Transaction } from '@buildcore/interfaces';
 import { Subscription, take, of, Observable, BehaviorSubject, Subject } from 'rxjs';
 import { CartService, CartItem } from '@components/cart/services/cart.service';
 import { AuthService } from '@components/auth/services/auth.service';

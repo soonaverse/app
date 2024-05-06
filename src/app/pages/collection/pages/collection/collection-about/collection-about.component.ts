@@ -7,7 +7,7 @@ import { PreviewImageService } from '@core/services/preview-image';
 import { UnitsService } from '@core/services/units';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { HelperService } from '@pages/collection/services/helper.service';
-import { Access, FILE_SIZES, Network } from '@build-5/interfaces';
+import { Access, FILE_SIZES, Network } from '@buildcore/interfaces';
 import { BehaviorSubject, combineLatest, of, switchMap } from 'rxjs';
 import { DataService } from '../../../services/data.service';
 

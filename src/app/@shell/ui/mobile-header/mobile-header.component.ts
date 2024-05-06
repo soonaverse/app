@@ -5,7 +5,7 @@ import { RouterService } from '@core/services/router';
 import { UnitsService } from '@core/services/units';
 import { ROUTER_UTILS } from '@core/utils/router.utils';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { Notification } from '@build-5/interfaces';
+import { Notification } from '@buildcore/interfaces';
 import { BehaviorSubject } from 'rxjs';
 import { NotificationContent } from '../header/header.component';
 import { CartService } from '@components/cart/services/cart.service';

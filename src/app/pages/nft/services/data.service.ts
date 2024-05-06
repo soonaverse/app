@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { OffersHistory, SuccesfullOrdersWithFullHistory } from '@api/nft.api';
 import { AuthService } from '@components/auth/services/auth.service';
 import { SelectCollectionOption } from '@components/collection/components/select-collection/select-collection.component';
-import { Collection, Member, Nft, Space, Transaction } from '@build-5/interfaces';
+import { Collection, Member, Nft, Space, Transaction } from '@buildcore/interfaces';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({

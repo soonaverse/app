@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Award } from '@build-5/interfaces';
+import { Award } from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 
 @Injectable({

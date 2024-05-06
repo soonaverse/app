@@ -24,7 +24,7 @@ import {
   SOON_SPACE_TEST,
   Space,
   StakeType,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import Papa from 'papaparse';
 import { BehaviorSubject, combineLatest, map, Observable, skip } from 'rxjs';
 import { SpaceApi } from './../../../../@api/space.api';

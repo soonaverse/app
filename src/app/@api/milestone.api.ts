@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Milestone, Dataset } from '@build-5/interfaces';
+import { Milestone, Dataset } from '@buildcore/interfaces';
 import { BaseApi } from './base.api';
 
 @Injectable({

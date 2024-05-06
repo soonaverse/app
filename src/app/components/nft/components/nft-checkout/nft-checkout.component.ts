@@ -40,7 +40,7 @@ import {
   TransactionType,
   TRANSACTION_AUTO_EXPIRY_MS,
   NftPurchaseRequest,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import dayjs from 'dayjs';
 import { BehaviorSubject, firstValueFrom, interval, Subscription, take } from 'rxjs';
 import { CartService } from '@components/cart/services/cart.service';

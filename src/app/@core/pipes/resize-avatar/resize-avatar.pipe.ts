@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { FILE_SIZES } from '@build-5/interfaces';
+import { FILE_SIZES } from '@buildcore/interfaces';
 
 @Pipe({
   name: 'resizeAvatar',

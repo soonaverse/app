@@ -20,7 +20,7 @@ import {
   GLOBAL_DEBOUNCE_TIME,
   Proposal,
   ProposalType,
-} from '@build-5/interfaces';
+} from '@buildcore/interfaces';
 import { BehaviorSubject, debounceTime, first, firstValueFrom, skip, Subscription } from 'rxjs';
 import { MemberApi } from './../../../../@api/member.api';
 import { ProposalApi } from './../../../../@api/proposal.api';

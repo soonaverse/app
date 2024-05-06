@@ -11,7 +11,7 @@ import {
 import { MemberApi } from '@api/member.api';
 import { DeviceService } from '@core/services/device';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { FILE_SIZES, Member, Timestamp, Transaction } from '@build-5/interfaces';
+import { FILE_SIZES, Member, Timestamp, Transaction } from '@buildcore/interfaces';
 import { BehaviorSubject, first, Observable, of } from 'rxjs';
 import { ROUTER_UTILS } from './../../../../@core/utils/router.utils';
 

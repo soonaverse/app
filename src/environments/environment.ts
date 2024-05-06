@@ -1,4 +1,4 @@
-import { MIN_IOTA_AMOUNT } from '@build-5/interfaces';
+import { MIN_IOTA_AMOUNT } from '@buildcore/interfaces';
 
 export const environment = {
   production: false,
@@ -7,7 +7,7 @@ export const environment = {
     key: '5c053a0370395f0fe8cf7ce9e5a21a72',
   },
   soonaversePlaceholder: 'https://soonaverse.com/favicon.ico',
-  build5Token:
+  buildcoreToken:
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIweDU1MWZkMmM3YzdiZjM1NmJhYzE5NDU4N2RhYjJmY2Q0NjQyMDA1NGIiLCJwcm9qZWN0IjoiMHg0NjIyM2VkZDQxNTc2MzVkZmM2Mzk5MTU1NjA5ZjMwMWRlY2JmZDg4IiwiaWF0IjoxNjk1ODUyNTk2fQ.WT9L4H9eDdFfJZMrfxTKhEq4PojNWSGNv_CbmlG9sJg',
   tiers: [0, 10, 4000, 6000, 15000].map((v) => v * MIN_IOTA_AMOUNT),
 };
