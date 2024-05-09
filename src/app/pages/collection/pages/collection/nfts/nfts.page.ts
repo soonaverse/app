@@ -26,7 +26,7 @@ import { Subject, take, filter, takeUntil } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { CartService } from '@components/cart/services/cart.service';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { state } from '@angular/animations';
+import dayjs from 'dayjs';
 import { CollectionNftStateService } from './collectionNfts.service';
 
 // used in src/app/pages/collection/pages/collection/collection.page.ts
@@ -165,7 +165,7 @@ export class CollectionNFTsPage implements OnInit, OnChanges, OnDestroy {
 
     const transformedItems = algoliaItems.map((algolia) => ({
       ...algolia,
-      availableFrom: Timestamp.fromMillis(+algolia.availableFrom),
+      availableFrom: Timestamp.fromDate(dayjs(algolia.availableFrom).toDate()),
     }));
 
     this.cd.markForCheck();
