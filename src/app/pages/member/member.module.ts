@@ -61,6 +61,8 @@ import { MemberSpacesComponent } from './pages/spaces/member-spaces.component';
 import { TokensPage } from './pages/tokens/tokens.page';
 import { TransactionsPage } from './pages/transactions/transactions.page';
 import { DataService } from './services/data.service';
+import { NzRadioModule } from 'ng-zorro-antd/radio';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 
 @NgModule({
   declarations: [
@@ -128,6 +130,8 @@ import { DataService } from './services/data.service';
     NftDepositModule,
     NftStakeModule,
     TokenTradingPairsTableModule,
+    NzRadioModule,
+    NzSpinModule,
   ],
 })
 export class MemberModule {}
