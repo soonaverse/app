@@ -22,7 +22,7 @@
           class="text-icons-secondary dark:text-icons-secondary-dark"
         ></wen-icon-info-circle>
         <div class="ml-3 font-medium" i18n>
-          Bring NFT from other network to Soonaverse and unlock it’s trading options.
+          Bring NFT from other network to Soonaverse and unlock it's trading options.
         </div>
       </div>
       <button nz-button nzType="primary" nzSize="default" (click)="isDepositNftVisible = true" i18n>
@@ -44,6 +44,7 @@
                 *ngFor="let hit of hits; trackBy: trackByUid"
                 [nft]="hit"
                 [collection]="cacheService.getCollection(hit.collection) | async"
+                (selectionChange)="handleNftSelectionChange($event)"
               >
               </wen-nft-card>
               <div (wenVisible)="refine()"></div>

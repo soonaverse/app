@@ -2,9 +2,12 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
+  Output,
+  SimpleChanges,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { FileApi } from '@api/file.api';
@@ -29,7 +32,8 @@ import {
   Nft,
   NftAccess,
 } from '@build-5/interfaces';
-import { BehaviorSubject, Subscription, take } from 'rxjs';
+import { BehaviorSubject, Subscription, combineLatest, map, startWith, take } from 'rxjs';
+import { NftSelectionService } from '@core/services/nft-selection/nft-selection.service';
 
 @UntilDestroy()
 @Component({
@@ -77,8 +81,12 @@ export class NftCardComponent implements OnInit, OnDestroy {
 
   @Input() collection?: Collection | null;
 
+  public nftSelectable = false;
+  @Output() selectionChange = new EventEmitter<any>();
+  public nftSelected = false;
+  private nftSelectionSubscription$: Subscription = new Subscription();
+
   public mediaType: 'video' | 'image' | undefined;
-  public isCheckoutOpen = false;
   public isBidOpen = false;
   public path = ROUTER_UTILS.config.nft.root;
   public owner$: BehaviorSubject<Member | undefined> = new BehaviorSubject<Member | undefined>(
@@ -98,10 +106,31 @@ export class NftCardComponent implements OnInit, OnDestroy {
     private memberApi: MemberApi,
     private fileApi: FileApi,
     private cache: CacheService,
+    public nftSelectionService: NftSelectionService,
     public cartService: CartService,
   ) {}
 
   ngOnInit(): void {
+    this.nftSelectionSubscription$.add(
+      this.nftSelectionService.selectedNftIds$.subscribe((selectedIds) => {
+        this.nftSelected = selectedIds.includes(this.nft?.uid || '');
+        this.cd.markForCheck();
+      }),
+    );
+
+    const nftSelectableSub = combineLatest([this.owner$, this.auth.member$.pipe(startWith(null))])
+      .pipe(
+        map(([owner, member]) => {
+          return owner !== null && member !== null && owner?.uid === member?.uid;
+        }),
+      )
+      .subscribe((isOwner) => {
+        this.nftSelectable = isOwner && this.nft?.locked === false;
+        this.cd.markForCheck();
+      });
+
+    this.nftSelectionSubscription$.add(nftSelectableSub);
+
     this.cartSubscription$ = this.cartService.getCartItems().subscribe(() => {
       this.cd.markForCheck();
     });
@@ -214,7 +243,37 @@ export class NftCardComponent implements OnInit, OnDestroy {
     }
   }
 
+  preventDefaultOnClick(event: MouseEvent): void {
+    if (this.nftSelected) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+
+  onCardClick(event: MouseEvent, nft: any): void {
+    if (!this.nftSelected) {
+      this.router.navigate(['/', this.path, nft?.uid]);
+    }
+  }
+
+  public toggleNftSelection(isChecked: boolean): void {
+    this.nftSelected = isChecked;
+
+    const action = isChecked ? 'select' : 'deselect';
+    if (action === 'select') {
+      this.nftSelectionService.selectNft(this.nft?.uid || '');
+    } else {
+      this.nftSelectionService.deselectNft(this.nft?.uid || '');
+    }
+
+    this.cd.markForCheck();
+  }
+
   ngOnDestroy() {
+    if (this.nftSelectionSubscription$) {
+      this.nftSelectionSubscription$.unsubscribe();
+    }
+
     this.cartSubscription$.unsubscribe();
   }
 }

@@ -126,7 +126,9 @@ export class MemberPage implements OnInit, OnDestroy {
         .pipe(untilDestroyed(this))
         .subscribe(this.data.awardsPending$),
     );
+
     // TODO Implement search. This is parked since we will be implementing new search here.
+
     this.subscriptions$.push(
       this.memberApi
         .topSpaces(memberId)
@@ -142,6 +144,7 @@ export class MemberPage implements OnInit, OnDestroy {
           this.data.space$.next(filteredSpaces);
         }),
     );
+
     this.subscriptions$.push(
       this.memberApi
         .listen(memberId)

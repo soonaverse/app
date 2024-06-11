@@ -101,6 +101,7 @@ module.exports = {
         99: '24.75rem',
       },
       borderRadius: {
+        card: '1.7rem',
         9: '2.25rem',
         10: '2.5rem',
         large: '3rem',
@@ -108,6 +109,10 @@ module.exports = {
       },
       borderWidth: {
         3: '3px',
+        card: '10px',
+      },
+      borderColor: {
+        'accent-primary': 'var(--accent-primary)',
       },
       dropShadow: {
         card: '0px 0px 12px rgba(0, 0, 0, 0.08)',
