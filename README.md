@@ -16,19 +16,8 @@
   <a href="CONTRIBUTING.md">Contributing Guidelines</a>
   ·
   <a href="https://github.com/soonaverse/app/issues">Submit an Issue</a>
-  ·
-  <a href="https://twitter.com/soon_labs">Twitter</a>
   <br>
   <br>
-</p>
-
-<p align="center">
-  <a href="https://twitter.com/soon_labs">
-    <img src="https://img.shields.io/twitter/follow/soon_labs" alt="Follow on Twitter" />
-  </a>&nbsp;
-  <a href="https://discord.gg/x7sBB2SZCg">
-    <img src="https://img.shields.io/discord/892481940953915433.svg?logo=discord&logoColor=fff&label=Discord&color=7389d8" alt="Discord conversation" />
-  </a>
 </p>
 
 <hr>
