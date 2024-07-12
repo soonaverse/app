@@ -9,11 +9,11 @@
       </svg>
     </a>
 
-    <div *ngIf="(deviceService.isDesktop$ | async) && (deviceService.isNotBreakHeight$ | async)">
+    <!-- <div *ngIf="(deviceService.isDesktop$ | async) && (deviceService.isNotBreakHeight$ | async)">
       <wen-navigation [items]="(auth.desktopMenuItems$ | async) || []"></wen-navigation>
-    </div>
+    </div> -->
 
-    <ul
+    <!-- <ul
       nz-menu
       *ngIf="(deviceService.isDesktop$ | async) && (deviceService.isBreakHeight$ | async)"
       [nzMode]="'vertical'"
@@ -29,7 +29,7 @@
       <ng-template #menu>
         <wen-icon-menu></wen-icon-menu>
       </ng-template>
-    </ul>
+    </ul> -->
   </div>
 
   <div class="sticky bottom-0 flex flex-col items-center px-3 shrink">
@@ -39,7 +39,7 @@
   <ng-template #options>
     <wen-network-status class="mb-6"></wen-network-status>
     <!-- <wen-language-change class="mb-6"></wen-language-change> -->
-    <a class="block mb-5" href="https://docs.soonaverse.com/" target="_blank">
+    <!-- <a class="block mb-5" target="_blank">
       <i
         nz-icon
         nzType="info-circle"
@@ -48,7 +48,7 @@
         nzTooltipTitle="See Docs"
         class="text-xl cursor-pointer"
       ></i>
-    </a>
+    </a> -->
     <wen-theme-switch class="mb-5"></wen-theme-switch>
   </ng-template>
 </div>

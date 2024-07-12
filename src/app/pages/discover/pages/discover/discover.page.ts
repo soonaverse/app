@@ -24,10 +24,10 @@ export const discoverSections: TabSection[] = [
 })
 export class DiscoverPage implements OnDestroy, OnInit {
   constructor(public filter: FilterService, public deviceService: DeviceService) {
-    // none;
   }
 
   public ngOnInit(): void {
+    window.location.href = 'https://soonaverse.com/home/';
     this.deviceService.viewWithSearch$.next(true);
   }
 

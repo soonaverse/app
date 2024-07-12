@@ -1,8 +1,9 @@
 name: Action | Auto deploy "production" to soonaverse.com
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - switch_to_downtime_mode
 
 jobs:
   publish:

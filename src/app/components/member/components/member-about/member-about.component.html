@@ -15,7 +15,7 @@
       @{{ (data.member$ | async)?.name || ((data.member$ | async)?.uid | truncate : [12]) }}
     </h3>
     <div *ngIf="(data.member$ | async)?.uid === (loggedInMember | async)?.uid">
-      <button
+      <!-- <button
         nz-button
         nzSize="default"
         nzShape="circle"
@@ -24,7 +24,7 @@
         class="ml-4 text-center text-current"
       >
         <span nz-icon nzType="edit" class="text-white"></span>
-      </button>
+      </button> -->
       <wen-member-edit-drawer
         [isDesktop]="(deviceService.isDesktop$ | async) === true"
         *ngIf="(drawerVisible$ | async) || false"
@@ -114,7 +114,7 @@
     [entity]="(data.member$ | async)?.uid"
   ></wen-audit-one-widget>
 
-  <div class="mt-10 text-left">
+  <!-- <div class="mt-10 text-left">
     <h4 class="flex items-center justify-between">
       <span i18n>Recently joined spaces</span>
       <a
@@ -155,5 +155,5 @@
         <span i18n>No Contribution Yet.</span>
       </article>
     </div>
-  </div>
+  </div> -->
 </div>

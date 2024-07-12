@@ -57,11 +57,11 @@ export class MemberPage implements OnInit, OnDestroy {
       if (params?.memberId) {
         this.listenMember(params.memberId);
         this.sections = [
-          { route: 'badges', label: $localize`Reputation` },
-          { route: 'awards', label: $localize`Awards` },
-          { route: 'spaces', label: $localize`Spaces` },
-          { route: 'tokens', label: $localize`Tokens` },
-          { route: 'nfts', label: $localize`NFTs` },
+          // { route: 'badges', label: $localize`Reputation` },
+          // { route: 'awards', label: $localize`Awards` },
+          // { route: 'spaces', label: $localize`Spaces` },
+          // { route: 'tokens', label: $localize`Tokens` },
+          // { route: 'nfts', label: $localize`NFTs` },
         ];
         this.checkLoggedInTabs();
         this.cd.markForCheck();
