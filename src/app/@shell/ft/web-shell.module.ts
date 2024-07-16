@@ -34,11 +34,11 @@ const APP_ROUTES: Routes = [
   //   loadChildren: async () => (await import('@pages/discover/discover.module')).DiscoverModule,
   //   canLoad: [],
   // },
-  {
-    path: ROUTER_UTILS.config.member.root,
-    loadChildren: async () => (await import('@pages/member/member.module')).MemberModule,
-    canLoad: [],
-  },
+  // {
+  //   path: ROUTER_UTILS.config.member.root,
+  //   loadChildren: async () => (await import('@pages/member/member.module')).MemberModule,
+  //   canLoad: [],
+  // },
   // {
   //   path: ROUTER_UTILS.config.space.root,
   //   loadChildren: async () => (await import('@pages/space/space.module')).SpaceModule,
