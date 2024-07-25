@@ -1,9 +1,17 @@
+
+<h2 align="center">
+  This project is no longer actively maintaned. <br><br>See more: <a href="https://www.soonaverse.com">Issue #182</a>
+  <br>
+</h2>
+
+<br><br><br>
+
 <h1 align="center">Soonaverse - Web3 platform for communities build on IOTA & Shimmer</h1>
 
 <p align="center">
   <img src="src/assets/static-home/images/Soonaverse-logo.svg" alt="angular-logo" width="120px" height="120px"/>
   <br>
-  <em>Soonaverse is a platform for communities to create and manage decentralized autonomous organizations (DAOs), NFTs, projects, companies, and markets, on the feeless infrastructure of the IOTA and SMR network.</em>
+  <em>Soonaverse was a platform for communities to create and manage decentralized autonomous organizations (DAOs), NFTs, projects, companies, and markets, on the feeless infrastructure of the IOTA and SMR network.</em>
   <br>
 </p>
 
